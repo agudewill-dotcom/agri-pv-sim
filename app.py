@@ -89,8 +89,17 @@ if st.sidebar.button("Fetch Satellite Topography"):
         st.session_state.s, st.session_state.a = get_topo(loc.latitude, loc.longitude)
         st.sidebar.success(f"Terrain Applied")
 
-g_slope = st.sidebar.slider("Site Slope (deg)", 0.0, 20.0, st.session_state.s)
-g_aspect = st.sidebar.slider("Site Aspect (deg)", 0, 360, int(st.session_state.a))
+# TERRAIN ENGINE
+st.sidebar.subheader("🌍 Terrain & Topography")
+use_manual = st.sidebar.toggle("Manual Terrain Override", value=False, help="Enable to manually set slope/aspect. Otherwise, satellite data is used.")
+
+if not use_manual:
+    g_slope = st.session_state.s
+    g_aspect = st.session_state.a
+    st.sidebar.info(f"**Satellite Active:** {g_slope}° Slope | {g_aspect}° Aspect")
+else:
+    g_slope = st.sidebar.slider("Manual Site Slope (deg)", 0.0, 20.0, st.session_state.s)
+    g_aspect = st.sidebar.slider("Manual Site Aspect (deg)", 0, 360, int(st.session_state.a))
 st.sidebar.divider()
 tau = st.sidebar.slider("Module Transparency", 0.0, 1.0, 0.20)
 
