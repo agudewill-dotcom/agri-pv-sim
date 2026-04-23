@@ -34,6 +34,20 @@ st.markdown("""
 
 # --- ENGINE ---
 @st.cache_data
+def get_topo(lat, lon):
+    d = 0.0005 
+    locations = f"{lat},{lon}|{lat+d},{lon}|{lat-d},{lon}|{lat},{lon+d}|{lat},{lon-d}"
+    url = f"https://api.opentopodata.org/v1/srtm30m?locations={locations}"
+    try:
+        r = requests.get(url, timeout=5).json()['results']
+        z_c, z_n, z_s, z_e, z_w = r[0]['elevation'], r[1]['elevation'], r[2]['elevation'], r[3]['elevation'], r[4]['elevation']
+        dist = 111320 * d
+        slope = np.degrees(np.arctan(np.sqrt(((z_e-z_w)/(2*dist))**2 + ((z_n-z_s)/(2*dist))**2)))
+        aspect = (np.degrees(np.arctan2((z_e-z_w)/(2*dist), (z_n-z_s)/(2*dist))) + 360) % 360
+        return round(slope, 1), round(aspect, 1)
+    except: return 0.0, 180.0
+
+@st.cache_data
 def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt):
     df = solar.fetch_pvgis_hourly(lat, lon, yr, yr)
     sp = solar.get_solar_position_df(lat, lon, df.index)
@@ -54,24 +68,34 @@ def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt):
     df['par'] = df['g_g'] * 2.1
     return df
 
-# --- SITE ---
+# --- SESSION STATE ---
+if 's' not in st.session_state: st.session_state.s = 0.0
+if 'a' not in st.session_state: st.session_state.a = 180.0
+
+# --- SIDEBAR ---
 st.sidebar.title("Simulation Setup")
 addr = st.sidebar.text_input("Project Site", "Berlin, Germany")
-gs = st.sidebar.slider("Site Slope (deg)", 0.0, 20.0, 0.0)
+if st.sidebar.button("Fetch Satellite Topography"):
+    loc = Nominatim(user_agent="agri_final_v8").geocode(addr)
+    if loc:
+        st.session_state.s, st.session_state.a = get_topo(loc.latitude, loc.longitude)
+        st.sidebar.success(f"Terrain Applied: {st.session_state.s}° Slope")
+
+g_slope = st.sidebar.slider("Site Slope (deg)", 0.0, 20.0, st.session_state.s)
+g_aspect = st.sidebar.slider("Site Aspect (deg)", 0, 360, int(st.session_state.a))
+st.sidebar.divider()
 tau = st.sidebar.slider("Module Transparency", 0.0, 1.0, 0.20)
 pitch = st.sidebar.number_input("Design Pitch (m)", 5.0, 15.0, 8.63)
 
+# Calculations
 loc_f = Nominatim(user_agent="agri_final_v8").geocode(addr)
 lat, lon = (loc_f.latitude, loc_f.longitude) if loc_f else (52.52, 13.40)
-
-# Simulations
-res_a = run_v8_physics(lat, lon, 2020, 5.63, 2.10, pitch, gs, 180.0, tau, 0.81, 15)
-res_s = run_v8_physics(lat, lon, 2020, 4.30, 0.80, 6.50, gs, 180.0, 0.00, 0.20, 20)
-
+res_a = run_v8_physics(lat, lon, 2020, 5.63, 2.10, pitch, g_slope, g_aspect, tau, 0.81, 15)
+res_s = run_v8_physics(lat, lon, 2020, 4.30, 0.80, 6.50, g_slope, g_aspect, 0.00, 0.20, 20)
 va, vs, vo = res_a['g_g'].sum()/1000, res_s['g_g'].sum()/1000, res_a['ghi'].sum()/1000
 pa, ps = (res_a['par']*3600).sum()/1e6, (res_s['par']*3600).sum()/1e6
 
-# --- HEADER Metrics ---
+# --- HEADER METRICS ---
 st.markdown(f"""
 <div class="status-box">
     <div class="status-title">STRATEGIC ADVANTAGE: +{(va-vs):.0f} kWh/m²</div>
@@ -82,7 +106,7 @@ st.markdown(f"""
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Agricultural Light", f"{(va/vo)*100:.1f}%", f"+{(va/vs-1)*100:.1f}% vs Std. PV")
 k2.metric("Annual PAR Sum", f"{pa:.0f} mol", f"+{(pa/ps-1)*100:.1f}% vs Std. PV")
-k3.metric("Standard Ground", f"{vs:.0f} kWh", f"{(vs/vo)*100:.1f}% of Open Field")
+k3.metric("Standard Ground", f"{vs:.0f} kWh", f"{(vs/vo)*100:.1f}% vs Unshaded Field")
 k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh", f"🏆 Production Winner")
 
 # HEATMAP & SENSORS
