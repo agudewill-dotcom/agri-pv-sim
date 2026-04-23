@@ -107,14 +107,14 @@ with c_heat:
 st.divider()
 st.subheader("Seasonal Performance Analysis")
 gm1, gm2 = st.columns(2)
-m_comp = pd.DataFrame({"Agri-PV": res_a['g_g'], "Standard PV": res_s['g_g'], "Open Field": res_a['ghi']}).resample('M').sum()/1000
+m_comp = pd.DataFrame({"Agri-PV": res_a['g_g'], "Standard PV": res_s['g_g'], "Open Field": res_a['ghi']}).resample('ME').sum()/1000
 m_comp.index = m_comp.index.strftime('%b')
 with gm1:
     st.markdown("**Monthly Irradiance Distribution (kWh/m²)**")
     st.bar_chart(m_comp, color=["#1e293b", "#94a3b8", "#cbd5e1"])
 with gm2:
     st.markdown("**Monthly PAR Growth Potential (mol/m²)**")
-    m_par = pd.DataFrame({"Agri-PV PAR": (res_a['par']*3600)/1e6, "Std PV PAR": (res_s['par']*3600)/1e6}).resample('M').sum()
+    m_par = pd.DataFrame({"Agri-PV PAR": (res_a['par']*3600)/1e6, "Std PV PAR": (res_s['par']*3600)/1e6}).resample('ME').sum()
     m_par.index = m_par.index.strftime('%b')
     st.bar_chart(m_par, color=["#16a34a", "#94a3b8"])
 
