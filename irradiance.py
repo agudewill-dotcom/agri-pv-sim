@@ -13,9 +13,9 @@ def calculate_incidence_angle(solar_zenith, solar_azimuth, tilt_degrees, surface
     )
     return aoi
 
-def calculate_ground_irradiance(dni, dhi, ground_aoi_degrees, t_dir_avg, t_diffuse):
+def calculate_ground_irradiance(dni, dhi, ghi, ground_aoi_degrees, t_dir_avg, t_diffuse_factor, albedo=0.2, ground_slope=0.0):
     """
-    G_ground = DNI * cos(ground_aoi) * T_dir_avg + DHI * T_diffuse
+    G_ground = Beam + Diffuse + Ground-Reflected (Albedo)
     """
     aoi_rad = np.radians(ground_aoi_degrees)
     cos_aoi = np.cos(aoi_rad)
@@ -23,14 +23,18 @@ def calculate_ground_irradiance(dni, dhi, ground_aoi_degrees, t_dir_avg, t_diffu
     # Direct beam on the specific ground plane orientation
     g_beam = dni * np.maximum(0, cos_aoi) * t_dir_avg
     
-    # Diffuse light on ground. 
-    # Note: For sloped ground, the sky view factor (SVF) changes.
-    # SVF = (1 + cos(slope))/2
-    # But user requirement 8 was DHI * T_diffuse. 
-    # We will stick to that but could optionally scale by SVF.
-    g_diff = dhi * t_diffuse
+    # View Factors for sloped terrain
+    slope_rad = np.radians(ground_slope)
+    svf = (1 + np.cos(slope_rad)) / 2
+    gvf = (1 - np.cos(slope_rad)) / 2
     
-    return g_beam + g_diff
+    # Diffuse light on ground (Sky View Factor applied)
+    g_diff = dhi * t_diffuse_factor * svf
+    
+    # Ground Reflected (Albedo) from surrounding terrain
+    g_refl = ghi * albedo * gvf
+    
+    return g_beam + g_diff + g_refl
 
 def calculate_par(g_ground, factor=2.1):
     """

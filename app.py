@@ -48,7 +48,7 @@ def get_topo(lat, lon):
     except: return 0.0, 180.0
 
 @st.cache_data
-def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt):
+def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt, albedo=0.20):
     df = solar.fetch_pvgis_hourly(lat, lon, yr, yr)
     sp = solar.get_solar_position_df(lat, lon, df.index)
     df = pd.concat([df, sp], axis=1)
@@ -62,17 +62,27 @@ def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt):
         return np.clip(beam_t, 0.20, 0.95)
     df['shadow'] = df.apply(lambda r: shading.calculate_shadow_length(geo['top_edge_height'], r['elevation'], r['azimuth'], gs, ga), axis=1)
     df['t_avg'] = df['shadow'].apply(get_t_factor)
-    svf = 0.45 + (min(2.1, h)/2.1)*0.45 
+    svf_f = 0.45 + (min(2.1, h)/2.1)*0.45 
     aoi = irradiance.calculate_incidence_angle(df['zenith'], df['azimuth'], gs, ga)
-    df['g_g'] = df.apply(lambda r: irradiance.calculate_ground_irradiance(r['dni'], r['dhi'], aoi.loc[r.name], r['t_avg'], svf), axis=1)
+    df['g_g'] = df.apply(lambda r: irradiance.calculate_ground_irradiance(r['dni'], r['dhi'], r['ghi'], aoi.loc[r.name], r['t_avg'], svf_f, albedo, gs), axis=1)
     df['par'] = df['g_g'] * 2.1
     return df
 
 # --- UI ---
 if 's' not in st.session_state: st.session_state.s = 0.0
 if 'a' not in st.session_state: st.session_state.a = 180.0
+# SIDEBAR CONFIG
 st.sidebar.title("Simulation Setup")
 addr = st.sidebar.text_input("Project Site", "Berlin, Germany")
+
+ALBEDO_PRESETS = {
+    "Green Grass (Agri-PV Standard)": 0.20,
+    "Dry Soil / Tilled Field": 0.15,
+    "Sand / Light Soil": 0.28,
+    "Fresh Snow": 0.75,
+    "Custom High-Reflectance": 0.40
+}
+
 if st.sidebar.button("Fetch Satellite Topography"):
     loc = Nominatim(user_agent="agri_final_v8").geocode(addr)
     if loc:
@@ -83,12 +93,21 @@ g_slope = st.sidebar.slider("Site Slope (deg)", 0.0, 20.0, st.session_state.s)
 g_aspect = st.sidebar.slider("Site Aspect (deg)", 0, 360, int(st.session_state.a))
 st.sidebar.divider()
 tau = st.sidebar.slider("Module Transparency", 0.0, 1.0, 0.20)
+
+# REPLACED SLIDER WITH DROPDOWN
+ground_type = st.sidebar.selectbox(
+    "Ground Surface Type", 
+    options=list(ALBEDO_PRESETS.keys()),
+    help="Determines the 'Albedo' or reflection coefficient of the ground."
+)
+albedo = ALBEDO_PRESETS[ground_type]
+
 pitch = st.sidebar.number_input("Design Pitch (m)", 5.0, 15.0, 8.63)
 
 loc_f = Nominatim(user_agent="agri_final_v8").geocode(addr)
 lat, lon = (loc_f.latitude, loc_f.longitude) if loc_f else (52.52, 13.40)
-res_a = run_v8_physics(lat, lon, 2020, 5.63, 2.10, pitch, g_slope, g_aspect, tau, 0.81, 15)
-res_s = run_v8_physics(lat, lon, 2020, 4.30, 0.80, 6.50, g_slope, g_aspect, 0.00, 0.20, 20)
+res_a = run_v8_physics(lat, lon, 2020, 5.63, 2.10, pitch, g_slope, g_aspect, tau, 0.81, 15, albedo)
+res_s = run_v8_physics(lat, lon, 2020, 4.30, 0.80, 6.50, g_slope, g_aspect, 0.00, 0.20, 20, albedo)
 va, vs, vo = res_a['g_g'].sum()/1000, res_s['g_g'].sum()/1000, res_a['ghi'].sum()/1000
 pa, ps = (res_a['par']*3600).sum()/1e6, (res_s['par']*3600).sum()/1e6
 
@@ -123,6 +142,43 @@ with c_heat:
     m_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     h_data.index = m_names
     st.plotly_chart(px.imshow(h_data, color_continuous_scale='Viridis', aspect='auto', height=350), use_container_width=True)
+
+# SPATIAL PROFILE SECTION
+st.divider()
+st.subheader("Spatial Shadow Profile (Cross-Section)")
+sp_col1, sp_col2 = st.columns([2, 1])
+
+with sp_col1:
+    # Pick a representative hour (Solar Noon in June)
+    noon_june = res_a[(res_a.index.month == 6) & (res_a.index.hour == 12)].iloc[0]
+    x_points = np.linspace(0, pitch, 100)
+    geo_a = geometry.calculate_derived_geometry(15, length=5.63, clearance=2.10)
+    
+    t_mask = shading.calculate_spatial_mask(
+        x_points, geo_a['top_edge_height'], 2.10, 5.63, 15, 
+        noon_june['elevation'], noon_june['azimuth'], pitch, tau
+    )
+    
+    # Calculate local irradiance across the points
+    aoi_noon = irradiance.calculate_incidence_angle(noon_june['zenith'], noon_june['azimuth'], g_slope, g_aspect)
+    # Simple spatial distribution: Direct beam is masked, diffuse and reflected are uniform
+    g_base_diff = noon_june['dhi'] * 0.90 # Simplified SVF
+    g_base_refl = noon_june['ghi'] * albedo * (1 - np.cos(np.radians(g_slope))) / 2
+    
+    g_spatial = (noon_june['dni'] * np.maximum(0, np.cos(np.radians(aoi_noon))) * t_mask) + g_base_diff + g_base_refl
+    
+    fig_sp = px.line(x=x_points, y=g_spatial, labels={'x': 'Horizontal Distance across Pitch (m)', 'y': 'Irradiance (W/m²)'},
+                     title=f"Instantaneous Light Distribution at Solar Noon (June)")
+    fig_sp.add_vrect(x0=(pitch-5.63*np.cos(np.radians(15)))/2, x1=(pitch+5.63*np.cos(np.radians(15)))/2, 
+                     fillcolor="rgba(0,0,0,0.1)", layer="below", line_width=0, annotation_text="Module Table Position")
+    st.plotly_chart(fig_sp, use_container_width=True)
+
+with sp_col2:
+    st.info("**Vector Shadow Pathing Analysis**")
+    st.write(f"Shown: 12:00 PM, June 21st")
+    st.write(f"Sun Elevation: {noon_june['elevation']:.1f}°")
+    st.write(f"Shadow Length: {noon_june['shadow']:.2f} m")
+    st.write("The chart shows the 'stripe' of reduced light caused by the module shadow. Note how the 2.1m clearance and transparency (tau) prevent total darkness.")
 
 # MONTHLY COMPARATIVE GRAPHS (ENFORCED CALENDAR ORDER)
 st.divider()

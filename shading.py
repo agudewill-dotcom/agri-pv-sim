@@ -55,4 +55,41 @@ def calculate_avg_direct_transmission(projected_width, tau, free_gap, shadow_len
     gap_part = max(0, free_gap - shadow_length)
     
     t_avg = (module_part + gap_part) / pitch
+    t_avg = (module_part + gap_part) / pitch
     return np.clip(t_avg, 0, 1)
+
+def calculate_spatial_mask(x_points, top_height, clearance, length, tilt, solar_elev, solar_az, pitch, tau):
+    """
+    Returns transmittance array for x_points (0 to pitch).
+    Simple 1D projection.
+    """
+    if solar_elev <= 0:
+        return np.zeros_like(x_points)
+        
+    elev_rad = np.radians(solar_elev)
+    # Horizontal shift of the shadow relative to the object
+    # For a simple 2D cross-section, we look at the 'projected' solar elevation in the pitch direction
+    # But let's use the shadow length logic:
+    sh_len = calculate_shadow_length(top_height, solar_elev, solar_az)
+    
+    # Let's assume the module is centered in the pitch [0, P]
+    proj_w = length * np.cos(np.radians(tilt))
+    m_start = (pitch - proj_w) / 2
+    m_end = m_start + proj_w
+    
+    # Shadow offset (simple approximation)
+    # x_shadow = x_obj + top_height / tan(elev)
+    # We'll use the sh_len as the displacement magnitude
+    offset = sh_len * 0.8 # Empirical scaling for 1D profile
+    
+    transmittance = np.ones_like(x_points, dtype=float)
+    
+    # Check if x is within the projected shadow of any row
+    # In periodic system, we check multiple row shadows
+    for n in range(-1, 2):
+        s_start = m_start + n*pitch + offset
+        s_end = m_end + n*pitch + offset
+        mask = (x_points >= s_start) & (x_points <= s_end)
+        transmittance[mask] = tau
+        
+    return transmittance

@@ -19,3 +19,10 @@ def calculate_derived_geometry(tilt_degrees, length=DEFAULT_MODULE_LENGTH, clear
         'projected_width': projected_width,
         'top_edge_height': top_edge_height
     }
+
+def get_module_bounds(pitch, projected_width):
+    """
+    Returns (x_start, x_end) for a module centered within the pitch.
+    """
+    margin = (pitch - projected_width) / 2
+    return margin, margin + projected_width
