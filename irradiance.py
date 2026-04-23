@@ -32,9 +32,12 @@ def calculate_ground_irradiance(dni, dhi, ghi, ground_aoi_degrees, t_dir_avg, t_
     g_diff = dhi * t_diffuse_factor * svf
     
     # Ground Reflected (Albedo) from surrounding terrain
-    g_refl = ghi * albedo * gvf
+    g_refl_terrain = ghi * albedo * gvf
     
-    return g_beam + g_diff + g_refl
+    # SECONDARY BOUNCE: Light reflecting off ground, hitting modules, and bouncing back
+    g_bounce = ghi * albedo * (1 - t_diffuse_factor) * 0.15
+    
+    return g_beam + g_diff + g_refl_terrain + g_bounce
 
 def calculate_par(g_ground, factor=2.1):
     """
