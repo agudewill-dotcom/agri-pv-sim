@@ -32,7 +32,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- ENGINE ---
+# --- PHYSICS ---
 @st.cache_data
 def get_topo(lat, lon):
     d = 0.0005 
@@ -68,18 +68,16 @@ def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt):
     df['par'] = df['g_g'] * 2.1
     return df
 
-# --- SESSION STATE ---
+# --- UI ---
 if 's' not in st.session_state: st.session_state.s = 0.0
 if 'a' not in st.session_state: st.session_state.a = 180.0
-
-# --- SIDEBAR ---
 st.sidebar.title("Simulation Setup")
 addr = st.sidebar.text_input("Project Site", "Berlin, Germany")
 if st.sidebar.button("Fetch Satellite Topography"):
     loc = Nominatim(user_agent="agri_final_v8").geocode(addr)
     if loc:
         st.session_state.s, st.session_state.a = get_topo(loc.latitude, loc.longitude)
-        st.sidebar.success(f"Terrain Applied: {st.session_state.s}° Slope")
+        st.sidebar.success(f"Terrain Applied")
 
 g_slope = st.sidebar.slider("Site Slope (deg)", 0.0, 20.0, st.session_state.s)
 g_aspect = st.sidebar.slider("Site Aspect (deg)", 0, 360, int(st.session_state.a))
@@ -87,7 +85,6 @@ st.sidebar.divider()
 tau = st.sidebar.slider("Module Transparency", 0.0, 1.0, 0.20)
 pitch = st.sidebar.number_input("Design Pitch (m)", 5.0, 15.0, 8.63)
 
-# Calculations
 loc_f = Nominatim(user_agent="agri_final_v8").geocode(addr)
 lat, lon = (loc_f.latitude, loc_f.longitude) if loc_f else (52.52, 13.40)
 res_a = run_v8_physics(lat, lon, 2020, 5.63, 2.10, pitch, g_slope, g_aspect, tau, 0.81, 15)
@@ -95,7 +92,7 @@ res_s = run_v8_physics(lat, lon, 2020, 4.30, 0.80, 6.50, g_slope, g_aspect, 0.00
 va, vs, vo = res_a['g_g'].sum()/1000, res_s['g_g'].sum()/1000, res_a['ghi'].sum()/1000
 pa, ps = (res_a['par']*3600).sum()/1e6, (res_s['par']*3600).sum()/1e6
 
-# --- HEADER METRICS ---
+# --- HEADER Metrics ---
 st.markdown(f"""
 <div class="status-box">
     <div class="status-title">STRATEGIC ADVANTAGE: +{(va-vs):.0f} kWh/m²</div>
@@ -106,7 +103,7 @@ st.markdown(f"""
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Agricultural Light", f"{(va/vo)*100:.1f}%", f"+{(va/vs-1)*100:.1f}% vs Std. PV")
 k2.metric("Annual PAR Sum", f"{pa:.0f} mol", f"+{(pa/ps-1)*100:.1f}% vs Std. PV")
-k3.metric("Standard Ground", f"{vs:.0f} kWh", f"{(vs/vo)*100:.1f}% vs Unshaded Field")
+k3.metric("BASELINE: STANDARD GROUND-PV", f"{vs:.0f} kWh", f"RESTRICTED: {(vs/vo)*100:.1f}% LIGHT")
 k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh", f"🏆 Production Winner")
 
 # HEATMAP & SENSORS
@@ -120,27 +117,40 @@ with c_meta:
         {"System": "Open Field", "Yield": f"{vo:.0f} kWh", "PAR": f"{(vo*2.1*3.6):.0f} mol"}
     ]))
     st.info("System optimized for a 5.63m sloped table and 15° bifacial tilt.")
-
 with c_heat:
     st.subheader("Light Intensity Heatmap (W/m² - Agri-PV)")
     h_data = res_a.groupby([res_a.index.month, res_a.index.hour])['g_g'].mean().unstack()
-    h_data.index = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    m_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    h_data.index = m_names
     st.plotly_chart(px.imshow(h_data, color_continuous_scale='Viridis', aspect='auto', height=350), use_container_width=True)
 
-# MONTHLY COMPARATIVE GRAPHS
+# MONTHLY COMPARATIVE GRAPHS (ENFORCED CALENDAR ORDER)
 st.divider()
 st.subheader("Seasonal Performance Analysis")
-gm1, gm2 = st.columns(2)
 m_comp = pd.DataFrame({"Agri-PV": res_a['g_g'], "Standard PV": res_s['g_g'], "Open Field": res_a['ghi']}).resample('ME').sum()/1000
-m_comp.index = m_comp.index.strftime('%b')
+m_comp['Month'] = m_comp.index.month
+m_comp = m_comp.sort_values('Month')
+m_comp.index = [m_names[m-1] for m in m_comp['Month']]
+m_comp = m_comp.drop(columns=['Month'])
+
+m_par = pd.DataFrame({"Agri-PV PAR": (res_a['par']*3600)/1e6, "Std PV PAR": (res_s['par']*3600)/1e6}).resample('ME').sum()
+m_par['Month'] = m_par.index.month
+m_par = m_par.sort_values('Month')
+m_par.index = [m_names[m-1] for m in m_par['Month']]
+m_par = m_par.drop(columns=['Month'])
+
+gm1, gm2 = st.columns(2)
 with gm1:
     st.markdown("**Monthly Irradiance Distribution (kWh/m²)**")
-    st.bar_chart(m_comp, color=["#1e293b", "#94a3b8", "#cbd5e1"])
+    # Using plotly to enforce order
+    fig_irr = px.bar(m_comp, barmode='group', color_discrete_sequence=["#1e293b", "#94a3b8", "#cbd5e1"])
+    fig_irr.update_layout(xaxis={'categoryorder':'array', 'categoryarray':m_names}, height=400, margin=dict(l=0,r=0,t=0,b=0))
+    st.plotly_chart(fig_irr, use_container_width=True)
 with gm2:
     st.markdown("**Monthly PAR Growth Potential (mol/m²)**")
-    m_par = pd.DataFrame({"Agri-PV PAR": (res_a['par']*3600)/1e6, "Std PV PAR": (res_s['par']*3600)/1e6}).resample('ME').sum()
-    m_par.index = m_par.index.strftime('%b')
-    st.bar_chart(m_par, color=["#16a34a", "#94a3b8"])
+    fig_par = px.bar(m_par, barmode='group', color_discrete_sequence=["#16a34a", "#94a3b8"])
+    fig_par.update_layout(xaxis={'categoryorder':'array', 'categoryarray':m_names}, height=400, margin=dict(l=0,r=0,t=0,b=0))
+    st.plotly_chart(fig_par, use_container_width=True)
 
 # METHODOLOGY
 st.markdown(f"""
