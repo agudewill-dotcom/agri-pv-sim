@@ -44,19 +44,31 @@ def calculate_shadow_length(top_height, elevation, solar_azimuth=180.0, ground_s
     # But x_horiz is the N-S stretch.
     return x_horiz / np.cos(slope_rad)
 
-def calculate_avg_direct_transmission(projected_width, tau, free_gap, shadow_length, pitch):
+def calculate_periodic_shading_factor(projected_width, pitch_horizontal, aoi_mod, aoi_ground):
     """
-    Compute average direct transmission across one pitch.
+    Computes the shaded fraction f of the ground in an infinite periodic array.
+    Using the rigorous AOI ratio method:
+    f = min(1.0, (L * cos(AOI_mod)) / (P * cos(AOI_ground)))
     """
-    if pitch <= 0:
-        return 0.0
-        
-    module_part = projected_width * tau
-    gap_part = max(0, free_gap - shadow_length)
+    cos_mod = np.cos(np.radians(aoi_mod))
+    cos_ground = np.cos(np.radians(aoi_ground))
     
-    t_avg = (module_part + gap_part) / pitch
-    t_avg = (module_part + gap_part) / pitch
-    return np.clip(t_avg, 0, 1)
+    if cos_ground <= 0.01:
+        return 1.0 # Sun behind ground or very low
+        
+    # Shading ratio: how much ground 'width' does one module shadow occupy
+    # Note: projected_width (pw) already includes cos(tilt)
+    # The true 'shaded width' on ground is pw * (cos_mod / cos_ground)
+    # But for a 1D row, it's simpler:
+    ratio = (np.abs(cos_mod) / cos_ground) * (projected_width / pitch_horizontal)
+    
+    return np.clip(ratio, 0, 1)
+
+def calculate_avg_direct_transmission(shading_factor, tau_eff):
+    """
+    T_beam = (1 - f) * 1.0 + f * tau_eff
+    """
+    return (1.0 - shading_factor) + (shading_factor * tau_eff)
 
 def calculate_spatial_mask(x_points, top_height, clearance, length, tilt, solar_elev, solar_az, pitch, tau):
     """

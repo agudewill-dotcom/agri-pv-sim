@@ -418,6 +418,44 @@ with st.expander("Show Physical Calculations (Step-by-Step)", expanded=False):
 
 # --- DOWNLOAD SECTION ---
 st.divider()
+st.divider()
+st.markdown("**Executive Reporting**")
+report_text = f"""# Technical Validation Report: Agri-PV Strategic Analytics (v8.3)
+
+This report validates the physical simulation methodology used for the SUNfarming Agri-PV dashboard at Latitude {lat:.4f}, Longitude {lon:.4f}.
+
+## 1. Direct Beam Irradiance (Vector Shadow Pathing)
+**Model:** 1D Periodic Row Shading (Infinite Row Approximation).
+**Method:** Area of Incidence (AOI) Ratio.
+**Formula:** $T_{{beam}} = 1 - \\min\\left(1, \\frac{{L \\cdot |\\cos(AOI_{{module}})|}}{{P \\cdot \\cos(AOI_{{ground}})}} \\right) \\cdot (1 - \\tau_{{eff}})$
+
+## 2. Diffuse Light (Sky-View Factor)
+**Model:** Hottel's View Factor for Crossed Strings.
+**Base Formula:** $SVF_{{base}} = 1 - \\frac{{w_{{proj}}}}{{P}} \\cdot (1 - \\tau_{{eff}})$
+**Height Correction (Cavity Effect):** $SVF = SVF_{{base}} \\cdot (1 + 0.012 \\cdot h)$
+
+## 3. Thermal Model (Ventilation Gains)
+**Model:** NOCT Correction with Ventilation Gradient.
+**Formula:** $NOCT_{{eff}} = 41 - \\max(0, (h - 0.5) \\cdot 1.5)$
+**Efficiency Bonus:** $P_{{bonus}} = \\gamma \\cdot (T_{{cell, Agri}} - T_{{cell, Std}})$
+
+## 4. Annual Performance Summary
+- **Agri-PV Irradiance:** {va:.1f} kWh/m²
+- **Standard PV Irradiance:** {vs:.1f} kWh/m²
+- **Irradiance Advantage:** +{(va/vs-1)*100:.2f}%
+- **Thermal Power Bonus:** +{temp_bonus_pct:.3f}%
+
+**Data Reference:** PVGIS SARAH-2 Hourly Series | Methodology v8.3 (Cavity Update)
+"""
+
+st.download_button(
+    "Download Technical Validation Report (Markdown/LaTeX)",
+    report_text,
+    "Agri-PV_Technical_Validation_Report.md",
+    mime="text/markdown"
+)
+
+st.divider()
 st.markdown("**Export Hourly Calculation Data**")
 d1, d2 = st.columns(2)
 
