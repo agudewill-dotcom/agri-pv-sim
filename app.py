@@ -125,8 +125,8 @@ if 'a' not in st.session_state: st.session_state.a = 180.0
 st.sidebar.title("Simulation Setup")
 st.sidebar.markdown("**Project Site Coordinates**")
 c1, c2 = st.sidebar.columns(2)
-lat = c1.number_input("Latitude", -90.0, 90.0, 52.52, format="%.4f")
-lon = c2.number_input("Longitude", -180.0, 180.0, 13.40, format="%.4f")
+lat = c1.number_input("Latitude", -90.0, 90.0, 52.52, format="%.4f", help="Geographic latitude of the project site.")
+lon = c2.number_input("Longitude", -180.0, 180.0, 13.40, format="%.4f", help="Geographic longitude of the project site.")
 
 ALBEDO_PRESETS = {
     "Green Grass (Agri-PV Standard)": 0.20,
@@ -149,20 +149,20 @@ if not use_manual:
     g_aspect = st.session_state.a
     st.sidebar.info(f"**Satellite Active:** {g_slope}° Slope | {g_aspect}° Aspect")
 else:
-    g_slope = st.sidebar.slider("Manual Site Slope (°)", 0.0, 20.0, st.session_state.s)
-    g_aspect = st.sidebar.slider("Manual Site Aspect (°)", 0, 360, int(st.session_state.a))
+    g_slope = st.sidebar.slider("Manual Site Slope (°)", 0.0, 20.0, st.session_state.s, help="The inclination of the ground surface at the site.")
+    g_aspect = st.sidebar.slider("Manual Site Aspect (°)", 0, 360, int(st.session_state.a), help="The compass direction the slope faces (0°=North, 90°=East, 180°=South, 270°=West).")
 st.sidebar.divider()
-tau = st.sidebar.slider("Module Transparency (τ)", 0.0, 1.0, 0.20)
+tau = st.sidebar.slider("Module Transparency (τ)", 0.0, 1.0, 0.20, help="The fraction of light passing through the semi-transparent module (τ).")
 
 # REPLACED SLIDER WITH DROPDOWN
 ground_type = st.sidebar.selectbox(
     "Ground Surface Type", 
     options=list(ALBEDO_PRESETS.keys()),
-    help="Determines the 'Albedo' or reflection coefficient of the ground."
+    help="Determines the 'Albedo' or reflection coefficient of the ground surface."
 )
 albedo = ALBEDO_PRESETS[ground_type]
 
-pitch = st.sidebar.number_input("Design Pitch (m)", 5.0, 15.0, 8.63)
+pitch = st.sidebar.number_input("Design Pitch (m)", 5.0, 15.0, 8.63, help="Horizontal distance between the centers of two adjacent module rows.")
 
 # System geometry from technical drawing (SUNfarming Agri-PV cross-section):
 # Both systems: 100% identical hardware — same modules, same 5.63m table, 8.63m pitch, 15° tilt, tau, 0.81m blockage
