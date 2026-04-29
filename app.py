@@ -232,9 +232,9 @@ c_meta, c_heat = st.columns([1, 1.5])
 with c_meta:
     st.subheader("Comparative Sensor Profile")
     st.table(pd.DataFrame([
-        {"System": "Agri-PV (2.1m)", "Yield": f"{va:.0f} kWh", "PAR": f"{pa:.0f} mol"},
-        {"System": "Standard (0.8m)", "Yield": f"{vs:.0f} kWh", "PAR": f"{ps:.0f} mol"},
-        {"System": "Open Field", "Yield": f"{vo:.0f} kWh", "PAR": f"{(vo*2.1*3.6):.0f} mol"}
+        {"System": "Agri-PV (2.1m)", "Irradiance": f"{va:.0f} kWh", "PAR": f"{pa:.0f} mol"},
+        {"System": "Standard (0.8m)", "Irradiance": f"{vs:.0f} kWh", "PAR": f"{ps:.0f} mol"},
+        {"System": "Open Field", "Irradiance": f"{vo:.0f} kWh", "PAR": f"{(vo*2.1*3.6):.0f} mol"}
     ]))
     st.info("System geometry per SUNfarming technical drawing: 5.63m table | 8.63m pitch | 2.10m clearance | 15° tilt | 9.3% structural loss.")
 with c_heat:
