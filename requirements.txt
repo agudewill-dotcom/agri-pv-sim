@@ -6,3 +6,4 @@ pvlib
 requests
 geopy
 scipy
+fpdf2

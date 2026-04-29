@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+from fpdf import FPDF
+import io
 from datetime import datetime
 import requests
 import solar
@@ -470,12 +472,58 @@ This report validates the physical simulation methodology used for the SUNfarmin
 **Data Reference:** PVGIS SARAH-2 Hourly Series | Methodology v8.3 (Cavity Update)
 """
 
+# PDF GENERATION FUNCTION
+def create_pdf_report(lat, lon, va, vs, ya, ys, bonus):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, "Technical Validation Report: Agri-PV Strategic Analytics", ln=True, align="C")
+    pdf.set_font("Arial", "", 10)
+    pdf.cell(0, 10, f"Location: {lat:.4f}, {lon:.4f} | System: SUNfarming SF600-72N", ln=True, align="C")
+    pdf.ln(10)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "1. Executive Summary", ln=True)
+    pdf.set_font("Arial", "", 11)
+    pdf.multi_cell(0, 8, f"This report validates the technical performance advantage of the high-clearance Agri-PV system compared to standard ground-mounted PV. The simulation accounts for height-dependent ventilation and diffuse light cavity gains.")
+    pdf.ln(5)
+    
+    # Results Table
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(60, 10, "Metric", border=1)
+    pdf.cell(60, 10, "Agri-PV (2.1m)", border=1)
+    pdf.cell(60, 10, "Standard PV (0.8m)", border=1, ln=True)
+    
+    pdf.set_font("Arial", "", 11)
+    pdf.cell(60, 10, "Ground Irradiance", border=1)
+    pdf.cell(60, 10, f"{va:.1f} kWh/m2", border=1)
+    pdf.cell(60, 10, f"{vs:.1f} kWh/m2", border=1, ln=True)
+    
+    pdf.cell(60, 10, "Specific Yield", border=1)
+    pdf.cell(60, 10, f"{ya:.1f} kWh/kWp", border=1)
+    pdf.cell(60, 10, f"{ys:.1f} kWh/kWp", border=1, ln=True)
+    
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(120, 10, "Annual Energy Bonus per kWp", border=1)
+    pdf.cell(60, 10, f"+{bonus:.1f} kWh", border=1, ln=True)
+    pdf.ln(10)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "2. Physical Methodology", ln=True)
+    pdf.set_font("Arial", "", 10)
+    pdf.multi_cell(0, 8, "Direct Beam: Rigorous vector shadow pathing using AOI-ratio methodology.\nDiffuse Cavity: Height-dependent sky-view factor correction (+1.2% per meter).\nThermal Model: Ventilation correction based on module height (NOCT -2.4 degC).")
+    
+    return pdf.output(dest='S').encode('latin-1')
+
+pdf_bytes = create_pdf_report(lat, lon, va, vs, ya_spec, ys_spec, y_bonus)
+
 st.download_button(
-    "Download Technical Validation Report (Markdown/LaTeX)",
-    report_text,
-    "Agri-PV_Technical_Validation_Report.md",
-    mime="text/markdown"
+    "Download Technical Validation Report (PDF)",
+    pdf_bytes,
+    "Agri-PV_Technical_Validation_Report.pdf",
+    mime="application/pdf"
 )
+
 
 st.divider()
 st.markdown("**Export Hourly Calculation Data**")
