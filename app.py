@@ -187,17 +187,17 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("Agricultural Light", f"{(va/vo)*100:.1f}%", f"+{(va/vs-1)*100:.1f}% vs Std. PV")
-k2.metric("Annual PAR Sum", f"{pa:.0f} mol/m²", f"+{(pa/ps-1)*100:.1f}% vs Std. PV")
-k3.metric("BASELINE: STANDARD GROUND-PV", f"{vs:.0f} kWh/m²", f"RESTRICTED: {(vs/vo)*100:.1f}% LIGHT")
-k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh/m²", "Production Winner")
+k1.metric("Agricultural Light", f"{(va/vo)*100:.1f}%", f"+{(va/vs-1)*100:.1f}% vs Std. PV", help="Percentage of total open-field irradiance reaching the ground under the system.")
+k2.metric("Annual PAR Sum", f"{pa:.0f} mol/m²", f"+{(pa/ps-1)*100:.1f}% vs Std. PV", help="Annual cumulative Photosynthetic Active Radiation (PAR) for crop growth.")
+k3.metric("BASELINE: STANDARD GROUND-PV", f"{vs:.0f} kWh/m²", f"RESTRICTED: {(vs/vo)*100:.1f}% LIGHT", help="Annual ground irradiance for a standard 0.8m high system.")
+k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh/m²", "Production Winner", help="The absolute irradiance advantage of Agri-PV over Standard PV.")
 
 # TEMPERATURE KPI ROW
 t1, t2, t3, t4 = st.columns(4)
 t1.metric("Agri-PV Cell Temp", f"{ta_cell:.1f} °C", f"−{delta_t:.1f}°C vs Standard", help="Annual arithmetic mean during daylight hours (GHI > 50 W/m²)")
 t2.metric("Std. PV Cell Temp", f"{ts_cell:.1f} °C", "Restricted ventilation at 0.8m", help="Annual arithmetic mean during daylight hours (GHI > 50 W/m²)")
-t3.metric("Temp. Power Bonus", f"+{temp_bonus_pct:.2f}%", "Agri-PV cooler → higher η")
-t4.metric("NOCT (Datasheet)", "41 °C", f"Vent correction: −2.4°C @ 2.1m")
+t3.metric("Temp. Power Bonus", f"+{temp_bonus_pct:.2f}%", "Agri-PV cooler → higher η", help="Relative module power increase due to the lower cell temperatures in high-mounted systems.")
+t4.metric("NOCT (Datasheet)", "41 °C", f"Vent correction: −2.4°C @ 2.1m", help="Nominal Operating Cell Temperature corrected for height-dependent ventilation.")
 
 # WHY THE DIFFERENCE? EXPLANATION BOX
 st.markdown(f"""
