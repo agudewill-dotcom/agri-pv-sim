@@ -37,6 +37,14 @@ st.markdown("""
         word-break: break-word !important;
     }
     .stMetric { min-height: 150px; }
+    /* Hide +/- buttons from number inputs */
+    button[data-testid="stNumberInputStepUp"], 
+    button[data-testid="stNumberInputStepDown"] {
+        display: none !important;
+    }
+    div[data-testid="stNumberInputContainer"] {
+        padding-right: 10px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
