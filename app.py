@@ -188,9 +188,9 @@ st.markdown(f"""
 
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Agricultural Light", f"{(va/vo)*100:.1f}%", f"+{(va/vs-1)*100:.1f}% vs Std. PV")
-k2.metric("Annual PAR Sum", f"{pa:.0f} mol", f"+{(pa/ps-1)*100:.1f}% vs Std. PV")
-k3.metric("BASELINE: STANDARD GROUND-PV", f"{vs:.0f} kWh", f"RESTRICTED: {(vs/vo)*100:.1f}% LIGHT")
-k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh", "Production Winner")
+k2.metric("Annual PAR Sum", f"{pa:.0f} mol/m²", f"+{(pa/ps-1)*100:.1f}% vs Std. PV")
+k3.metric("BASELINE: STANDARD GROUND-PV", f"{vs:.0f} kWh/m²", f"RESTRICTED: {(vs/vo)*100:.1f}% LIGHT")
+k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh/m²", "Production Winner")
 
 # TEMPERATURE KPI ROW
 t1, t2, t3, t4 = st.columns(4)
@@ -232,9 +232,9 @@ c_meta, c_heat = st.columns([1, 1.5])
 with c_meta:
     st.subheader("Comparative Sensor Profile")
     st.table(pd.DataFrame([
-        {"System": "Agri-PV (2.1m)", "Irradiance": f"{va:.0f} kWh", "PAR": f"{pa:.0f} mol"},
-        {"System": "Standard (0.8m)", "Irradiance": f"{vs:.0f} kWh", "PAR": f"{ps:.0f} mol"},
-        {"System": "Open Field", "Irradiance": f"{vo:.0f} kWh", "PAR": f"{(vo*2.1*3.6):.0f} mol"}
+        {"System": "Agri-PV (2.1m)", "Irradiance": f"{va:.0f} kWh/m²", "PAR": f"{pa:.0f} mol/m²"},
+        {"System": "Standard (0.8m)", "Irradiance": f"{vs:.0f} kWh/m²", "PAR": f"{ps:.0f} mol/m²"},
+        {"System": "Open Field", "Irradiance": f"{vo:.0f} kWh/m²", "PAR": f"{(vo*2.1*3.6):.0f} mol/m²"}
     ]))
     st.info("System geometry per SUNfarming technical drawing: 5.63m table | 8.63m pitch | 2.10m clearance | 15° tilt | 9.3% structural loss.")
 with c_heat:
@@ -411,9 +411,9 @@ with st.expander("Show Physical Calculations (Step-by-Step)", expanded=False):
     st.markdown("#### 6. Annual Summary")
     st.table(pd.DataFrame({
         "Metric": ["Annual Ground Irradiance", "vs. Open Field", "Annual PAR Sum", "Mean Cell Temp (daylight)"],
-        "Agri-PV": [f"{va:.1f} kWh/m2", f"{(va/vo)*100:.1f}%", f"{pa:.0f} mol/m2", f"{ta_cell:.1f} °C"],
-        "Standard PV": [f"{vs:.1f} kWh/m2", f"{(vs/vo)*100:.1f}%", f"{ps:.0f} mol/m2", f"{ts_cell:.1f} °C"],
-        "Difference": [f"+{va-vs:.1f} kWh/m2 (+{(va/vs-1)*100:.1f}%)", "-", f"+{pa-ps:.0f} mol/m2", f"-{delta_t:.1f} °C (Agri-PV cooler)"]
+        "Agri-PV": [f"{va:.1f} kWh/m²", f"{(va/vo)*100:.1f}%", f"{pa:.0f} mol/m²", f"{ta_cell:.1f} °C"],
+        "Standard PV": [f"{vs:.1f} kWh/m²", f"{(vs/vo)*100:.1f}%", f"{ps:.0f} mol/m²", f"{ts_cell:.1f} °C"],
+        "Difference": [f"+{va-vs:.1f} kWh/m² (+{(va/vs-1)*100:.1f}%)", "-", f"+{pa-ps:.0f} mol/m²", f"-{delta_t:.1f} °C (Agri-PV cooler)"]
     }))
 
 # --- DOWNLOAD SECTION ---
