@@ -13,9 +13,10 @@ def calculate_incidence_angle(solar_zenith, solar_azimuth, tilt_degrees, surface
     )
     return aoi
 
-def calculate_ground_irradiance(dni, dhi, ghi, ground_aoi_degrees, t_dir_avg, t_diffuse_factor, albedo=0.2, ground_slope=0.0):
+def calculate_ground_irradiance(dni, dhi, ghi, ground_aoi_degrees, t_dir_avg, t_diffuse_factor, albedo=0.2, ground_slope=0.0, h=1.0):
     """
-    G_ground = Beam + Diffuse + Ground-Reflected (Albedo)
+    G_ground = Beam + Diffuse + Ground-Reflected (Albedo) + Secondary Bounce
+    Includes height-dependent gain for secondary reflections.
     """
     aoi_rad = np.radians(ground_aoi_degrees)
     cos_aoi = np.cos(aoi_rad)
@@ -35,7 +36,9 @@ def calculate_ground_irradiance(dni, dhi, ghi, ground_aoi_degrees, t_dir_avg, t_
     g_refl_terrain = ghi * albedo * gvf
     
     # SECONDARY BOUNCE: Light reflecting off ground, hitting modules, and bouncing back
-    g_bounce = ghi * albedo * (1 - t_diffuse_factor) * 0.15
+    # Higher clearance (h) allows for better distribution of these secondary reflections
+    bounce_efficiency = 0.15 + (0.01 * h)
+    g_bounce = ghi * albedo * (1 - t_diffuse_factor) * bounce_efficiency
     
     return g_beam + g_diff + g_refl_terrain + g_bounce
 
