@@ -194,10 +194,10 @@ k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh/m²", "Production Winner"
 
 # TEMPERATURE KPI ROW
 t1, t2, t3, t4 = st.columns(4)
-t1.metric("Agri-PV Cell Temp (avg)", f"{ta_cell:.1f} °C", f"−{delta_t:.1f}°C vs Standard")
-t2.metric("Std. PV Cell Temp (avg)", f"{ts_cell:.1f} °C", "Restricted ventilation at 0.8m")
-t3.metric("Temperature Power Bonus", f"+{temp_bonus_pct:.2f}%", "Agri-PV cooler → higher η")
-t4.metric("NOCT Used (datasheet)", "41 °C", f"Vent correction: −2.4°C @ 2.1m")
+t1.metric("Agri-PV Cell Temp", f"{ta_cell:.1f} °C", f"−{delta_t:.1f}°C vs Standard", help="Annual arithmetic mean during daylight hours (GHI > 50 W/m²)")
+t2.metric("Std. PV Cell Temp", f"{ts_cell:.1f} °C", "Restricted ventilation at 0.8m", help="Annual arithmetic mean during daylight hours (GHI > 50 W/m²)")
+t3.metric("Temp. Power Bonus", f"+{temp_bonus_pct:.2f}%", "Agri-PV cooler → higher η")
+t4.metric("NOCT (Datasheet)", "41 °C", f"Vent correction: −2.4°C @ 2.1m")
 
 # WHY THE DIFFERENCE? EXPLANATION BOX
 st.markdown(f"""
