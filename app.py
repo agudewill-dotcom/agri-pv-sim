@@ -220,7 +220,7 @@ st.markdown(f"""
         <p style="margin:4px 0 0 0; font-size:0.9rem; color:#64748b;">Annual energy generation advantage per installed kWp</p>
     </div>
     <div style="text-align:right;">
-        <span style="font-size:2rem; font-weight:800; color:#1e293b;">+{y_bonus:.1f} kWh/kWp</span>
+        <span style="font-size:2rem; font-weight:800; color:#1e293b;">+{y_bonus:.1f} kWh/kWp <span style="font-size:1.2rem; color:#16a34a; font-weight:600;">(+{temp_bonus_pct:.2f}%)</span></span>
         <div style="font-size:0.9rem; font-weight:600; color:#16a34a;">↑ Agri-PV: {ya_spec:.0f} vs Standard: {ys_spec:.0f}</div>
     </div>
 </div>
