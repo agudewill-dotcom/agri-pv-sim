@@ -328,7 +328,7 @@ st.markdown(f"""
     <p>The simulation engine calculates ground-level irradiance through a high-fidelity 1D-Periodic Row Model tailored for SUNfarming high-mounted systems.</p>
     <ul>
         <li><strong>Vector Shadow Pathing:</strong> Direct beam irradiance (DNI) is mapped through the row geometry using topocentric solar coordinates. The exact geometric interception fraction is calculated hourly based on the sun's angle of incidence on the modules versus the ground.</li>
-        <li><strong>Diffuse & Sky-View Factor (SVF):</strong> Diffuse irradiance (DHI) is calculated using rigorous geometric view factors. For an infinite periodic array, the average ground SVF is governed by the effective module transparency and the structural gap ratio. Standard PV blocks over 60% of the sky vault, while Agri-PV's semi-transparent modules and wider pitch allow significantly higher average diffuse transmission.</li>
+        <li><strong>Diffuse & Sky-View Factor (SVF):</strong> Diffuse irradiance (DHI) is calculated using rigorous geometric view factors. For an infinite periodic array, the average ground SVF is governed by the module transparency and the structural gap ratio. While the geometry is identical for both systems, the Agri-PV system's 2.1m clearance allows significantly more stray diffuse light to leak into the cavity from the sides compared to the restricted 0.8m Standard system.</li>
         <li><strong>Agricultural Metric:</strong> Photosynthetic Active Radiation (PAR) is derived using the McRee standard (2.1 μmol per Joule) across the 400nm-700nm waveband.</li>
     </ul>
     <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 20px;">Data Reference: PVGIS SARAH-2 Hourly Series | NASA SRTM Topography | Methodology v8.3 (Cavity Update)</p>
