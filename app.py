@@ -202,27 +202,24 @@ t4.metric("NOCT (Datasheet)", "41 °C", f"Vent correction: −2.4°C @ 2.1m", he
 # WHY THE DIFFERENCE? EXPLANATION BOX
 st.markdown(f"""
 <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-left:6px solid #16a34a; border-radius:10px; padding:24px; margin:20px 0;">
-    <h3 style="color:#15803d; margin-top:0;">Why is Agri-PV Ground Irradiance higher than Standard PV?</h3>
-    <p style="color:#1e293b; margin-bottom:14px;">Both systems use <strong>100% identical hardware</strong> (SUNfarming SF600-72N, 5.63m table, 8.63m pitch, 15° tilt, {tau*100:.0f}% transparency).
-    The performance difference is driven by <strong>two height-dependent physical mechanisms</strong>:</p>
+    <h3 style="color:#15803d; margin-top:0;">Agri-PV Strategic Advantages: Why Height Matters</h3>
+    <p style="color:#1e293b; margin-bottom:14px;">Both systems use <strong>100% identical hardware</strong>. The performance delta is driven by two height-dependent physical mechanisms:</p>
     <table style="width:100%; border-collapse:collapse; color:#1e293b;">
         <tr style="background:#dcfce7; font-weight:700;">
-            <td style="padding:10px;">Factor</td><td style="padding:10px;">Agri-PV (2.1m)</td><td style="padding:10px;">Standard PV (0.8m)</td><td style="padding:10px;">Effect</td>
+            <td style="padding:10px;">Benefit</td><td style="padding:10px;">Mechanism</td><td style="padding:10px;">Impact</td>
         </tr>
         <tr style="border-bottom:1px solid #d1fae5;">
-            <td style="padding:10px;"><strong>1. Cell Temperature (NOCT)</strong></td>
-            <td style="padding:10px;">Free convective airflow</td>
-            <td style="padding:10px;">Restricted airflow</td>
-            <td style="padding:10px;">Agri-PV runs <strong>{delta_t:.1f} °C cooler</strong> → higher yield efficiency.</td>
+            <td style="padding:10px;"><strong>1. Higher Energy Generation</strong></td>
+            <td style="padding:10px;">Free convective airflow (2.1m)</td>
+            <td style="padding:10px;">Agri-PV runs <strong>{delta_t:.1f} °C cooler</strong> → Higher electrical system efficiency.</td>
         </tr>
         <tr style="border-bottom:1px solid #d1fae5; background:#f0fdf4;">
-            <td style="padding:10px;"><strong>2. Diffuse Cavity Effect</strong></td>
-            <td style="padding:10px;">Higher clearance</td>
-            <td style="padding:10px;">Lower clearance</td>
-            <td style="padding:10px;">Higher systems allow more <strong>stray diffuse light</strong> to leak into the cavity from the sides.</td>
+            <td style="padding:10px;"><strong>2. Higher Ground Irradiance</strong></td>
+            <td style="padding:10px;">Diffuse Cavity Effect</td>
+            <td style="padding:10px;">Higher clearance allows more <strong>stray diffuse light</strong> to reach the ground from the sides.</td>
         </tr>
     </table>
-    <p style="margin-top:14px; font-size:0.85rem; color:#475569;">Both module geometry and transparency are identical. The only physical difference is height-driven ventilation and diffuse light distribution. NOCT = 41 °C (datasheet). ΔT = <strong>{delta_t:.1f} °C</strong>. Annual mean: Agri-PV {ta_cell:.1f} °C vs Standard {ts_cell:.1f} °C.</p>
+    <p style="margin-top:14px; font-size:0.85rem; color:#475569;">Both systems: 5.63m table | 8.63m pitch | 15° tilt | {tau*100:.0f}% transparency. Only the mounting height varies.</p>
 </div>
 """, unsafe_allow_html=True)
 
