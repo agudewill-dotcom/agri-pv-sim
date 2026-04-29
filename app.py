@@ -110,8 +110,13 @@ def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt, albedo=0.20)
     GAMMA = -0.0029   # Pmpp temp coefficient from datasheet (-0.29%/°C)
     vent_delta = max(0.0, (h - 0.5) * 1.5)  # Agri-PV(2.1m): -2.4°C, Std(0.8m): -0.45°C
     noct_eff = NOCT_BASE - vent_delta
-    # G_poa proxy: use GHI * (1 + albedo) as simplified plane-of-array irradiance
-    g_poa = df['ghi'] * (1.0 + albedo)
+    # Rigorous POA calculation for yield
+    aoi_mod = irradiance.calculate_incidence_angle(df['zenith'], df['azimuth'], tilt, 180.0)
+    svf_m = (1.0 + np.cos(np.radians(tilt))) / 2.0
+    gvf_m = (1.0 - np.cos(np.radians(tilt))) / 2.0
+    g_poa = df['dni'] * np.maximum(0, np.cos(np.radians(aoi_mod))) + df['dhi'] * svf_m + df['ghi'] * albedo * gvf_m
+    
+    df['g_poa'] = g_poa
     df['t_cell'] = df['temp_air'] + (noct_eff - 20.0) / 800.0 * g_poa
     # Temperature correction factor for module power output
     df['temp_factor'] = 1.0 + GAMMA * (df['t_cell'] - 25.0)
@@ -172,11 +177,17 @@ res_s = run_v8_physics(lat, lon, 2020, 5.63, 0.80, pitch, g_slope, g_aspect, tau
 va, vs, vo = res_a['g_g'].sum()/1000, res_s['g_g'].sum()/1000, res_a['ghi'].sum()/1000
 pa, ps = (res_a['par']*3600).sum()/1e6, (res_s['par']*3600).sum()/1e6
 
+# Specific Yield calculation (kWh/kWp)
+# Yield = sum(POA * temp_factor) / 1000
+ya_spec = (res_a['g_poa'] * res_a['temp_factor']).sum() / 1000.0
+ys_spec = (res_s['g_poa'] * res_s['temp_factor']).sum() / 1000.0
+y_bonus = ya_spec - ys_spec
+
 # Temperature statistics
-ta_cell  = res_a['t_cell'][res_a['ghi'] > 50].mean()  # mean cell temp (daylight hours only)
+ta_cell  = res_a['t_cell'][res_a['ghi'] > 50].mean()
 ts_cell  = res_s['t_cell'][res_s['ghi'] > 50].mean()
-delta_t  = ts_cell - ta_cell  # how much cooler Agri-PV runs
-temp_bonus_pct = (res_a['temp_factor'].mean() - res_s['temp_factor'].mean()) * 100  # % power bonus
+delta_t  = ts_cell - ta_cell
+temp_bonus_pct = (ya_spec / ys_spec - 1.0) * 100.0
 
 # --- HEADER Metrics ---
 st.markdown(f"""
@@ -198,6 +209,20 @@ t1.metric("Agri-PV Cell Temp", f"{ta_cell:.1f} °C", f"−{delta_t:.1f}°C vs St
 t2.metric("Std. PV Cell Temp", f"{ts_cell:.1f} °C", "Restricted ventilation at 0.8m", help="Annual arithmetic mean during daylight hours (GHI > 50 W/m²)")
 t3.metric("Temp. Power Bonus", f"+{temp_bonus_pct:.2f}%", "Agri-PV cooler → higher η", help="Relative module power increase due to the lower cell temperatures in high-mounted systems.")
 t4.metric("NOCT (Datasheet)", "41 °C", f"Vent correction: −2.4°C @ 2.1m", help="Nominal Operating Cell Temperature corrected for height-dependent ventilation.")
+
+# NEW: ELECTRICAL YIELD BOX
+st.markdown(f"""
+<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px; margin:20px 0; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h4 style="margin:0; color:#475569;">SPECIFIC YIELD BONUS (ELECTRICAL)</h4>
+        <p style="margin:4px 0 0 0; font-size:0.9rem; color:#64748b;">Annual energy generation advantage per installed kWp</p>
+    </div>
+    <div style="text-align:right;">
+        <span style="font-size:2rem; font-weight:800; color:#1e293b;">+{y_bonus:.1f} kWh/kWp</span>
+        <div style="font-size:0.9rem; font-weight:600; color:#16a34a;">↑ Agri-PV: {ya_spec:.0f} vs Standard: {ys_spec:.0f}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # WHY THE DIFFERENCE? EXPLANATION BOX
 st.markdown(f"""
