@@ -513,7 +513,7 @@ def create_pdf_report(lat, lon, va, vs, ya, ys, bonus):
     pdf.set_font("Arial", "", 10)
     pdf.multi_cell(0, 8, "Direct Beam: Rigorous vector shadow pathing using AOI-ratio methodology.\nDiffuse Cavity: Height-dependent sky-view factor correction (+1.2% per meter).\nThermal Model: Ventilation correction based on module height (NOCT -2.4 degC).")
     
-    return pdf.output(dest='S').encode('latin-1')
+    return bytes(pdf.output())
 
 pdf_bytes = create_pdf_report(lat, lon, va, vs, ya_spec, ys_spec, y_bonus)
 
