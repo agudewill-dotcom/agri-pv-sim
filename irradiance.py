@@ -36,17 +36,22 @@ def calculate_incidence_angle(solar_zenith, solar_azimuth, tilt_degrees, surface
     return aoi
 
 
-def sky_view_factor_periodic(h_top, proj_width, pitch, tau_eff, n_points=100):
+def sky_view_factor_periodic(h_top, proj_width, pitch, tau_eff,
+                             h_clearance=None, n_points=100):
     """
     Analytical Sky View Factor averaged over one pitch for infinite periodic rows.
 
-    For each ground point at position x within one pitch period, the sky
-    hemisphere is partially obstructed by adjacent rows. The obstruction angle
-    from each side is arctan(H/d), where H is the row top-edge height and d
-    is the horizontal distance to the row.
+    Each module row spans from h_clearance (bottom edge) to h_top (top edge).
+    The gap between the ground and h_clearance is OPEN — diffuse light passes
+    freely through this gap. Only the module band (h_clearance to h_top) 
+    obstructs the sky, modulated by module transparency (tau_eff).
 
-    The module transparency (tau_eff) allows partial sky visibility through
-    the obstructing rows.
+    For a ground point at distance x from a row, the module subtends an
+    angular band:
+        θ_module = arctan(h_top/x) - arctan(h_clearance/x)
+
+    Higher clearance → module at higher elevation angle → smaller subtended
+    angle → more sky visible → HIGHER SVF for Agri-PV systems.
 
     Parameters
     ----------
@@ -58,6 +63,9 @@ def sky_view_factor_periodic(h_top, proj_width, pitch, tau_eff, n_points=100):
         Row-to-row spacing (center to center) [m].
     tau_eff : float
         Effective module transparency (0-1). Accounts for structural blockage.
+    h_clearance : float or None
+        Height of the bottom edge (clearance) above ground [m].
+        If None, defaults to 0 (modules touching ground — conservative).
     n_points : int
         Number of integration points across pitch. Default 100.
 
@@ -68,36 +76,46 @@ def sky_view_factor_periodic(h_top, proj_width, pitch, tau_eff, n_points=100):
 
     Notes
     -----
-    Height dependence emerges naturally from arctan(H/d):
-    - Taller rows subtend larger angles from directly beneath
-    - But the same height with wider pitch reduces obstruction
-    - The pitch-averaged result captures the net geometric effect
+    Height dependence emerges naturally from the angular geometry:
+    - Same-size module at higher elevation subtends a SMALLER angle
+    - Larger clearance gap allows more low-angle diffuse light through
+    - This correctly produces higher SVF for elevated (Agri-PV) systems
 
-    For very tall rows (h → ∞): SVF → tau_eff (sky only visible through modules)
-    For very short rows (h → 0): SVF → 1.0 (no obstruction)
+    For very tall clearance (h_clearance → ∞): SVF → 1.0 (module far away)
+    For zero clearance, opaque modules: SVF depends on h_top/pitch ratio
     """
     if pitch <= 0 or h_top <= 0:
         return 1.0
 
+    if h_clearance is None:
+        h_clearance = 0.0
+
+    # Ensure h_clearance < h_top
+    h_clearance = min(h_clearance, h_top - 0.01)
+    h_clearance = max(h_clearance, 0.0)
+
     # Sample ground positions across one pitch period
-    # Avoid exact row positions (x=0, x=pitch) where angles are undefined
     x = np.linspace(0.01 * pitch, 0.99 * pitch, n_points)
 
-    # Each ground point sees two adjacent rows:
-    # Left row edge at x=0, right row edge at x=pitch
-    # The row extends from ground to h_top
+    # For each ground point, compute angular band blocked by left and right rows.
+    # The module spans from h_clearance to h_top.
+    # Angular band blocked = arctan(h_top/d) - arctan(h_clearance/d)
+    # The gap below h_clearance is OPEN SKY.
 
-    # Elevation angle subtended by left row from position x
-    theta_left = np.arctan2(h_top, x)
-    # Elevation angle subtended by right row from position x
-    theta_right = np.arctan2(h_top, pitch - x)
+    # Left row at distance x
+    theta_top_left = np.arctan2(h_top, x)
+    theta_bot_left = np.arctan2(h_clearance, x) if h_clearance > 0 else 0.0
+    band_left = theta_top_left - theta_bot_left
 
-    # In a 2D cross-section, the diffuse sky hemisphere spans π radians (0 to π).
-    # Each row blocks a fraction theta/π of the isotropic diffuse radiation.
-    # Module transparency allows tau_eff fraction of blocked light through.
-    # Effective blockage per side = (theta / (π/2)) * (1 - tau_eff)
-    # (We use π/2 because each row only blocks one half of the sky hemisphere)
-    f_blocked = (theta_left + theta_right) / np.pi * (1.0 - tau_eff)
+    # Right row at distance (pitch - x)
+    d_right = pitch - x
+    theta_top_right = np.arctan2(h_top, d_right)
+    theta_bot_right = np.arctan2(h_clearance, d_right) if h_clearance > 0 else 0.0
+    band_right = theta_top_right - theta_bot_right
+
+    # Total angular fraction of sky blocked (out of π hemisphere)
+    # Module transparency allows tau_eff fraction of light through
+    f_blocked = (band_left + band_right) / np.pi * (1.0 - tau_eff)
 
     svf_local = 1.0 - f_blocked
     svf_avg = np.mean(np.clip(svf_local, 0.0, 1.0))

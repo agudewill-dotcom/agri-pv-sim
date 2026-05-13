@@ -106,7 +106,7 @@ def run_v9_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt, albedo=0.20)
     df['t_avg'] = [get_t_beam(m, g) for m, g in zip(aoi_mod, aoi_ground)]
     
     # --- C) DIFFUSE SKY — Analytical View Factor (Hottel) ---
-    svf_f = irradiance.sky_view_factor_periodic(h_top, pw, p, tau_eff)
+    svf_f = irradiance.sky_view_factor_periodic(h_top, pw, p, tau_eff, h_clearance=h)
     
     # --- D) GROUND IRRADIANCE (beam + diffuse + reflected) ---
     aoi = irradiance.calculate_incidence_angle(df['zenith'], df['azimuth'], gs, ga)
@@ -386,8 +386,8 @@ with st.expander("Show Physical Calculations (Step-by-Step)", expanded=False):
     tau_eff_s = max(0, (pw_s - block_val) / pw_s) * tau
     
     # Analytical SVF (Hottel method) — computed by actual function
-    svf_a = irradiance.sky_view_factor_periodic(h_top_a, pw_a, pitch, tau_eff_a)
-    svf_s = irradiance.sky_view_factor_periodic(h_top_s, pw_s, pitch, tau_eff_s)
+    svf_a = irradiance.sky_view_factor_periodic(h_top_a, pw_a, pitch, tau_eff_a, h_clearance=2.10)
+    svf_s = irradiance.sky_view_factor_periodic(h_top_s, pw_s, pitch, tau_eff_s, h_clearance=0.80)
     
     # Wind speed statistics
     ws_mean = res_a['wind_speed'][res_a['ghi'] > 50].mean() if 'wind_speed' in res_a.columns else 1.0
