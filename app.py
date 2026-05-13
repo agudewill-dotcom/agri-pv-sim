@@ -11,6 +11,7 @@ import solar
 import geometry
 import shading
 import irradiance
+import thermal
 from geopy.geocoders import Nominatim
 
 st.set_page_config(page_title="Agri-PV Strategic Analytics", layout="wide")
@@ -66,15 +67,31 @@ def get_topo(lat, lon):
     except: return 0.0, 180.0
 
 @st.cache_data
-def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt, albedo=0.20):
+def run_v9_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt, albedo=0.20):
+    """
+    v9.0 Physics Engine — Refactored for scientific defensibility.
+    
+    Changes from v8.3:
+    - SVF: Analytical view factor integration (Hottel crossed-strings)
+    - Thermal: Faiman (2008) model with log wind profile (uses PVGIS wind data)
+    - PAR: Explicit McCree decomposition (f_PAR × McCree factor)
+    - Albedo: Physical backsheet reflectance (rho_back=0.15)
+    - Removed all arbitrary correction factors
+    """
     df = solar.fetch_pvgis_hourly(lat, lon, yr, yr)
     sp = solar.get_solar_position_df(lat, lon, df.index)
     df = pd.concat([df, sp], axis=1)
+    
+    # Ensure wind speed column exists (PVGIS provides WS10m)
+    if 'wind_speed' not in df.columns:
+        df['wind_speed'] = 1.0  # Fallback if not available
+    
+    # --- A) GEOMETRY ---
     geo = geometry.calculate_derived_geometry(tilt, length=l, clearance=h)
     pw = geo['projected_width']
-    gap_w = p - pw
-    # Exact geometric transmission for direct beam
-    # f_intercepted = (L * cos_aoi_mod) / (P * cos_aoi_ground)
+    h_top = geo['top_edge_height']
+    
+    # --- B) BEAM TRANSMISSION (AOI-ratio method) ---
     tau_eff = max(0, (pw - block) / pw) * tau if pw > 0 else 0
     aoi_mod = irradiance.calculate_incidence_angle(df['zenith'], df['azimuth'], tilt, 180.0)
     aoi_ground = irradiance.calculate_incidence_angle(df['zenith'], df['azimuth'], gs, ga)
@@ -82,46 +99,39 @@ def run_v8_physics(lat, lon, yr, l, h, p, gs, ga, tau, block, tilt, albedo=0.20)
     def get_t_beam(aoi_m, aoi_g):
         cos_g = np.cos(np.radians(aoi_g))
         if cos_g <= 0.01: return tau_eff
-        cos_m = np.abs(np.cos(np.radians(aoi_m)))
+        cos_m = max(0, np.cos(np.radians(aoi_m)))  # Fixed: was abs()
         f_int = (l * cos_m) / (p * cos_g)
         return 1.0 - min(1.0, f_int) * (1.0 - tau_eff)
         
     df['t_avg'] = [get_t_beam(m, g) for m, g in zip(aoi_mod, aoi_ground)]
     
-    # --- HEIGHT-DEPENDENT DIFFUSE CORRECTION (The 'Cavity Effect') ---
-    # Higher clearance allows more stray diffuse light to leak in from the sides
-    # and reduces the solid angle obstruction of the module rows.
-    # We apply a small empirical gain factor based on clearance (h).
-    diffuse_leakage_factor = 1.0 + (0.012 * h) # ~1.2% gain per meter of height
-    p_horiz = p * np.cos(np.radians(gs))
-    blocked_frac = min(1.0, pw / p_horiz) if p_horiz > 0 else 1.0
-    svf_f = 1.0 - (blocked_frac * (1.0 - tau_eff))
-    svf_f = min(1.0, svf_f * diffuse_leakage_factor)
+    # --- C) DIFFUSE SKY — Analytical View Factor (Hottel) ---
+    svf_f = irradiance.sky_view_factor_periodic(h_top, pw, p, tau_eff)
     
+    # --- D) GROUND IRRADIANCE (beam + diffuse + reflected) ---
     aoi = irradiance.calculate_incidence_angle(df['zenith'], df['azimuth'], gs, ga)
-    # Pass clearance (h) to ground irradiance for height-dependent albedo bounce
     df['g_g'] = df.apply(lambda r: irradiance.calculate_ground_irradiance(
         r['dni'], r['dhi'], r['ghi'], aoi.loc[r.name], r['t_avg'], svf_f, albedo, gs, h
     ), axis=1)
-    df['par'] = df['g_g'] * 2.1
     
-    # --- CELL TEMPERATURE MODEL (SUNfarming SF600 datasheet: NOCT=41°C, γ=-0.29%/°C) ---
-    # Clearance-based ventilation correction: higher mounting = better free-air cooling
-    # Research shows ~1.5°C reduction per extra meter of clearance above a baseline of 0.5m
-    NOCT_BASE = 41.0  # °C from SUNfarming SF600-72N datasheet
-    GAMMA = -0.0029   # Pmpp temp coefficient from datasheet (-0.29%/°C)
-    vent_delta = max(0.0, (h - 0.5) * 1.5)  # Agri-PV(2.1m): -2.4°C, Std(0.8m): -0.45°C
-    noct_eff = NOCT_BASE - vent_delta
-    # Rigorous POA calculation for yield
+    # --- E) PAR (McCree 1972: f_PAR=0.45, factor=4.57 µmol/J) ---
+    df['par'] = irradiance.calculate_par(df['g_g'])
+    
+    # --- F) THERMAL MODEL — Faiman (2008) with log wind profile ---
+    # POA irradiance for module temperature calculation
     aoi_mod = irradiance.calculate_incidence_angle(df['zenith'], df['azimuth'], tilt, 180.0)
     svf_m = (1.0 + np.cos(np.radians(tilt))) / 2.0
     gvf_m = (1.0 - np.cos(np.radians(tilt))) / 2.0
     g_poa = df['dni'] * np.maximum(0, np.cos(np.radians(aoi_mod))) + df['dhi'] * svf_m + df['ghi'] * albedo * gvf_m
-    
     df['g_poa'] = g_poa
-    df['t_cell'] = df['temp_air'] + (noct_eff - 20.0) / 800.0 * g_poa
-    # Temperature correction factor for module power output
-    df['temp_factor'] = 1.0 + GAMMA * (df['t_cell'] - 25.0)
+    
+    # Cell temperature via Faiman model (height enters through wind profile)
+    df['t_cell'] = thermal.cell_temperature_faiman(
+        df['temp_air'], g_poa, df['wind_speed'], h
+    )
+    
+    # Temperature correction factor (γ = -0.29%/°C from SF600-72N datasheet)
+    df['temp_factor'] = thermal.temperature_efficiency_factor(df['t_cell'])
     
     return df
 
@@ -174,8 +184,8 @@ pitch = st.sidebar.number_input("Design Pitch (m)", 5.0, 15.0, 8.63, help="Horiz
 # System geometry from technical drawing (SUNfarming Agri-PV cross-section):
 # Both systems: 100% identical hardware — same modules, same 5.63m table, 8.63m pitch, 15° tilt, tau, 0.81m blockage
 # ONLY difference: clearance height (2.10m Agri-PV vs 0.80m Standard PV)
-res_a = run_v8_physics(lat, lon, 2020, 5.63, 2.10, pitch, g_slope, g_aspect, tau, 0.81, 15, albedo)
-res_s = run_v8_physics(lat, lon, 2020, 5.63, 0.80, pitch, g_slope, g_aspect, tau, 0.81, 15, albedo)
+res_a = run_v9_physics(lat, lon, 2020, 5.63, 2.10, pitch, g_slope, g_aspect, tau, 0.81, 15, albedo)
+res_s = run_v9_physics(lat, lon, 2020, 5.63, 0.80, pitch, g_slope, g_aspect, tau, 0.81, 15, albedo)
 va, vs, vo = res_a['g_g'].sum()/1000, res_s['g_g'].sum()/1000, res_a['ghi'].sum()/1000
 pa, ps = (res_a['par']*3600).sum()/1e6, (res_s['par']*3600).sum()/1e6
 
@@ -210,7 +220,7 @@ t1, t2, t3, t4 = st.columns(4)
 t1.metric("Agri-PV Cell Temp", f"{ta_cell:.1f} °C", f"−{delta_t:.1f}°C vs Standard", help="Annual arithmetic mean during daylight hours (GHI > 50 W/m²)")
 t2.metric("Std. PV Cell Temp", f"{ts_cell:.1f} °C", "Restricted ventilation at 0.8m", help="Annual arithmetic mean during daylight hours (GHI > 50 W/m²)")
 t3.metric("Temp. Power Bonus", f"+{temp_bonus_pct:.2f}%", "Agri-PV cooler → higher η", help="Relative module power increase due to the lower cell temperatures in high-mounted systems.")
-t4.metric("NOCT (Datasheet)", "41 °C", f"Vent correction: −2.4°C @ 2.1m", help="Nominal Operating Cell Temperature corrected for height-dependent ventilation.")
+t4.metric("Thermal Model", "Faiman (2008)", f"Wind-corrected, log profile", help="Cell temperature via Faiman model with logarithmic wind profile height correction using PVGIS 10m wind data.")
 
 # NEW: ELECTRICAL YIELD BOX
 st.markdown(f"""
@@ -348,14 +358,17 @@ with gm2:
 # METHODOLOGY
 st.markdown(f"""
 <div class="meth-box">
-    <h3 style="margin-top:0;">Physical Simulation Methodology</h3>
-    <p>The simulation engine calculates ground-level irradiance through a high-fidelity 1D-Periodic Row Model tailored for SUNfarming high-mounted systems.</p>
+    <h3 style="margin-top:0;">Physical Simulation Methodology (v9.0)</h3>
+    <p><strong>Model Classification:</strong> Physics-based comparative simulation for early-stage Agri-PV system evaluation. This tool estimates <em>relative</em> performance differences between elevated and standard-height PV configurations. It is not intended as a bankable yield model.</p>
     <ul>
-        <li><strong>Vector Shadow Pathing:</strong> Direct beam irradiance (DNI) is mapped through the row geometry using topocentric solar coordinates. The exact geometric interception fraction is calculated hourly based on the sun's angle of incidence on the modules versus the ground.</li>
-        <li><strong>Diffuse & Sky-View Factor (SVF):</strong> Diffuse irradiance (DHI) is calculated using rigorous geometric view factors. For an infinite periodic array, the average ground SVF is governed by the module transparency and the structural gap ratio. While the geometry is identical for both systems, the Agri-PV system's 2.1m clearance allows significantly more stray diffuse light to leak into the cavity from the sides compared to the restricted 0.8m Standard system.</li>
-        <li><strong>Agricultural Metric:</strong> Photosynthetic Active Radiation (PAR) is derived using the McRee standard (2.1 μmol per Joule) across the 400nm-700nm waveband.</li>
+        <li><strong>Direct Beam (AOI-Ratio):</strong> Hourly beam transmission computed via geometric interception fraction using topocentric solar coordinates. The ratio of module-projected to ground-projected areas determines the shaded fraction per pitch period.</li>
+        <li><strong>Diffuse Sky (Analytical SVF):</strong> Pitch-averaged sky view factor computed by integrating the elevation angles subtended by adjacent rows across one pitch period (Hottel crossed-strings method). No empirical height corrections — the geometry produces height dependence naturally via arctan(H/d).</li>
+        <li><strong>Ground Reflection:</strong> Isotropic terrain albedo (Liu & Jordan) plus first-order cavity inter-reflection bounded by module backsheet reflectance (ρ_back = 0.15).</li>
+        <li><strong>Thermal Model:</strong> Faiman (2008) cell temperature model with height-dependent wind speed via logarithmic atmospheric boundary layer profile. Uses PVGIS WS10m wind data. No arbitrary NOCT corrections.</li>
+        <li><strong>PAR:</strong> McCree (1972) conversion: G × f_PAR × 4.57 µmol/J, where f_PAR = 0.45 is the broadband-to-PAR spectral fraction.</li>
     </ul>
-    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 20px;">Data Reference: PVGIS SARAH-2 Hourly Series | NASA SRTM Topography | Methodology v8.3 (Cavity Update)</p>
+    <p style="font-size:0.85rem; margin-top:15px;"><strong>Limitations:</strong> 2D cross-section (infinite row assumption), isotropic diffuse sky (no circumsolar), steady-state thermal model, constant PAR spectral fraction.</p>
+    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Data: PVGIS SARAH-2 Hourly Series | NASA SRTM Topography | Methodology v9.0</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -366,26 +379,26 @@ with st.expander("Show Physical Calculations (Step-by-Step)", expanded=False):
     geo_s_calc = geometry.calculate_derived_geometry(15, length=5.63, clearance=0.80)
     pw_a = geo_a_calc['projected_width']
     pw_s = geo_s_calc['projected_width']
+    h_top_a = geo_a_calc['top_edge_height']
+    h_top_s = geo_s_calc['top_edge_height']
     block_val = 0.81
     tau_eff_a = max(0, (pw_a - block_val) / pw_a) * tau
     tau_eff_s = max(0, (pw_s - block_val) / pw_s) * tau
-    p_horiz_a = pitch * np.cos(np.radians(g_slope))
-    blocked_frac_a = min(1.0, pw_a / p_horiz_a) if p_horiz_a > 0 else 1.0
-    svf_base_a = 1.0 - (blocked_frac_a * (1.0 - tau_eff_a))
-    svf_base_s = 1.0 - (blocked_frac_a * (1.0 - tau_eff_s))
     
-    # Height Correction (The 'Cavity Effect')
-    svf_a = min(1.0, svf_base_a * (1.0 + 0.012 * 2.10))
-    svf_s = min(1.0, svf_base_s * (1.0 + 0.012 * 0.80))
+    # Analytical SVF (Hottel method) — computed by actual function
+    svf_a = irradiance.sky_view_factor_periodic(h_top_a, pw_a, pitch, tau_eff_a)
+    svf_s = irradiance.sky_view_factor_periodic(h_top_s, pw_s, pitch, tau_eff_s)
     
-    noct_a = 41.0 - max(0.0, (2.10 - 0.5) * 1.5)
-    noct_s = 41.0 - max(0.0, (0.80 - 0.5) * 1.5)
+    # Wind speed statistics
+    ws_mean = res_a['wind_speed'][res_a['ghi'] > 50].mean() if 'wind_speed' in res_a.columns else 1.0
+    v_eff_a = thermal.effective_wind_speed(ws_mean, 2.10)
+    v_eff_s = thermal.effective_wind_speed(ws_mean, 0.80)
 
     st.markdown("#### 1. Geometry")
     st.table(pd.DataFrame({
-        "Parameter": ["Module Length (sloped)", "Projected Width (horizontal)", "Lower Clearance", "Pitch", "Tilt", "Structural Blockage"],
-        "Agri-PV": ["5.63 m", f"{pw_a:.3f} m", "2.10 m", f"{pitch:.2f} m", "15°", "0.81 m"],
-        "Standard PV": ["5.63 m", f"{pw_s:.3f} m", "0.80 m", f"{pitch:.2f} m", "15°", "0.81 m"]
+        "Parameter": ["Module Length (sloped)", "Projected Width (horizontal)", "Lower Clearance", "Top Edge Height", "Pitch", "Tilt", "Structural Blockage"],
+        "Agri-PV": ["5.63 m", f"{pw_a:.3f} m", "2.10 m", f"{h_top_a:.3f} m", f"{pitch:.2f} m", "15°", "0.81 m"],
+        "Standard PV": ["5.63 m", f"{pw_s:.3f} m", "0.80 m", f"{h_top_s:.3f} m", f"{pitch:.2f} m", "15°", "0.81 m"]
     }))
 
     st.markdown("#### 2. Beam Transmission (Direct Light)")
@@ -396,43 +409,52 @@ with st.expander("Show Physical Calculations (Step-by-Step)", expanded=False):
 
 **Note:** Both systems use the same SUNfarming SF600-72N modules. Transparency is identical. The ONLY difference is mounting height.
     """)
-    st.latex(r"T_{beam} = 1 - \min\left(1, \frac{L \cdot |\cos(AOI_{mod})|}{P \cdot \cos(AOI_{ground})}\right) \cdot (1 - \tau_{eff})")
+    st.latex(r"T_{beam} = 1 - \min\left(1, \frac{L \cdot \max(0, \cos(AOI_{mod}))}{P \cdot \cos(AOI_{ground})}\right) \cdot (1 - \tau_{eff})")
     st.markdown("*(Calculated for each of the 8760 hourly intervals using PVGIS solar position data)*")
 
-    st.markdown("#### 3. Diffuse Light — Sky View Factor (SVF)")
-    st.latex(r"SVF = \left(1 - \frac{w_{proj}}{P} \cdot (1 - \tau_{eff})\right) \cdot (1 + 0.012 \cdot h)")
+    st.markdown("#### 3. Diffuse Light — Analytical Sky View Factor")
+    st.markdown("**Method:** Pitch-averaged integration of elevation angles subtended by adjacent rows (Hottel crossed-strings).")
+    st.latex(r"SVF = \frac{1}{P} \int_0^P \left[ 1 - \frac{\arctan(H/x) + \arctan(H/(P-x))}{\pi} \cdot (1 - \tau_{eff}) \right] dx")
     st.markdown(f"""
-- Agri-PV: `({svf_base_a:.4f}) * 1.0252` = **{svf_a:.4f}** ({svf_a*100:.1f}%)
-- Standard PV: `({svf_base_s:.4f}) * 1.0096` = **{svf_s:.4f}** ({svf_s*100:.1f}%)
+- Agri-PV (H={h_top_a:.2f}m): SVF = **{svf_a:.4f}** ({svf_a*100:.1f}%)
+- Standard PV (H={h_top_s:.2f}m): SVF = **{svf_s:.4f}** ({svf_s*100:.1f}%)
 
-**The Cavity Effect:** Higher systems physically increase sky visibility and allow side-diffuse light to reach the ground more effectively.
+**Physical basis:** Taller rows subtend larger elevation angles from ground points, but the effect is modulated by module transparency.
+No empirical correction factors — height dependence emerges from arctan geometry.
     """)
 
-    st.markdown("#### 4. Cell Temperature (NOCT Model — SUNfarming SF600-72N Datasheet)")
-    st.markdown("**Effective NOCT (Ventilation Correction):**")
-    st.latex(r"NOCT_{eff} = 41 - \max(0, (h - 0.5) \cdot 1.5)")
+    st.markdown("#### 4. Cell Temperature — Faiman (2008) Model")
+    st.markdown("**Wind-corrected thermal model with logarithmic height profile:**")
+    st.latex(r"T_{cell} = T_{amb} + \frac{G_{POA}}{u_0 + u_1 \cdot v_{eff}}")
+    st.latex(r"v_{eff} = v_{10m} \cdot \frac{\ln(h_{mod} / z_0)}{\ln(10 / z_0)}")
     st.markdown(f"""
-- Agri-PV (2.10 m): `41 - {max(0,(2.10-0.5)*1.5):.2f}` = **{noct_a:.2f} °C**
-- Standard PV (0.80 m): `41 - {max(0,(0.80-0.5)*1.5):.2f}` = **{noct_s:.2f} °C**
-    """)
-    st.markdown("**Cell Temperature Calculation:**")
-    st.latex(r"T_{cell} = T_{amb} + \frac{NOCT_{eff} - 20}{800} \cdot GHI \cdot (1 + \alpha)")
-    st.markdown(f"""
+- Wind speed at 10m (PVGIS mean, daylight): **{ws_mean:.1f} m/s**
+- Effective wind at Agri-PV (h=2.85m center): **{v_eff_a:.2f} m/s**
+- Effective wind at Standard PV (h=1.55m center): **{v_eff_s:.2f} m/s**
 - Annual mean Agri-PV cell temp (daylight hours): **{ta_cell:.1f} °C**
 - Annual mean Standard PV cell temp (daylight hours): **{ts_cell:.1f} °C**
 - ΔT (Agri-PV cooler by): **{delta_t:.1f} °C**
-- Module power bonus ($\gamma \cdot \Delta T$): **+{temp_bonus_pct:.3f}%**
+- Module power bonus ($\\gamma \\cdot \\Delta T$): **+{temp_bonus_pct:.3f}%**
+
+*Parameters: u₀ = 25.0 W/m²/K, u₁ = 6.84 W/m²/K/(m/s) [Koehl 2011], z₀ = 0.03m (grass)*
     """)
 
     st.markdown("#### 5. Ground Irradiance Formula (Hourly)")
-    st.latex(r"G_{ground} = G_{beam} + G_{diffuse} + G_{terrain} + G_{bounce}")
+    st.latex(r"G_{ground} = G_{beam} + G_{diffuse} + G_{reflected}")
     st.latex(r"G_{beam} = DNI \cdot \cos(AOI_{ground}) \cdot T_{beam}")
-    st.latex(r"G_{diffuse} = DHI \cdot SVF")
-    st.latex(r"G_{terrain} = GHI \cdot \alpha \cdot \frac{1 - \cos(\beta)}{2}")
-    st.latex(r"G_{bounce} = GHI \cdot \alpha \cdot (1 - SVF) \cdot \eta_{bounce}")
-    st.markdown("*(Note: α = Albedo, β = Ground Slope)*")
+    st.latex(r"G_{diffuse} = DHI \cdot SVF \cdot \frac{1 + \cos(\beta)}{2}")
+    st.latex(r"G_{reflected} = \underbrace{GHI \cdot \alpha \cdot \frac{1 - \cos(\beta)}{2}}_{terrain} + \underbrace{GHI \cdot \alpha \cdot (1 - SVF) \cdot \rho_{back}}_{cavity}")
+    st.markdown("*(α = Albedo, β = Ground Slope, ρ_back = 0.15 module backsheet reflectance)*")
 
-    st.markdown("#### 6. Annual Summary")
+    st.markdown("#### 6. PAR Conversion — McCree (1972)")
+    st.latex(r"PAR = G_{ground} \times f_{PAR} \times 4.57 \; \mu mol/J")
+    st.markdown("""
+- f_PAR = 0.45 (fraction of broadband solar spectrum in 400-700nm)
+- McCree factor = 4.57 µmol photons per Joule of PAR-band radiation
+- Combined effective factor: 0.45 × 4.57 = **2.057 µmol/J** (broadband)
+    """)
+
+    st.markdown("#### 7. Annual Summary")
     st.table(pd.DataFrame({
         "Metric": ["Annual Ground Irradiance", "vs. Open Field", "Annual PAR Sum", "Mean Cell Temp (daylight)"],
         "Agri-PV": [f"{va:.1f} kWh/m²", f"{(va/vo)*100:.1f}%", f"{pa:.0f} mol/m²", f"{ta_cell:.1f} °C"],
@@ -444,32 +466,26 @@ with st.expander("Show Physical Calculations (Step-by-Step)", expanded=False):
 st.divider()
 st.divider()
 st.markdown("**Executive Reporting**")
-report_text = f"""# Technical Validation Report: Agri-PV Strategic Analytics (v8.3)
+report_text = f"""# Technical Validation Report: Agri-PV Strategic Analytics (v9.0)
 
-This report validates the physical simulation methodology used for the SUNfarming Agri-PV dashboard at Latitude {lat:.4f}, Longitude {lon:.4f}.
+This report validates the physical simulation methodology at Latitude {lat:.4f}, Longitude {lon:.4f}.
+Model Classification: Physics-based comparative simulation for early-stage evaluation.
 
-## 1. Direct Beam Irradiance (Vector Shadow Pathing)
-**Model:** 1D Periodic Row Shading (Infinite Row Approximation).
-**Method:** Area of Incidence (AOI) Ratio.
-**Formula:** $T_{{beam}} = 1 - \\min\\left(1, \\frac{{L \\cdot |\\cos(AOI_{{module}})|}}{{P \\cdot \\cos(AOI_{{ground}})}} \\right) \\cdot (1 - \\tau_{{eff}})$
+## 1. Direct Beam (AOI-Ratio)
+Formula: T_beam = 1 - min(1, L*max(0,cos(AOI_mod)) / (P*cos(AOI_ground))) * (1 - tau_eff)
 
-## 2. Diffuse Light (Sky-View Factor)
-**Model:** Hottel's View Factor for Crossed Strings.
-**Base Formula:** $SVF_{{base}} = 1 - \\frac{{w_{{proj}}}}{{P}} \\cdot (1 - \\tau_{{eff}})$
-**Height Correction (Cavity Effect):** $SVF = SVF_{{base}} \\cdot (1 + 0.012 \\cdot h)$
+## 2. Diffuse Sky (Analytical SVF - Hottel)
+SVF = (1/P) * integral[1 - (arctan(H/x)+arctan(H/(P-x)))/pi * (1-tau_eff)] dx
+No empirical height corrections.
 
-## 3. Thermal Model (Ventilation Gains)
-**Model:** NOCT Correction with Ventilation Gradient.
-**Formula:** $NOCT_{{eff}} = 41 - \\max(0, (h - 0.5) \\cdot 1.5)$
-**Efficiency Bonus:** $P_{{bonus}} = \\gamma \\cdot (T_{{cell, Agri}} - T_{{cell, Std}})$
+## 3. Thermal (Faiman 2008)
+T_cell = T_amb + G_POA / (u0 + u1*v_eff), v_eff via log wind profile.
 
-## 4. Annual Performance Summary
-- **Agri-PV Irradiance:** {va:.1f} kWh/m²
-- **Standard PV Irradiance:** {vs:.1f} kWh/m²
-- **Irradiance Advantage:** +{(va/vs-1)*100:.2f}%
-- **Thermal Power Bonus:** +{temp_bonus_pct:.3f}%
+## 4. Results
+- Agri-PV Irradiance: {va:.1f} kWh/m2 | Standard: {vs:.1f} kWh/m2
+- Advantage: +{(va/vs-1)*100:.2f}% | Thermal Bonus: +{temp_bonus_pct:.3f}%
 
-**Data Reference:** PVGIS SARAH-2 Hourly Series | Methodology v8.3 (Cavity Update)
+Data: PVGIS SARAH-2 | Methodology v9.0
 """
 
 # PDF GENERATION FUNCTION
@@ -481,14 +497,14 @@ def create_pdf_report(lat, lon, va, vs, ya, ys, bonus):
     pdf.set_font("Arial", "B", 18)
     pdf.cell(0, 15, "Agri-PV Strategic Analytics: Technical Validation", ln=True, align="C")
     pdf.set_font("Arial", "I", 10)
-    pdf.cell(0, 5, f"Location: {lat:.4f}, {lon:.4f} | Methodology v8.3 (Cavity Update)", ln=True, align="C")
+    pdf.cell(0, 5, f"Location: {lat:.4f}, {lon:.4f} | Methodology v9.0", ln=True, align="C")
     pdf.ln(10)
     
     # Section 1: Executive Summary
     pdf.set_font("Arial", "B", 13)
     pdf.cell(0, 10, "1. Executive Summary", ln=True)
     pdf.set_font("Arial", "", 11)
-    pdf.multi_cell(0, 7, f"This audit validates the high-clearance Agri-PV performance at this site. The results confirm a specific energy yield bonus of +{bonus:.1f} kWh/kWp compared to standard mounting heights (0.8m).")
+    pdf.multi_cell(0, 7, f"Physics-based comparative simulation for SUNfarming Agri-PV. Estimated yield bonus: +{bonus:.1f} kWh/kWp for elevated (2.1m) vs standard (0.8m) mounting. Designed for strategic evaluation, not bankable yield assessment.")
     pdf.ln(5)
     
     # Results Table
@@ -514,37 +530,37 @@ def create_pdf_report(lat, lon, va, vs, ya, ys, bonus):
     
     # Section 2: Methodology
     pdf.set_font("Arial", "B", 13)
-    pdf.cell(0, 10, "2. Physical Methodology Audit", ln=True)
+    pdf.cell(0, 10, "2. Physical Methodology (v9.0)", ln=True)
     
     pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 8, "2.1 Direct Beam Irradiance (Vector Shadow Pathing)", ln=True)
+    pdf.cell(0, 8, "2.1 Direct Beam (AOI-Ratio Method)", ln=True)
     pdf.set_font("Arial", "", 10)
-    pdf.multi_cell(0, 6, "We utilize the AOI-Ratio methodology, the solar engineering gold standard for periodic shading. It calculates 3D shadow projections onto sloped terrain by projecting the module vector onto the ground plane. This accounts for complex seasonal shading variations with 100% geometric precision.")
+    pdf.multi_cell(0, 6, "Hourly beam transmission via geometric interception fraction. The ratio of module-projected to ground-projected areas determines shaded fraction per pitch period.")
     pdf.ln(4)
     
     pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 8, "2.2 Diffuse Cavity Effect (Sky-View Factor)", ln=True)
+    pdf.cell(0, 8, "2.2 Diffuse Sky (Analytical View Factor)", ln=True)
     pdf.set_font("Arial", "", 10)
-    pdf.multi_cell(0, 6, "Agri-PV systems benefit from a 'Diffuse Cavity Effect'. Higher clearance (2.1m) allows stray diffuse light to leak into the system from the sides, modeled by a height-dependent gain factor (+1.2% per meter). This explains the significant ground irradiance advantage over 0.8m systems.")
+    pdf.multi_cell(0, 6, "Pitch-averaged SVF via Hottel crossed-strings integration. Height dependence emerges from arctan(H/d) geometry. No empirical correction factors.")
     pdf.ln(4)
     
     pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 8, "2.3 Thermal Model (Ventilation Gains)", ln=True)
+    pdf.cell(0, 8, "2.3 Thermal Model (Faiman 2008)", ln=True)
     pdf.set_font("Arial", "", 10)
-    pdf.multi_cell(0, 6, "The simulation uses a height-corrected NOCT model. High-mounted modules (2.1m) experience improved free convective airflow, reducing cell temperatures by ~2.4 degC relative to datasheet standard mounting. This directly boosts the module conversion efficiency during high-irradiance hours.")
+    pdf.multi_cell(0, 6, "T_cell = T_amb + G_POA/(u0 + u1*v_eff). Height enters via logarithmic wind profile using PVGIS 10m wind data. Elevated modules see higher wind, improving convective cooling.")
     pdf.ln(4)
     
     pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 8, "2.4 Secondary Bounce (Albedo Gain)", ln=True)
+    pdf.cell(0, 8, "2.4 Ground Reflection", ln=True)
     pdf.set_font("Arial", "", 10)
-    pdf.multi_cell(0, 6, "Higher mounting heights improve the distribution of ground-reflected light hitting the underside of the modules and bouncing back to the crops. This secondary contribution is explicitly integrated into the ground irradiance sum.")
+    pdf.multi_cell(0, 6, "Isotropic terrain albedo + first-order cavity inter-reflection bounded by backsheet reflectance (rho_back=0.15).")
     pdf.ln(10)
     
     # Conclusion
     pdf.set_font("Arial", "B", 13)
-    pdf.cell(0, 10, "3. Summary Conclusion", ln=True)
+    pdf.cell(0, 10, "3. Summary", ln=True)
     pdf.set_font("Arial", "I", 11)
-    pdf.multi_cell(0, 7, "The simulation is technically robust and follows industry standards for Agri-PV performance modeling. The SUNfarming system configuration (v8.3) maximizes both electricity production and agricultural light availability through strategic mounting height and module transparency.")
+    pdf.multi_cell(0, 7, "All physical models use analytically derived parameters with no arbitrary tuning factors. Methodology v9.0 is suitable for comparative strategic evaluation of elevated Agri-PV configurations.")
     
     return bytes(pdf.output())
 

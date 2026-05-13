@@ -60,7 +60,7 @@ def calculate_periodic_shading_factor(projected_width, pitch_horizontal, aoi_mod
     # Note: projected_width (pw) already includes cos(tilt)
     # The true 'shaded width' on ground is pw * (cos_mod / cos_ground)
     # But for a 1D row, it's simpler:
-    ratio = (np.abs(cos_mod) / cos_ground) * (projected_width / pitch_horizontal)
+    ratio = (np.maximum(0, cos_mod) / cos_ground) * (projected_width / pitch_horizontal)
     
     return np.clip(ratio, 0, 1)
 
@@ -92,7 +92,7 @@ def calculate_spatial_mask(x_points, top_height, clearance, length, tilt, solar_
     # Shadow offset (simple approximation)
     # x_shadow = x_obj + top_height / tan(elev)
     # We'll use the sh_len as the displacement magnitude
-    offset = sh_len * 0.8 # Empirical scaling for 1D profile
+    offset = sh_len  # Shadow displacement from geometry (no empirical scaling)
     
     transmittance = np.ones_like(x_points, dtype=float)
     
