@@ -213,7 +213,7 @@ k1, k2, k3, k4 = st.columns(4)
 k1.metric("Agricultural Light", f"{(va/vo)*100:.1f}%", f"+{(va/vs-1)*100:.1f}% vs Std. PV", help="Percentage of total open-field irradiance reaching the ground under the system.")
 k2.metric("Annual PAR Sum", f"{pa:.0f} mol/m²", f"+{(pa/ps-1)*100:.1f}% vs Std. PV", help="Annual cumulative Photosynthetic Active Radiation (PAR) for crop growth.")
 k3.metric("BASELINE: STANDARD GROUND-PV", f"{vs:.0f} kWh/m²", f"RESTRICTED: {(vs/vo)*100:.1f}% LIGHT", help="Annual ground irradiance for a standard 0.8m high system.")
-k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh/m²", "Production Winner", help="The absolute irradiance advantage of Agri-PV over Standard PV.")
+k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh/m²", help="The absolute irradiance advantage of Agri-PV over Standard PV.")
 
 # TEMPERATURE KPI ROW
 t1, t2, t3, t4 = st.columns(4)
