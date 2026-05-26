@@ -903,25 +903,21 @@ with tab_crops:
         st.warning(f"**CONSERVATIVE AGRONOMIC DISCLOSURE (Tier C Evidence):** {warning_msg}")
 
     # Growing season and critical phase calendars
-    c_cal1, c_cal2 = st.columns(2)
+    st.markdown(f"**Active Growing Season Calendar for {crop_sel.name_en}**")
+    calendar_html = "".join([
+        f'<span style="background-color:#065f46; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.growing_months
+        else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>'
+        for m in range(1, 13)
+    ])
+    st.markdown(f'<div style="margin-top:8px; margin-bottom:16px;">{calendar_html}</div>', unsafe_allow_html=True)
 
-    with c_cal1:
-        st.markdown(f"**Active Growing Season Calendar for {crop_sel.name_en}**")
-        calendar_html = "".join([
-            f'<span style="background-color:#065f46; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>' if m in crop_sel.growing_months
-            else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>'
-            for m in range(1, 13)
-        ])
-        st.markdown(f'<div style="margin-top:8px;">{calendar_html}</div>', unsafe_allow_html=True)
-
-    with c_cal2:
-        st.markdown(f"**Critical Shade Sensitivity Window for {crop_sel.name_en}**")
-        crit_html = "".join([
-            f'<span style="background-color:#b91c1c; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>' if m in crop_sel.critical_months
-            else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>'
-            for m in range(1, 13)
-        ])
-        st.markdown(f'<div style="margin-top:8px;">{crit_html}</div>', unsafe_allow_html=True)
+    st.markdown(f"**Critical Shade Sensitivity Window for {crop_sel.name_en}**")
+    crit_html = "".join([
+        f'<span style="background-color:#b91c1c; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.critical_months
+        else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>'
+        for m in range(1, 13)
+    ])
+    st.markdown(f'<div style="margin-top:8px; margin-bottom:16px;">{crit_html}</div>', unsafe_allow_html=True)
 
     # Bibliography
     with st.expander(f"Show Bibliography and Literature References for {crop_sel.name_en}"):

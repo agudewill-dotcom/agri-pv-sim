@@ -291,9 +291,9 @@ def classify_score(score: float) -> str:
 
 
 # ---------------------------------------------------------------------------
-# German Explanation Builder
+# English Explanation Builder
 # ---------------------------------------------------------------------------
-def generate_german_explanation(
+def generate_english_explanation(
     crop: CropProfile,
     r_ann: float,
     r_crit: float,
@@ -304,44 +304,44 @@ def generate_german_explanation(
     parts = []
     # Intro
     parts.append(
-        f"{crop.name_de} wird als **{classification}** eingestuft. "
-        f"Die relative Jahres-PAR liegt bei **{r_ann*100:.1f}%** (Schwellenwert: {crop.r_ann_min*100:.0f}% min / {crop.r_ann_target*100:.0f}% Ziel) "
-        f"und die relative Einstrahlung im kritischen Zeitraum ({', '.join(map(str, crop.critical_months))}) beträgt **{r_crit*100:.1f}%**."
+        f"{crop.name_en} is classified as <b>{classification}</b>. "
+        f"The relative annual PAR is <b>{r_ann*100:.1f}%</b> (Threshold: {crop.r_ann_min*100:.0f}% min / {crop.r_ann_target*100:.0f}% target) "
+        f"and the relative radiation during the critical period ({', '.join(map(str, crop.critical_months))}) is <b>{r_crit*100:.1f}%</b>."
     )
     # Shading and Limiting Factor
     if limiting == "annual_par":
         parts.append(
-            "Der Hauptlimitierungsfaktor ist die mangelnde jährliche Lichtsumme (A), "
-            "welche die physiologischen Bedürfnisse des Pflanzenbestandes unterschreitet."
+            "The main limiting factor is the insufficient annual light sum (A), "
+            "which falls below the physiological needs of the crop."
         )
     elif limiting == "seasonal_par":
         parts.append(
-            "Das jahreszeitliche Lichtangebot (S) während der aktiven Wachstumsphase ist unzureichend."
+            "The seasonal light availability (S) during the active growing phase is insufficient."
         )
     elif limiting == "critical_phase":
         parts.append(
-            "Ein kritischer Lichtmangel (C) während der empfindlichen Entwicklungsphasen "
-            "stellt die Hauptlimitierung dar und beeinträchtigt voraussichtlich den Korn- bzw. Fruchtansatz."
+            "A critical lack of light (C) during sensitive developmental stages "
+            "represents the main limitation and will likely impair grain or fruit set."
         )
     elif limiting == "homogeneity":
         parts.append(
-            "Die hohe räumliche Lichtheterogenität (H) unter den Modulen birgt das Risiko ungleichmäßiger Abreife."
+            "The high spatial light heterogeneity (H) beneath the modules carries the risk of uneven ripening."
         )
     else:
         parts.append(
-            "Die Lichtparameter liegen im agronomisch unbedenklichen Bereich."
+            "The light parameters are within the agronomically safe range."
         )
 
     # Literature / Evidence
     if crop.evidence_tier in ["A", "B"]:
         parts.append(
-            f"Die Einstufung stützt sich auf die agronomische Evidenzgruppe **{crop.source_group}** "
-            f"mit gesicherten Versuchsreihen (Tier {crop.evidence_tier})."
+            f"The classification is based on the agronomic evidence group <b>{crop.source_group}</b> "
+            f"with verified field trials (Tier {crop.evidence_tier})."
         )
     else:
         parts.append(
-            f"Da für diese Kultur keine belastbare artspezifische Agri-PV-PAR-Kurve vorliegt, "
-            f"erfolgt eine conservative Ableitung als Proxy-Wert über die Gruppe **{crop.source_group}**."
+            f"Since there is no robust species-specific Agri-PV PAR curve for this crop, "
+            f"it is conservatively evaluated as a proxy using the group <b>{crop.source_group}</b>."
         )
 
     return " ".join(parts)
@@ -447,7 +447,7 @@ def evaluate_crop(
         crop.evidence_tier, has_monthly, has_hourly=has_hourly, is_proxy=(crop.evidence_tier == "C")
     )
     limiting = identify_limiting_factor(components)
-    explanation = generate_german_explanation(crop, r_ann, r_crit, classification, limiting, components)
+    explanation = generate_english_explanation(crop, r_ann, r_crit, classification, limiting, components)
 
     return SuitabilityResult(
         crop_id=crop.id,
