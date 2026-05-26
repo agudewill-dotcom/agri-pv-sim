@@ -200,11 +200,12 @@ def generate_full_pdf(lat, lon, metrics, crop_results, config):
     pdf.cell(50, 8, "Confidence Class", border=1, ln=True)
     
     pdf.set_font("Helvetica", "", 10)
-    for r in crop_results[:6]:
-        pdf.cell(60, 8, r.crop_name_de, border=1)
-        pdf.cell(50, 8, r.classification, border=1)
-        pdf.cell(30, 8, f"{r.score*100:.1f}%", border=1)
-        pdf.cell(50, 8, r.confidence, border=1, ln=True)
+    if crop_results is not None:
+        for r in crop_results[:6]:
+            pdf.cell(60, 8, r.crop_name_de, border=1)
+            pdf.cell(50, 8, r.classification, border=1)
+            pdf.cell(30, 8, f"{r.score*100:.1f}%", border=1)
+            pdf.cell(50, 8, r.confidence, border=1, ln=True)
     pdf.ln(8)
     
     # Section 4: Water Protection Regulations

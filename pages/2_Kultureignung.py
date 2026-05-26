@@ -162,7 +162,6 @@ for idx in range(11):
     cell_monthly = list(spatial_par_monthly[idx])
     
     # Evaluate each crop at cell idx
-    # Assuming homogeneous local CV is low because cell is a local spot, so cv_par=0
     for crop_id, crop in CROP_REGISTRY.items():
         res = evaluate_crop(
             crop, cell_ann, metrics['par_open_field'], cell_monthly, cv_par=0.0, has_hourly=True
