@@ -647,7 +647,6 @@ with tab_crops:
             {
                 "Crop": CROP_REGISTRY[r.crop_id].name_en,
                 "Score": f"{r.score*100:.1f}%",
-                "DIN 91434 Plausibility": get_din_compliance(r).upper(),
                 "Suitability Class": translate_class(r.classification).upper(),
                 "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
                 "Evidence Strength": f"Tier {r.evidence_tier}",
@@ -668,9 +667,9 @@ with tab_crops:
 
         styler = df_ranking.style
         if hasattr(styler, "map"):
-            styler = styler.map(color_class, subset=['Suitability Class', 'DIN 91434 Plausibility'])
+            styler = styler.map(color_class, subset=['Suitability Class'])
         else:
-            styler = styler.applymap(color_class, subset=['Suitability Class', 'DIN 91434 Plausibility'])
+            styler = styler.applymap(color_class, subset=['Suitability Class'])
 
         st.dataframe(
             styler,
