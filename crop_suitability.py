@@ -99,6 +99,8 @@ class CropProfile:
     r_ann_target: float
     r_crit_min: float
     r_crit_target: float
+    DLI_min: float
+    DLI_target: float
     peak_PPFD_min: float
     warning_text: str
     source_group: str
@@ -134,6 +136,8 @@ for cid, entry in CROP_DB.items():
         r_ann_target=entry["r_ann_target"],
         r_crit_min=entry["r_crit_min"],
         r_crit_target=entry["r_crit_target"],
+        DLI_min=entry.get("DLI_min", 20.0),
+        DLI_target=entry.get("DLI_target", 28.0),
         peak_PPFD_min=entry["peak_PPFD_min"],
         warning_text=entry.get("warning_text", ""),
         source_group=entry.get("source_group", ""),

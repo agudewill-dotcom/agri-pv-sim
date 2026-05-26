@@ -153,16 +153,26 @@ def evaluate_medicinal_crop(
 
     # 3. Base Classification
     # As requested, the minimal tolerated PAR in critical months (and DLI) is the reference for Suitable
-    if r_crit >= crop.r_crit_min and DLI_crit >= crop.DLI_min:
-        base_class = "suitable"
+    # Absolute light (DLI) can override poor relative light (r_crit).
+    has_dli = DLI_crit is not None and DLI_crit > 0.1
+    if has_dli:
+        if DLI_crit >= crop.DLI_min:
+            base_class = "suitable"
+        else:
+            base_class = "unsuitable"
     else:
-        base_class = "unsuitable"
+        if r_crit >= crop.r_crit_min:
+            base_class = "suitable"
+        else:
+            base_class = "unsuitable"
 
     limiting_factor = ""
     
     if base_class == "unsuitable":
-        if r_crit < crop.r_crit_min: limiting_factor = "Sub-optimal PAR in critical phase"
-        elif DLI_crit < crop.DLI_min: limiting_factor = "Sub-optimal DLI"
+        if has_dli and DLI_crit < crop.DLI_min:
+            limiting_factor = "Sub-optimal DLI in critical phase"
+        elif not has_dli and r_crit < crop.r_crit_min:
+            limiting_factor = "Sub-optimal PAR in critical phase"
 
     warning_text = crop.warning_text
 
