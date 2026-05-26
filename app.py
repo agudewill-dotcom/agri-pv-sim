@@ -771,9 +771,9 @@ with tab_crops:
             <h4 style="margin-top: 0; color: #1e3a8a; font-family: 'Outfit';">Suitability Class</h4>
             <p>Crops are classified based on standard agrivoltaic trial evidence, shade tolerance, and site light levels:</p>
             <ul style="padding-left: 20px; margin-top: 5px;">
-                <li><span style="color: #065f46; font-weight: 700;">● GEEIGNET (Suitable)</span>: Field-tested crops highly suitable for growth under modules with minimal yield loss.</li>
-                <li><span style="color: #b45309; font-weight: 700;">● GRENZWERTIG (Marginal / Audit Req.)</span>: Crops facing moderate yield losses or lacking direct PV trial evidence. Agronomic validation recommended.</li>
-                <li><span style="color: #b91c1c; font-weight: 700;">● UNGEEIGNET (Unsuitable)</span>: High-light crops with severe expected yield losses under shaded designs.</li>
+                <li><span style="color: #065f46; font-weight: 700;">● GEEIGNET (Suitable)</span>: Field-tested crops highly suitable for robust biomass growth under modules with minimal expected reduction.</li>
+                <li><span style="color: #b45309; font-weight: 700;">● GRENZWERTIG (Marginal / Audit Req.)</span>: Crops facing moderate biomass reductions or lacking direct PV trial evidence. Agronomic validation recommended.</li>
+                <li><span style="color: #b91c1c; font-weight: 700;">● UNGEEIGNET (Unsuitable)</span>: High-light crops with severe expected growth inhibition under shaded designs.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
