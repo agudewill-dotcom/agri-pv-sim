@@ -321,7 +321,22 @@ def translate_class(val):
         "sehr gut geeignet": "Highly Suitable",
         "geeignet": "Suitable",
         "grenzwertig": "Marginal",
-        "nicht empfohlen": "Not Recommended"
+        "nicht empfohlen": "Not Recommended",
+        "geeignet als hauptkultur": "Suitable as Main Crop",
+        "geeignet als sonderkultur / blühstreifen": "Suitable as Special Crop / Flower Strip",
+        "nur als sonderkultur mit abnehmer-/feldnachweis": "Special Crop Only (Trial Req.)",
+        "nur mit agronomischer prüfung": "Only with Agronomic Trial"
+    }
+    return mapping.get(val.lower(), val)
+
+def translate_limiting(val):
+    if not val: return "None"
+    mapping = {
+        "jahres-par nicht ausreichend": "Insufficient Annual PAR",
+        "par in der kritischen phase zu niedrig": "Insufficient PAR in Critical Phase",
+        "zu heterogene lichtverteilung": "Heterogeneous Light Distribution",
+        "lichtverteilung über die wachstumsmonate ungünstig": "Unfavorable Seasonal Light Distribution",
+        "keine": "None"
     }
     return mapping.get(val.lower(), val)
 
@@ -345,7 +360,7 @@ tab_overview, tab_light, tab_crops, tab_med, tab_elec, tab_din = st.tabs([
     "Executive Summary", 
     "Light Results", 
     "Arable Crops",
-    "Sonder- und Arzneikulturen",
+    "Medicinal & Special Crops",
     "Electrical & Thermal", 
     "DIN Spec & AwSV"
 ])
@@ -651,7 +666,7 @@ with tab_crops:
                 "Suitability Class": translate_class(r.classification).upper(),
                 "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
                 "Evidence Strength": f"Tier {r.evidence_tier}",
-                "Limiting Factor": r.limiting_factor.replace("_", " ").upper(),
+                "Limiting Factor": translate_limiting(r.limiting_factor).upper(),
                 "Annual PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
             }
             for r in crop_results_sorted
@@ -1082,58 +1097,58 @@ with tab_crops:
 with tab_med:
     st.markdown("""
     <div class="header-crops">
-        <h2 style="margin:0; font-weight:800; color:white;">Arznei- und Sonderkulturen</h2>
-        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Lichtplausibilität für Sonderkulturen, Heilpflanzen und Nischenkulturen unter Agri-PV</p>
+        <h2 style="margin:0; font-weight:800; color:white;">Medicinal & Special Crops</h2>
+        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Light Plausibility for Special Crops, Medicinal Plants and Niche Crops under Agri-PV</p>
     </div>
     """, unsafe_allow_html=True)
     
-    st.warning("**WICHTIGER HINWEIS:** Die Bewertung beschreibt die lichtseitige Plausibilität einer Kultur unter den simulierten Agri-PV-Bedingungen. Sie ersetzt keine standortspezifische Anbauplanung, keinen Abnehmernachweis, keine Ertragsprognose und keine formale Prüfung der landwirtschaftlichen Hauptnutzung nach DIN SPEC 91434. Für viele Arznei- und Gewürzpflanzen liegen keine robusten artspezifischen Agri-PV-PAR-Ertragskurven vor. Die Bewertung erfolgt daher teilweise über DLI, PPFD, ökologische Lichtzahlen, Standortpräferenzen und Proxy-Gruppen.")
+    st.warning("**IMPORTANT NOTICE:** The evaluation describes the light-related plausibility of a crop under the simulated Agri-PV conditions. It does not replace site-specific cultivation planning, evidence of a buyer, yield forecasting, or a formal review of the primary agricultural use according to DIN SPEC 91434. For many medicinal and spice plants, robust species-specific Agri-PV PAR yield curves do not exist. Therefore, the evaluation is partly based on DLI, PPFD, ecological light values, site preferences, and proxy groups.")
 
     # Convert results to dataframe for display
     med_data = []
     for r in crop_results_med:
         med_data.append({
-            "Kultur": r.crop_name,
-            "Botanisch": r.botanical_name,
-            "Typ": r.use_type,
-            "Klasse": translate_class(r.suitability_class).upper(),
+            "Crop": r.crop_name,
+            "Botanical Name": r.botanical_name,
+            "Type": r.use_type,
+            "Suitability Class": translate_class(r.suitability_class).upper(),
             "DLI Crit": f"{r.DLI_crit:.1f} / min {r.DLI_min:.1f} mol",
-            "Homogenität": r.homogeneity_class.upper(),
+            "Homogeneity": r.homogeneity_class.upper(),
             "Confidence": translate_confidence(r.confidence_level).upper(),
             "Limiting": r.limiting_factor,
             "ID": r.crop_id
         })
     df_med = pd.DataFrame(med_data)
 
-    st.subheader("Filter & Übersicht")
+    st.subheader("Filter & Overview")
     # Filters
-    filters = ["Alle", "Arzneipflanzen", "Gewürzpflanzen", "hohe Lichtpräferenz", "moderate Lichtpräferenz", "Blüh-/Sonderkulturen"]
-    sel_filter = st.radio("Kulturgruppe filtern:", filters, horizontal=True)
+    filters = ["All", "Medicinal Plants", "Spice Plants", "High Light Preference", "Moderate Light Preference", "Flowering / Special"]
+    sel_filter = st.radio("Filter Crop Group:", filters, horizontal=True)
 
-    if sel_filter != "Alle":
+    if sel_filter != "All":
         filtered_ids = []
         for r in crop_results_med:
             cg = MED_CROP_REGISTRY[r.crop_id].crop_group
             ut = MED_CROP_REGISTRY[r.crop_id].use_type
-            if sel_filter == "Arzneipflanzen" and "Arznei" in ut: filtered_ids.append(r.crop_id)
-            elif sel_filter == "Gewürzpflanzen" and "Gewürz" in ut: filtered_ids.append(r.crop_id)
-            elif sel_filter == "hohe Lichtpräferenz" and "high_light" in cg: filtered_ids.append(r.crop_id)
-            elif sel_filter == "moderate Lichtpräferenz" and "moderate_light" in cg: filtered_ids.append(r.crop_id)
-            elif sel_filter == "Blüh-/Sonderkulturen" and ("flowering" in cg or "special" in cg): filtered_ids.append(r.crop_id)
+            if sel_filter == "Medicinal Plants" and "Arznei" in ut: filtered_ids.append(r.crop_id)
+            elif sel_filter == "Spice Plants" and "Gewürz" in ut: filtered_ids.append(r.crop_id)
+            elif sel_filter == "High Light Preference" and "high_light" in cg: filtered_ids.append(r.crop_id)
+            elif sel_filter == "Moderate Light Preference" and "moderate_light" in cg: filtered_ids.append(r.crop_id)
+            elif sel_filter == "Flowering / Special" and ("flowering" in cg or "special" in cg): filtered_ids.append(r.crop_id)
         df_med_disp = df_med[df_med["ID"].isin(filtered_ids)]
     else:
         df_med_disp = df_med
 
     def color_med_class(val):
         val_upper = str(val).upper()
-        if "GEEIGNET" in val_upper and "SONDER" not in val_upper and "PRÜFUNG" not in val_upper:
-            return 'color: #065f46; font-weight: 700;'
-        elif "PRÜFUNG" in val_upper or "GRENZWERTIG" in val_upper or "FELDVERSUCH" in val_upper:
-            return 'color: #b45309; font-weight: 700;'
-        else:
+        if "UNSUITABLE" in val_upper:
             return 'color: #b91c1c; font-weight: 700;'
+        elif "SUITABLE" in val_upper and "TRIAL" not in val_upper and "MARGINAL" not in val_upper:
+            return 'color: #065f46; font-weight: 700;'
+        else:
+            return 'color: #b45309; font-weight: 700;'
 
-    styler = df_med_disp.drop(columns=["ID"]).style.applymap(color_med_class, subset=['Klasse']) if hasattr(df_med_disp.style, "applymap") else df_med_disp.drop(columns=["ID"]).style.map(color_med_class, subset=['Klasse'])
+    styler = df_med_disp.drop(columns=["ID"]).style.applymap(color_med_class, subset=['Suitability Class']) if hasattr(df_med_disp.style, "applymap") else df_med_disp.drop(columns=["ID"]).style.map(color_med_class, subset=['Suitability Class'])
     st.dataframe(styler, use_container_width=True, hide_index=True)
 
     c_exp_csv1, _ = st.columns(2)
@@ -1148,11 +1163,11 @@ with tab_med:
 
     st.divider()
 
-    st.subheader("Kultur-Detailanalyse")
-    disp_names = df_med_disp["Kultur"].tolist()
+    st.subheader("Crop Detail Analysis")
+    disp_names = df_med_disp["Crop"].tolist()
     if disp_names:
-        sel_crop_name = st.selectbox("Sonderkultur auswählen:", disp_names)
-        sel_row = df_med[df_med["Kultur"] == sel_crop_name].iloc[0]
+        sel_crop_name = st.selectbox("Select Special Crop:", disp_names)
+        sel_row = df_med[df_med["Crop"] == sel_crop_name].iloc[0]
         sel_res = next(r for r in crop_results_med if r.crop_id == sel_row["ID"])
         sel_crop = MED_CROP_REGISTRY[sel_res.crop_id]
 
@@ -1160,28 +1175,28 @@ with tab_med:
         with c_med1:
             st.markdown(f"### {sel_res.crop_name}")
             st.markdown(f"*{sel_res.botanical_name}*")
-            st.write(f"**Nutzung:** {sel_res.use_type}")
-            st.write(f"**Gruppe:** {sel_res.crop_group.replace('_', ' ').title()}")
-            st.write(f"**Evidenzklasse:** Tier {sel_res.evidence_tier} ({translate_confidence(sel_res.confidence_level)})")
+            st.write(f"**Use Type:** {sel_res.use_type}")
+            st.write(f"**Group:** {sel_res.crop_group.replace('_', ' ').title()}")
+            st.write(f"**Evidence Tier:** Tier {sel_res.evidence_tier} ({translate_confidence(sel_res.confidence_level)})")
         with c_med2:
-            st.markdown(f"**Kritische Phase (Monate):** {', '.join(map(str, sel_res.critical_months))}")
-            st.write(f"**Relative PAR (Jahr):** {sel_res.r_ann*100:.1f} %")
-            st.write(f"**Relative PAR (krit.):** {sel_res.r_crit*100:.1f} %")
-            st.write(f"**Mittlere DLI (krit.):** {sel_res.DLI_crit:.1f} mol/m²/d (Ziel: {sel_res.DLI_target})")
-            st.write(f"**Peak PPFD (krit.):** {sel_res.peak_PPFD_crit:.0f} µmol/m²/s (Min: {sel_res.peak_PPFD_min})")
-            st.write(f"**Lichtheterogenität (CV):** {sel_res.cv_PAR*100:.1f}% ({sel_res.homogeneity_class})")
+            st.markdown(f"**Critical Phase (Months):** {', '.join(map(str, sel_res.critical_months))}")
+            st.write(f"**Relative PAR (Annual):** {sel_res.r_ann*100:.1f} %")
+            st.write(f"**Relative PAR (Crit):** {sel_res.r_crit*100:.1f} %")
+            st.write(f"**Mean DLI (Crit):** {sel_res.DLI_crit:.1f} mol/m²/d (Target: {sel_res.DLI_target})")
+            st.write(f"**Peak PPFD (Crit):** {sel_res.peak_PPFD_crit:.0f} µmol/m²/s (Min: {sel_res.peak_PPFD_min})")
+            st.write(f"**Light Homogeneity (CV):** {sel_res.cv_PAR*100:.1f}% ({sel_res.homogeneity_class})")
         with c_med3:
-            st.markdown("**Bewertung:**")
-            st.info(sel_res.explanation_de)
+            st.markdown("**Evaluation:**")
+            st.info(sel_res.explanation_en)
             if sel_res.warning_text:
                 st.warning(sel_res.warning_text)
 
-        st.markdown("**Literatur- und Proxy-Quellen:**")
+        st.markdown("**Literature & Proxy Sources:**")
         for src in sel_res.source_references:
             st.markdown(f"- {src}")
             
         # Chart
-        st.markdown("**Jahresverlauf Lichtangebot (PAR) vs. Bedarf**")
+        st.markdown("**Annual Light Availability (PAR) vs. Target**")
         m_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         m_agri = metrics['monthly_par_agri']
         m_open = metrics['monthly_par_open']

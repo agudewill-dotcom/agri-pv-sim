@@ -63,7 +63,7 @@ class MedicinalSuitabilityResult:
     confidence_level: str
     evidence_tier: str
     limiting_factor: str
-    explanation_de: str
+    explanation_en: str
     warning_text: str
     source_references: List[str]
 
@@ -153,41 +153,41 @@ def evaluate_medicinal_crop(
 
     # 3. Base Classification
     if r_ann >= crop.r_ann_target and r_crit >= crop.r_crit_target and DLI_crit >= crop.DLI_target:
-        base_class = "geeignet"
+        base_class = "suitable"
     elif r_ann >= crop.r_ann_min and r_crit >= crop.r_crit_min and DLI_crit >= crop.DLI_min:
-        base_class = "grenzwertig"
+        base_class = "marginal"
     else:
-        base_class = "ungeeignet"
+        base_class = "unsuitable"
 
     limiting_factor = ""
     warning_text = crop.warning_text
 
     # 4. Homogeneity Class
     if cv_PAR <= 0.15:
-        homogeneity_class = "gut"
+        homogeneity_class = "good"
     elif cv_PAR <= 0.25:
-        homogeneity_class = "moderat"
+        homogeneity_class = "moderate"
         if "moderate" not in warning_text.lower():
-            warning_text += " Moderate Lichtheterogenität."
+            warning_text += " Moderate light heterogeneity."
     else:
-        homogeneity_class = "kritisch"
+        homogeneity_class = "critical"
 
     # 5. Peak PPFD Downgrade
     if peak_PPFD_crit < crop.peak_PPFD_min:
-        if base_class == "geeignet":
-            base_class = "grenzwertig"
-        elif base_class == "grenzwertig":
-            base_class = "ungeeignet"
-        limiting_factor = "zu niedrige Spitzen-PAR / PPFD in der kritischen Phase"
+        if base_class == "suitable":
+            base_class = "marginal"
+        elif base_class == "marginal":
+            base_class = "unsuitable"
+        limiting_factor = "Peak PAR/PPFD too low in critical phase"
     
     # 6. Homogeneity Downgrade
     if cv_PAR > 0.25:
-        if base_class == "geeignet":
-            base_class = "grenzwertig"
-        elif base_class == "grenzwertig":
-            base_class = "ungeeignet"
+        if base_class == "suitable":
+            base_class = "marginal"
+        elif base_class == "marginal":
+            base_class = "unsuitable"
         if not limiting_factor:
-            limiting_factor = "zu heterogene Lichtverteilung"
+            limiting_factor = "Light distribution too heterogeneous"
 
     # 7. High-Light Medicinal Crop Rule
     high_light_groups = [
@@ -198,36 +198,36 @@ def evaluate_medicinal_crop(
     ]
     if crop.crop_group in high_light_groups:
         if r_ann < crop.r_ann_min or r_crit < crop.r_crit_min:
-            base_class = "ungeeignet"
+            base_class = "unsuitable"
         elif r_ann < crop.r_ann_target:
-            if base_class == "geeignet":
-                base_class = "grenzwertig / agronomische Prüfung erforderlich"
+            if base_class == "suitable":
+                base_class = "marginal / agronomic trial required"
     
     # 8. Evidence Rule Formatting
     final_class = base_class
     if "C" in crop.evidence_tier:
-        if final_class == "geeignet":
-            final_class = "geeignet als Sonder-Hauptackerfrucht mit agronomischer Prüfung"
-        elif final_class == "grenzwertig":
-            final_class = "grenzwertig / agronomische Prüfung erforderlich"
+        if final_class == "suitable":
+            final_class = "suitable as special crop with agronomic trial"
+        elif final_class == "marginal":
+            final_class = "marginal / agronomic trial required"
     if "D" in crop.evidence_tier:
-        if final_class != "ungeeignet":
-            final_class = "nur mit Feldversuch / Abnehmernachweis"
+        if final_class != "unsuitable":
+            final_class = "only with field trial / market proof"
 
     # 9. Explanation Generation
     explanation = (
-        f"{crop.display_name} wird als {final_class} eingestuft. "
-        f"Die relative Jahres-PAR beträgt {r_ann*100:.1f} %, "
-        f"die PAR im kritischen Zeitraum {crop.critical_months} beträgt {r_crit*100:.1f} %, "
-        f"und die mittlere DLI in der kritischen Phase liegt bei {DLI_crit:.1f} mol/m²/d. "
-        f"Die Einstufung basiert auf {crop.source_group}. Da für diese Kultur keine robuste artspezifische Agri-PV-PAR-Ertragskurve vorliegt, "
-        f"wird die Bewertung mit Confidence {crop.confidence_default} ausgegeben."
+        f"{crop.display_name} is classified as {final_class}. "
+        f"The relative annual PAR is {r_ann*100:.1f}%, "
+        f"PAR in critical period {crop.critical_months} is {r_crit*100:.1f}%, "
+        f"and mean DLI in critical phase is {DLI_crit:.1f} mol/m²/d. "
+        f"Classification based on {crop.source_group}. Since no robust species-specific Agri-PV PAR curve is available, "
+        f"this evaluation is provided with confidence level '{crop.confidence_default}'."
     )
 
-    if not limiting_factor and final_class != "ungeeignet":
-        limiting_factor = "keine (Werte im agronomisch plausiblen Bereich)"
+    if not limiting_factor and final_class != "unsuitable":
+        limiting_factor = "none (values within agronomically plausible range)"
     elif not limiting_factor:
-        limiting_factor = "unzureichende PAR / DLI für diese Kulturgruppe"
+        limiting_factor = "insufficient PAR / DLI for this crop group"
 
     sources = [f"{s}: {MED_SOURCES_REGISTRY.get(s, {}).get('title', 'Ref')}" for s in crop.source_references]
 
@@ -251,7 +251,7 @@ def evaluate_medicinal_crop(
         confidence_level=crop.confidence_default,
         evidence_tier=crop.evidence_tier,
         limiting_factor=limiting_factor,
-        explanation_de=explanation,
+        explanation_en=explanation,
         warning_text=warning_text.strip(),
         source_references=sources
     )
@@ -281,9 +281,9 @@ def evaluate_all_medicinal_crops(
     # Sort: put best suited first, then by r_ann
     def sort_key(r):
         score = 0
-        if "geeignet" in r.suitability_class: score = 3
-        elif "grenzwertig" in r.suitability_class: score = 2
-        elif "Feldversuch" in r.suitability_class: score = 1
+        if "suitable" in r.suitability_class: score = 3
+        elif "marginal" in r.suitability_class: score = 2
+        elif "trial" in r.suitability_class: score = 1
         return (score, r.r_ann)
 
     results.sort(key=sort_key, reverse=True)

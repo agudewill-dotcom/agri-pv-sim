@@ -22,7 +22,7 @@ def test_salbei_not_suitable_at_low_r_ann():
         cv_PAR=0.10
     )
     assert res.r_ann == 0.60
-    assert "ungeeignet" in res.suitability_class
+    assert "unsuitable" in res.suitability_class
 
 def test_echinacea_marginal_at_065():
     echinacea = MED_CROP_REGISTRY["echinacea_purpurea"]
@@ -36,7 +36,7 @@ def test_echinacea_marginal_at_065():
         peak_PPFD_crit=600.0,
         cv_PAR=0.10
     )
-    assert "ungeeignet" in res.suitability_class  # Since r_ann < 0.75
+    assert "unsuitable" in res.suitability_class  # Since r_ann < 0.75
 
 def test_kamille_suitable_if_dli_sufficient():
     kamille = MED_CROP_REGISTRY["echte_kamille"]
@@ -51,7 +51,7 @@ def test_kamille_suitable_if_dli_sufficient():
         cv_PAR=0.10
     )
     assert res.r_ann == 0.85
-    assert res.suitability_class == "geeignet als Sonder-Hauptackerfrucht mit agronomischer Prüfung"
+    assert res.suitability_class == "suitable as special crop with agronomic trial"
     assert "C" in kamille.evidence_tier
 
 def test_evidence_tier_c_never_sicher_geeignet():
@@ -67,9 +67,9 @@ def test_evidence_tier_c_never_sicher_geeignet():
                 peak_PPFD_crit=1000.0,
                 cv_PAR=0.05
             )
-            assert "sicher geeignet" not in res.suitability_class
+            assert res.suitability_class != "suitable"
             if cid == "kapuzinerkresse":
-                assert "Feldversuch" in res.suitability_class or "Prüfung" in res.suitability_class
+                assert "trial" in res.suitability_class
 
 def test_kapuzinerkresse_warning():
     kap = MED_CROP_REGISTRY["kapuzinerkresse"]
@@ -83,7 +83,7 @@ def test_kapuzinerkresse_warning():
         peak_PPFD_crit=700.0,
         cv_PAR=0.10
     )
-    assert "Feldversuch" in res.suitability_class
+    assert "trial" in res.suitability_class
     assert "Nicht als klassische deutsche Hauptackerfrucht validiert" in res.warning_text
 
 def test_homogeneity_penalty():
@@ -99,9 +99,9 @@ def test_homogeneity_penalty():
         cv_PAR=0.30  # > 0.25
     )
     # Original would be geeignet -> downgrade to grenzwertig
-    assert "grenzwertig" in res.suitability_class
-    assert res.limiting_factor == "zu heterogene Lichtverteilung"
-    assert res.homogeneity_class == "kritisch"
+    assert "marginal" in res.suitability_class
+    assert res.limiting_factor == "Light distribution too heterogeneous"
+    assert res.homogeneity_class == "critical"
 
 def test_peak_ppfd_penalty():
     kamille = MED_CROP_REGISTRY["echte_kamille"]
@@ -115,8 +115,8 @@ def test_peak_ppfd_penalty():
         peak_PPFD_crit=500.0, # min is 600
         cv_PAR=0.10
     )
-    assert "grenzwertig" in res.suitability_class
-    assert res.limiting_factor == "zu niedrige Spitzen-PAR / PPFD in der kritischen Phase"
+    assert "marginal" in res.suitability_class
+    assert res.limiting_factor == "Peak PAR/PPFD too low in critical phase"
 
 if __name__ == "__main__":
     tests = [
