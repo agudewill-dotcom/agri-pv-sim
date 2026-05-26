@@ -1040,18 +1040,18 @@ with tab_crops:
             
         with cols[idx]:
             st.markdown(f"""
-            <div class="crop-card {card_class}">
-                <h3 style="margin:0; color:#0f172a;">{crop.name_en}</h3>
-                <div style="font-size:0.9rem; color:#64748b; font-style:italic; margin-bottom:8px;">(German: {crop.name_de})</div>
-                <div class="badge {badge_class}">{translate_class(r.classification)}</div>
-                <div style="margin-top:12px; font-size:1.6rem; font-weight:800; color:#0f172a;">Score: {r.score*100:.1f}%</div>
-                <p style="font-size:0.9rem; color:#334155; margin-top:8px; line-height:1.4;">{ENGLISH_CROP_NOTES.get(r.crop_id, r.notes_de)}</p>
-                {warning_html}
-                <div class="limiting-box">
-                    <strong>Limiting Factor:</strong> {r.limiting_factor.replace("_", " ").upper()}<br/>
-                    <strong>Evidence Tier:</strong> {r.evidence_tier} ({translate_confidence(r.confidence).upper()} CONFIDENCE)
-                </div>
-            </div>
+<div class="crop-card {card_class}">
+<h3 style="margin:0; color:#0f172a;">{crop.name_en}</h3>
+<div style="font-size:0.9rem; color:#64748b; font-style:italic; margin-bottom:8px;">(German: {crop.name_de})</div>
+<div class="badge {badge_class}">{translate_class(r.classification)}</div>
+<div style="margin-top:12px; font-size:1.6rem; font-weight:800; color:#0f172a;">Score: {r.score*100:.1f}%</div>
+<p style="font-size:0.9rem; color:#334155; margin-top:8px; line-height:1.4;">{ENGLISH_CROP_NOTES.get(r.crop_id, r.notes_de)}</p>
+{warning_html}
+<div class="limiting-box">
+<strong>Limiting Factor:</strong> {r.limiting_factor.replace("_", " ").upper()}<br/>
+<strong>Evidence Tier:</strong> {r.evidence_tier} ({translate_confidence(r.confidence).upper()} CONFIDENCE)
+</div>
+</div>
             """, unsafe_allow_html=True)
             
             # Expander details
