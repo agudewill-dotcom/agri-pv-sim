@@ -584,66 +584,63 @@ with d2:
     )
 
 # --- NAVIGATION ADD-ON LINK BANNER ---
-def get_registered_page(target_keyword, default_path):
-    try:
-        from streamlit.source_util import get_pages
-        try:
-            pages = get_pages()
-        except TypeError:
-            pages = get_pages("app.py")
-            
-        for page_info in pages.values():
-            script_path = page_info.get("script_path", "")
-            if target_keyword in script_path.replace("\\", "/"):
-                return script_path
-    except Exception:
-        pass
-    return default_path
-
 st.divider()
-st.subheader("🧭 Detailed System Add-On Pages (Click below to navigate)")
+st.subheader("🧭 Detailed System Add-On Pages (Click anywhere on the cards below to navigate)")
 n_col1, n_col2, n_col3 = st.columns(3)
 
 with n_col1:
     st.markdown("""
-    <div class="info-container" style="min-height: 200px; border-top: 4px solid #3b82f6; margin-bottom: 10px;">
-        <h4 style="margin-top:0; color:#1e3a8a;">🌾 High-Fidelity Light Results</h4>
-        <p style="font-size:0.9rem; color:#475569; min-height:80px;">
-            Examine spatial shadow profiles, 2D irradiance heatmaps, and hourly diffuse sky factors. 
-            Visualize the Hottel periodic sky blockage and ground albedo reflection models.
-        </p>
-    </div>
+    <a href="/Light_Results" target="_self" style="text-decoration: none; color: inherit;">
+        <div class="info-container" style="min-height: 220px; border-top: 4px solid #3b82f6; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s ease;">
+            <h4 style="margin-top:0; color:#1e3a8a;">🌾 High-Fidelity Light Results</h4>
+            <p style="font-size:0.9rem; color:#475569; min-height:80px; margin-bottom:10px;">
+                Examine spatial shadow profiles, 2D irradiance heatmaps, and hourly diffuse sky factors. 
+                Visualize the Hottel periodic sky blockage and ground albedo reflection models.
+            </p>
+            <div style="font-size:0.85rem; font-weight:700; color:#2563eb; border-top:1px solid #e2e8f0; padding-top:8px; margin-top:10px;">→ Click to open page</div>
+        </div>
+    </a>
     """, unsafe_allow_html=True)
-    st.page_link(get_registered_page("1_Light_Results", "pages/1_Light_Results.py"), label="Open Light Results Page", icon="🌾")
 
 with n_col2:
     top_3 = [r for r in crop_results if r.classification in {"sehr gut geeignet", "geeignet"}][:3]
     top_3_names = ", ".join([r.crop_name_de for r in top_3]) if top_3 else "Luzerne"
     
     st.markdown(f"""
-    <div class="info-container" style="min-height: 200px; border-top: 4px solid #10b981; margin-bottom: 10px;">
-        <h4 style="margin-top:0; color:#064e3b;">🌱 Agronomic Suitability</h4>
-        <p style="font-size:0.9rem; color:#475569; min-height:80px;">
-            Rigorous multi-component suitability scoring for 11 Central European field crops. 
-            Explore crop-specific growing calendars, confidence tiers, and limiting factors.
-        </p>
-        <div style="font-size:0.85rem; font-weight:700; color:#047857;">Top Crops: {top_3_names}</div>
-    </div>
+    <a href="/Kultureignung" target="_self" style="text-decoration: none; color: inherit;">
+        <div class="info-container" style="min-height: 220px; border-top: 4px solid #10b981; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s ease;">
+            <h4 style="margin-top:0; color:#064e3b;">🌱 Agronomic Suitability</h4>
+            <p style="font-size:0.9rem; color:#475569; min-height:80px; margin-bottom:10px;">
+                Rigorous multi-component suitability scoring for 11 Central European field crops. 
+                Explore crop-specific growing calendars, confidence tiers, and limiting factors.
+            </p>
+            <div style="font-size:0.85rem; font-weight:700; color:#047857; margin-bottom:5px;">Top Crops: {top_3_names}</div>
+            <div style="font-size:0.85rem; font-weight:700; color:#10b981; border-top:1px solid #e2e8f0; padding-top:8px; margin-top:10px;">→ Click to open page</div>
+        </div>
+    </a>
     """, unsafe_allow_html=True)
-    st.page_link(get_registered_page("2_Kultureignung", "pages/2_Kultureignung.py"), label="Open Agronomic Suitability Page", icon="🌱")
 
 with n_col3:
     st.markdown("""
-    <div class="info-container" style="min-height: 200px; border-top: 4px solid #f59e0b; margin-bottom: 10px;">
-        <h4 style="margin-top:0; color:#78350f;">⚡ Electrical & Thermal Modeling</h4>
-        <p style="font-size:0.9rem; color:#475569; min-height:80px;">
-            Analyze wind-corrected cell temperatures using the Faiman (2008) model. 
-            Observe temperature-dependent efficiency coefficients, monthly specific generation, and backsheet ventilation.
-        </p>
-    </div>
+    <a href="/Electrical_Results" target="_self" style="text-decoration: none; color: inherit;">
+        <div class="info-container" style="min-height: 220px; border-top: 4px solid #f59e0b; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s ease;">
+            <h4 style="margin-top:0; color:#78350f;">⚡ Electrical & Thermal Modeling</h4>
+            <p style="font-size:0.9rem; color:#475569; min-height:80px; margin-bottom:10px;">
+                Analyze wind-corrected cell temperatures using the Faiman (2008) model. 
+                Observe temperature-dependent efficiency coefficients, monthly specific generation, and backsheet ventilation.
+            </p>
+            <div style="font-size:0.85rem; font-weight:700; color:#ea580c; border-top:1px solid #e2e8f0; padding-top:8px; margin-top:10px;">→ Click to open page</div>
+        </div>
+    </a>
     """, unsafe_allow_html=True)
-    st.page_link(get_registered_page("3_Electrical_Results", "pages/3_Electrical_Results.py"), label="Open Electrical Results Page", icon="⚡")
 
 st.write("")
-st.page_link(get_registered_page("4_DIN_Evidence", "pages/4_DIN_Evidence.py"), label="📋 Open DIN SPEC 91434 & AwSV Regulatory Permit Page", icon="📋")
+st.markdown("""
+<a href="/DIN_Evidence" target="_self" style="text-decoration: none; color: inherit;">
+    <div style="background-color: #f1f5f9; border-left: 6px solid #475569; padding: 18px 24px; border-radius: 8px; cursor: pointer; transition: transform 0.2s ease; margin-bottom:20px;">
+        <strong style="color: #1e293b; font-size: 1.05rem;">📋 Open DIN SPEC 91434 & AwSV Regulatory Permit Page</strong>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #475569;">Click here to review compliance checklists, AwSV water safety guidelines, and generate PDF/CSV reports.</p>
+    </div>
+</a>
+""", unsafe_allow_html=True)
 st.write("")
