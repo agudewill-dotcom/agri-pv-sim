@@ -151,15 +151,33 @@ def evaluate_medicinal_crop(
         if DLI_crit is None: DLI_crit = 0.0
         if peak_PPFD_crit is None: peak_PPFD_crit = 0.0
 
+    def score_metric(val, min_val, target_val):
+        if target_val <= min_val: return 1.0 if val >= target_val else 0.0
+        if val >= target_val: return 1.0
+        if val < min_val: return max(0.0, (val / min_val) * 0.4) if min_val > 0 else 0.0
+        return 0.4 + 0.6 * ((val - min_val) / (target_val - min_val))
+
+    s_ann = score_metric(r_ann, crop.r_ann_min, crop.r_ann_target)
+    s_crit = score_metric(r_crit, crop.r_crit_min, crop.r_crit_target)
+    s_dli = score_metric(DLI_crit, crop.DLI_min, crop.DLI_target)
+    
+    final_score = min(s_ann, s_crit, s_dli)
+
     # 3. Base Classification
-    if r_ann >= crop.r_ann_target and r_crit >= crop.r_crit_target and DLI_crit >= crop.DLI_target:
+    if final_score >= 0.65:
         base_class = "suitable"
-    elif r_ann >= crop.r_ann_min and r_crit >= crop.r_crit_min and DLI_crit >= crop.DLI_min:
+    elif final_score >= 0.45:
         base_class = "marginal"
     else:
         base_class = "unsuitable"
 
     limiting_factor = ""
+    
+    if final_score < 1.0:
+        if s_ann == final_score: limiting_factor = "Sub-optimal Annual PAR"
+        elif s_crit == final_score: limiting_factor = "Sub-optimal PAR in critical phase"
+        elif s_dli == final_score: limiting_factor = "Sub-optimal DLI"
+
     warning_text = crop.warning_text
 
     # 4. Homogeneity Class
@@ -189,20 +207,7 @@ def evaluate_medicinal_crop(
         if not limiting_factor:
             limiting_factor = "Light distribution too heterogeneous"
 
-    # 7. High-Light Medicinal Crop Rule
-    high_light_groups = [
-        "medicinal_spice_high_light",
-        "medicinal_flowering_high_light",
-        "spice_seed_high_light",
-        "medicinal_seed_high_light"
-    ]
-    if crop.crop_group in high_light_groups:
-        if r_ann < crop.r_ann_min or r_crit < crop.r_crit_min:
-            base_class = "unsuitable"
-        elif r_ann < crop.r_ann_target:
-            if base_class == "suitable":
-                base_class = "marginal / agronomic trial required"
-    
+
     # 8. Evidence Rule Formatting
     final_class = base_class
     if "C" in crop.evidence_tier:
