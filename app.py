@@ -749,16 +749,15 @@ with tab_crops:
         st.plotly_chart(fig_groups, use_container_width=True)
 
     with col_right:
-        st.subheader("DIN SPEC 91434 Regulatory Summary")
+        st.subheader("Suitability Class Explanation")
         st.markdown("""
         <div class="din-box" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; font-size: 0.92rem; color: #334155; margin-bottom: 20px;">
-            <h4 style="margin-top: 0; color: #1e3a8a; font-family: 'Outfit';">Category II Dual-Use Plausibility</h4>
-            <p>Under Category II of the German <strong>DIN SPEC 91434</strong> framework, agricultural land use must remain the primary activity beneath elevated PV installations.</p>
+            <h4 style="margin-top: 0; color: #1e3a8a; font-family: 'Outfit';">Suitability Class</h4>
             <p>Crops are classified based on standard agrivoltaic trial evidence, shade tolerance, and site light levels:</p>
             <ul style="padding-left: 20px; margin-top: 5px;">
-                <li><span style="color: #065f46; font-weight: 700;">● PLAUSIBEL (Plausible)</span>: Field-tested crops highly suitable as agricultural main use under modules.</li>
-                <li><span style="color: #b45309; font-weight: 700;">● PRÜFPFLICHTIG (Audit Required)</span>: Niche or special crops requiring an agricultural contract or agronomic validation.</li>
-                <li><span style="color: #b91c1c; font-weight: 700;">● NICHT EMPFOHLEN (Not Recommended)</span>: High-light crops with severe expected yield losses under shaded designs.</li>
+                <li><span style="color: #065f46; font-weight: 700;">● GEEIGNET (Suitable)</span>: Field-tested crops highly suitable for growth under modules with minimal yield loss.</li>
+                <li><span style="color: #b45309; font-weight: 700;">● GRENZWERTIG (Marginal / Audit Req.)</span>: Crops facing moderate yield losses or lacking direct PV trial evidence. Agronomic validation recommended.</li>
+                <li><span style="color: #b91c1c; font-weight: 700;">● UNGEEIGNET (Unsuitable)</span>: High-light crops with severe expected yield losses under shaded designs.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
