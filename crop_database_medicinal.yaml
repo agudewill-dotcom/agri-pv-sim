@@ -16,7 +16,7 @@ echte_kamille:
   confidence_default: "low-medium"
   source_group: "light germination + long-day plant + Landolt L=4 hell + medicinal crop agronomy"
   source_references: ["Echte_Kamille_Licht"]
-  warning_text: "Keine robuste artspezifische Agri-PV-PAR-Ertragskurve. Bewertung über Lichtkeimung, Langtagcharakter, Lichtzahl und Anbauplausibilität."
+  warning_text: "No robust species-specific Agri-PV PAR yield curve. Evaluated via light germination, long-day characteristics, and ecological light values."
   notes_de: "Kamille ist als Arznei-Hauptackerfrucht plausibler als viele mediterrane Kräuter, sollte aber bei starker Verschattung oder hoher Lichtheterogenität nur mit Feldtest empfohlen werden."
 
 ringelblume:
@@ -36,7 +36,7 @@ ringelblume:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "flowering medicinal crop proxy"
-  warning_text: "Keine belastbare artspezifische Agri-PV-PAR-Kurve. Bewertung als Blüh-/Arzneipflanzen-Proxy."
+  warning_text: "No robust species-specific Agri-PV PAR yield curve. Evaluated as a flowering/medicinal plant proxy."
 
 borretsch:
   display_name: "Borretsch"
@@ -55,7 +55,7 @@ borretsch:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "pollinator/medicinal crop proxy"
-  warning_text: "Nur mit Abnehmer- und Feldnachweis als Hauptackerfrucht bewerten."
+  warning_text: "Should only be considered a main crop with buyer confirmation and field trial evidence."
 
 salbei:
   display_name: "Echter Salbei"
@@ -75,7 +75,7 @@ salbei:
   confidence_default: "low"
   source_group: "Landolt L=4 hell + Mediterranean dry/warm full-light ecology + medicinal cultivation proxy"
   source_references: ["Salbei_Licht"]
-  warning_text: "Salbei hat eine hohe Lichtpräferenz. Keine robuste artspezifische Agri-PV-PAR-Ertragskurve. Nur bei hoher Rest-PAR als Hauptkultur plausibel."
+  warning_text: "Sage has a high light preference. No robust species-specific Agri-PV PAR yield curve. Only plausible as a main crop with high residual PAR."
   notes_de: "Bei r_ann < 0.75 oder DLI_crit < 22 mol/m²/d höchstens grenzwertig ausgeben."
 
 echinacea_purpurea:
@@ -96,7 +96,7 @@ echinacea_purpurea:
   confidence_default: "low"
   source_group: "full sun / sun to light shade ecology + medicinal crop proxy"
   source_references: ["Echinacea_Licht"]
-  warning_text: "Echinacea ist lichtliebend. Keine robuste artspezifische Agri-PV-PAR-Ertragskurve. Nur bei hoher Rest-PAR und guter Homogenität als Hauptkultur plausibel."
+  warning_text: "Echinacea is light-demanding. No robust species-specific Agri-PV PAR yield curve. Only plausible as a main crop with high residual PAR and good light homogeneity."
 
 echinacea_angustifolia:
   display_name: "Schmalblättriger Sonnenhut"
@@ -115,7 +115,7 @@ echinacea_angustifolia:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "sun-loving Echinacea proxy"
-  warning_text: "Keine robuste Agri-PV-PAR-Kurve. Bewertung nur als Proxy."
+  warning_text: "No robust species-specific Agri-PV PAR yield curve. Evaluated only as a proxy."
 
 johanniskraut:
   display_name: "Echtes Johanniskraut"
@@ -134,7 +134,7 @@ johanniskraut:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "open habitat medicinal plant proxy"
-  warning_text: "Keine robuste artspezifische Agri-PV-PAR-Kurve. Hauptkultur nur bei ausreichender Sommer-PAR und Abnehmernachweis."
+  warning_text: "No robust species-specific Agri-PV PAR yield curve. Only plausible as a main crop with sufficient summer PAR and buyer confirmation."
 
 pfefferminze:
   display_name: "Pfefferminze"
@@ -153,7 +153,7 @@ pfefferminze:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "leafy medicinal crop proxy"
-  warning_text: "Für Biomasse möglich plausibler als für stark lichtabhängige Blütendrogen, aber keine robuste Agri-PV-PAR-Kurve."
+  warning_text: "Likely more plausible for biomass production than for highly light-dependent floral drugs, but lacks a robust Agri-PV PAR yield curve."
 
 zitronenmelisse:
   display_name: "Zitronenmelisse"
@@ -172,7 +172,7 @@ zitronenmelisse:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "leafy medicinal crop proxy"
-  warning_text: "Keine robuste artspezifische Agri-PV-PAR-Kurve. Feldtest und Vermarktung prüfen."
+  warning_text: "No robust species-specific Agri-PV PAR yield curve. Field trial and market viability should be verified."
 
 baldrian:
   display_name: "Baldrian"
@@ -191,7 +191,7 @@ baldrian:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "root medicinal crop / moderate-light proxy"
-  warning_text: "Baldrian nicht nur nach Licht bewerten; Wasser, Boden und Ernteverfahren sind kritisch."
+  warning_text: "Do not evaluate Valerian based solely on light; water, soil, and harvesting methods are critical factors."
 
 spitzwegerich:
   display_name: "Spitzwegerich"
@@ -210,7 +210,7 @@ spitzwegerich:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "robust herbaceous medicinal crop proxy"
-  warning_text: "Keine robuste Agri-PV-PAR-Kurve; eher als robuste Sonderkultur bewerten."
+  warning_text: "No robust species-specific Agri-PV PAR yield curve; should be evaluated as a resilient special crop."
 
 schafgarbe:
   display_name: "Schafgarbe"
@@ -229,7 +229,7 @@ schafgarbe:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "open grassland medicinal proxy"
-  warning_text: "Keine robuste artspezifische Agri-PV-PAR-Kurve. Bewertung als Proxy."
+  warning_text: "No robust species-specific Agri-PV PAR yield curve. Evaluated as a proxy."
 
 fenchel:
   display_name: "Fenchel"
@@ -248,7 +248,7 @@ fenchel:
   evidence_tier: "C"
   confidence_default: "low"
   source_group: "seed spice crop high-light proxy"
-  warning_text: "Samen-/Fruchtdrogen sind stärker licht- und wärmeabhängig. Abnehmer- und Feldnachweis erforderlich."
+  warning_text: "Seed/fruit drugs are highly dependent on light and heat. Buyer confirmation and field trial evidence required."
 
 kuemmel:
   display_name: "Kümmel"
@@ -321,4 +321,4 @@ kapuzinerkresse:
   evidence_tier: "C-D"
   confidence_default: "low"
   source_group: "special crop proxy"
-  warning_text: "Nicht als klassische deutsche Hauptackerfrucht validiert. Nur mit Abnehmer, Feldtest und Nutzungskonzept als Hauptnutzung bewerten."
+  warning_text: "Not validated as a classic German main crop. Evaluate as a main crop only with a buyer, field trial, and clear utilization concept."
