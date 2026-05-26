@@ -115,10 +115,10 @@ def calculate_dli_and_peak(hourly_par: pd.Series, critical_months: List[int]) ->
     daily_dli = (crit_data * 3600 / 1e6).groupby(crit_data.index.date).sum()
     mean_dli = daily_dli.mean()
     
-    # Peak PPFD: mean or median of hourly PAR between 11:00 and 14:00
+    # Peak PPFD: 90th percentile of hourly PAR between 11:00 and 14:00 to represent clear sky peaks
     peak_mask = crit_data.index.hour.isin([11, 12, 13, 14])
     peak_data = crit_data[peak_mask]
-    mean_peak_ppfd = peak_data.mean() if not peak_data.empty else 0.0
+    mean_peak_ppfd = peak_data.quantile(0.90) if not peak_data.empty else 0.0
     
     return float(mean_dli), float(mean_peak_ppfd)
 
