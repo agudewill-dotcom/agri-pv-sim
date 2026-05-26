@@ -329,11 +329,11 @@ ta_cell, ts_cell, delta_t, temp_bonus_pct = metrics['ta_cell'], metrics['ts_cell
 
 # --- NAVIGATION TABS ---
 tab_overview, tab_light, tab_crops, tab_elec, tab_din = st.tabs([
-    "📊 Executive Summary", 
-    "🌾 Light Results", 
-    "🌱 Crop Suitability", 
-    "⚡ Electrical & Thermal", 
-    "📋 DIN Spec & AwSV"
+    "Executive Summary", 
+    "Light Results", 
+    "Crop Suitability", 
+    "Electrical & Thermal", 
+    "DIN Spec & AwSV"
 ])
 
 
@@ -343,7 +343,7 @@ tab_overview, tab_light, tab_crops, tab_elec, tab_din = st.tabs([
 with tab_overview:
     st.markdown("""
     <div class="header-overview">
-        <h2 style="margin:0; font-weight:800; color:white;">📊 Strategic Overview Dashboard</h2>
+        <h2 style="margin:0; font-weight:800; color:white;">Strategic Overview Dashboard</h2>
         <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Physics-based technical validation comparing elevated mounting heights (2.10m) against standard configurations</p>
     </div>
     """, unsafe_allow_html=True)
@@ -431,7 +431,7 @@ with tab_overview:
 with tab_light:
     st.markdown("""
     <div class="header-light">
-        <h2 style="margin:0; font-weight:800; color:white;">🌾 High-Fidelity Light Results</h2>
+        <h2 style="margin:0; font-weight:800; color:white;">High-Fidelity Light Results</h2>
         <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Spatial Shadow Paths, 2D Irradiance Distributions, and Analytical View Factors</p>
     </div>
     """, unsafe_allow_html=True)
@@ -442,7 +442,7 @@ with tab_light:
     c_meta, c_heat = st.columns([1, 1.5])
     
     with c_meta:
-        st.subheader("📊 Comparative Sensor Profile")
+        st.subheader("Comparative Sensor Profile")
         st.markdown("Annual cumulative ground irradiance and PAR potential under the system:")
         st.table(pd.DataFrame([
             {"System": "Agri-PV (2.10m)", "Irradiance": f"{va:.0f} kWh/m²", "PAR": f"{pa:.0f} mol/m²"},
@@ -452,7 +452,7 @@ with tab_light:
         st.info(f"**Structural Blockage Factor:** 0.81m row blockage (SUNfarming rack geometry). Pitch: {config['pitch']:.2f}m. Modules: SF600-72N.")
         
     with c_heat:
-        st.subheader("🗺️ Light Intensity Heatmap (W/m² - Agri-PV)")
+        st.subheader("Light Intensity Heatmap (W/m² - Agri-PV)")
         h_data = res_a.groupby([res_a.index.month, res_a.index.hour])['g_g'].mean().unstack()
         h_data.index = m_names
         
@@ -469,7 +469,7 @@ with tab_light:
     st.divider()
     
     # Vector Shadow Paths
-    st.subheader("📐 Spatial Shadow Profile (Cross-Section)")
+    st.subheader("Spatial Shadow Profile (Cross-Section)")
     sp_col1, sp_col2 = st.columns([2, 1])
     
     with sp_col2:
@@ -524,14 +524,14 @@ with tab_light:
     with sp_col2:
         st.divider()
         st.markdown(f"**Solar Metadata ({sel_hour}:00 {sel_month})**")
-        st.write(f"☀️ Sun Elevation: **{selected_data['elevation']:.1f}°**")
+        st.write(f"Sun Elevation: **{selected_data['elevation']:.1f}°**")
         sh_len = shading.calculate_shadow_length(geo_a['top_edge_height'], selected_data['elevation'], selected_data['azimuth'], config['g_slope'], config['g_aspect'])
-        st.write(f"📏 Shadow Length: **{min(sh_len, 99.9):.2f} m**")
+        st.write(f"Shadow Length: **{min(sh_len, 99.9):.2f} m**")
         st.write("The cross-section visualizes the module's cast shadow stripe. Transparency (τ) and high elevated spacing prevent total ground darkness.")
         
     # Expandable formulas
     st.divider()
-    with st.expander("📝 Show Step-by-Step Physics Calculations"):
+    with st.expander("Show Step-by-Step Physics Calculations"):
         geo_a_calc = geometry.calculate_derived_geometry(15, length=5.63, clearance=2.10)
         geo_s_calc = geometry.calculate_derived_geometry(15, length=5.63, clearance=0.80)
         pw_a = geo_a_calc['projected_width']
@@ -582,13 +582,13 @@ with tab_light:
 with tab_crops:
     st.markdown("""
     <div class="header-crops">
-        <h2 style="margin:0; font-weight:800; color:white;">🌱 Agronomic Suitability Engine</h2>
+        <h2 style="margin:0; font-weight:800; color:white;">Agronomic Suitability Engine</h2>
         <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Literature-Backed Crop Compatibility Modeling and spatial micro-climate scoring</p>
     </div>
     """, unsafe_allow_html=True)
     
     # SECTION 1: DETAILED RANKING TABLE
-    st.subheader("📊 Farm-Average Crop Suitability Ranking")
+    st.subheader("Farm-Average Crop Suitability Ranking")
     st.markdown("All 11 arable crops sorted by composite suitability score based on farm-average light levels:")
     
     df_ranking = pd.DataFrame([
@@ -626,7 +626,7 @@ with tab_crops:
     st.divider()
     
     # SECTION 2: PREMIUM CELL-LEVEL SPATIAL CROP Explorer
-    st.subheader("🌾 Cell-Level Spatial Suitability Explorer (Micro-Climate)")
+    st.subheader("Cell-Level Spatial Suitability Explorer (Micro-Climate)")
     st.markdown("""
     Since the module rows shade some parts of the ground more than others, crop suitability changes across the pitch period.
     This Rigorous Spatial simulation models suitability at 11 separate cells across the row pitch period (from row-to-row spacing).
@@ -687,7 +687,7 @@ with tab_crops:
     st.plotly_chart(fig_spatial, use_container_width=True)
     
     st.info("""
-    💡 **Agronomic Insights from Spatial Profile:** 
+    **Agronomic Insights from Spatial Profile:** 
     Cereals like Wheat show high suitability in the row gap center (left & right) but drop significantly directly under the modules (shaded zone).
     Lucerne remains highly robust and suited across the entire row pitch. Maize is fully unsuited regardless of location.
     """)
@@ -695,7 +695,7 @@ with tab_crops:
     st.divider()
     
     # SECTION 3: TOP RECOMMENDED CROP DETAIL CARDS
-    st.subheader("🌱 Detailed Crop Recommendation Cards")
+    st.subheader("Detailed Crop Recommendation Cards")
     st.markdown("Detailed breakdown of the top recommended crops:")
     
     # Group crops by classification
@@ -726,32 +726,31 @@ with tab_crops:
             """, unsafe_allow_html=True)
             
             # Expander details
-            with st.expander(f"📖 View Agronomic Details for {crop.name_en}"):
+            with st.expander(f"View Agronomic Details for {crop.name_en}"):
                 st.markdown(f"**Evidence Literature Sources:**")
                 for src in r.sources:
                     st.markdown(f"- *{src}*")
                     
                 st.markdown(f"**Component Scoring Breakdown:**")
                 c_scores = r.component_scores
-                st.write(f"- 📆 Annual PAR Adequacy (A): **{c_scores['A']*100:.1f}%**")
-                st.write(f"- 📈 Seasonal PAR Sum (S): **{c_scores['S']*100:.1f}%**")
-                st.write(f"- 🗓️ Critical Phase DLI (C): **{c_scores['C']*100:.1f}%**")
-                st.write(f"- 🔲 Spatial Homogeneity (H): **{c_scores['H']*100:.1f}%**")
+                st.write(f"- Annual PAR Adequacy (A): **{c_scores['A']*100:.1f}%**")
+                st.write(f"- Seasonal PAR Sum (S): **{c_scores['S']*100:.1f}%**")
+                st.write(f"- Critical Phase DLI (C): **{c_scores['C']*100:.1f}%**")
+                st.write(f"- Spatial Homogeneity (H): **{c_scores['H']*100:.1f}%**")
                 
                 # Show growing calendar months
                 st.markdown(f"**Growing Season Calendar:**")
                 calendar_str = " | ".join([f"**{m}**" if m in crop.growing_months else f"{m}" for m in range(1, 13)])
-                st.markdown(f"Months (active in bold): `{calendar_str}`")
+                st.markdown(f"Months (active in bold): {calendar_str}")
                 
                 st.markdown(f"**Critical Light Sensitivity Window:**")
                 crit_str = " | ".join([f"**{m}**" if m in crop.critical_months else f"{m}" for m in range(1, 13)])
-                st.markdown(f"Months (critical in bold): `{crit_str}`")
+                st.markdown(f"Months (critical in bold): {crit_str}")
                 
-    # Bottom strategic message
     st.markdown("""
     <div style="background-color:#eff6ff; border-left:6px solid #3b82f6; padding:18px 24px; border-radius:8px; margin-top:20px;">
-        <strong style="color:#1e3a8a;">💡 Strategic Recommendation:</strong><br/>
-        For dynamic tracker systems (Category II under DIN SPEC 91434) with row pitches ≥ 8m, <strong>Lucerne</strong> 
+        <strong style="color:#1e3a8a;">Strategic Recommendation:</strong><br/>
+        For fixed-tilt high-clearance systems (Category II under DIN SPEC 91434) with row pitches ≥ 8m, <strong>Lucerne</strong> 
         and robust C3 cereals (such as <strong>Oats</strong> and <strong>Spelt</strong>) represent the most reliable agricultural choice. 
         They maintain robust yields under partial shading and show high spatial homogeneity across the layout.
     </div>
@@ -764,7 +763,7 @@ with tab_crops:
 with tab_elec:
     st.markdown("""
     <div class="header-elec">
-        <h2 style="margin:0; font-weight:800; color:white;">⚡ Electrical & Thermal Modeling</h2>
+        <h2 style="margin:0; font-weight:800; color:white;">Electrical & Thermal Modeling</h2>
         <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Specific Yield Calculations, Faiman Convective Ventilation, and Cell Temperature Analysis</p>
     </div>
     """, unsafe_allow_html=True)
@@ -800,7 +799,7 @@ with tab_elec:
     st.divider()
     
     # Seasonal performance analysis
-    st.subheader("📊 Seasonal Performance Analysis")
+    st.subheader("Seasonal Performance Analysis")
     
     m_comp = pd.DataFrame({"Agri-PV": res_a['g_g'], "Standard PV": res_s['g_g'], "Open Field": res_a['ghi']}).resample('ME').sum()/1000
     m_comp['Month'] = m_comp.index.month
@@ -840,7 +839,7 @@ with tab_elec:
     st.divider()
     
     # Log wind profile explanation
-    st.subheader("🌡️ Logarithmic Wind Profile & Faiman Convective Cooling")
+    st.subheader("Logarithmic Wind Profile & Faiman Convective Cooling")
     st.markdown("""
     Mounted height doesn't just dictate shadow pathing; it directly affects the module's thermal balance.
     Under the Faiman (2008) thermal model, module cell temperature is calculated as:
@@ -866,13 +865,13 @@ with tab_elec:
 with tab_din:
     st.markdown("""
     <div class="header-din">
-        <h2 style="margin:0; font-weight:800; color:white;">📋 DIN 91434 & Reporting</h2>
+        <h2 style="margin:0; font-weight:800; color:white;">DIN 91434 & Reporting</h2>
         <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Regulatory Compliance, German Environmental Water Containment (AwSV), and Reporting Exports</p>
     </div>
     """, unsafe_allow_html=True)
     
     # SECTION 1: DIN SPEC 91434 COMPLIANCE
-    st.subheader("📋 DIN SPEC 91434 Regulatory Assessment")
+    st.subheader("DIN SPEC 91434 Regulatory Assessment")
     st.markdown("Assess compliance for Category II systems (high-clearance PV installations supporting arable agriculture):")
     
     c_din1, c_din2 = st.columns(2)
@@ -880,12 +879,12 @@ with tab_din:
     with c_din1:
         st.markdown("""
         <div class="din-box">
-            <h4 style="margin-top:0; color:#1e293b;">⚖️ DIN SPEC 91434 Category II Criteria Checklist</h4>
+            <h4 style="margin-top:0; color:#1e293b;">DIN SPEC 91434 Category II Criteria Checklist</h4>
             <ul style="padding-left:20px; line-height:1.7; color:#334155;">
-                <li>✅ <strong>Arable tractor clearance:</strong> Minimum clearance height H ≥ 2.10m. (Applied clearance: <strong>2.10m</strong>)</li>
-                <li>✅ <strong>Crop Yield Safeguard:</strong> Model predicts remaining crop yields above 66% for C3 cereals and forage under nominal shading.</li>
-                <li>✅ <strong>Spatial Uniformity:</strong> Shading homogeneity (cv_PAR) is within tolerable limits (15%), preventing local wet zones or early ripening anomalies.</li>
-                <li>✅ <strong>Dual Land Use:</strong> Standard agricultural procedures remain feasible beneath panels.</li>
+                <li>[Compliant] <strong>Arable tractor clearance:</strong> Minimum clearance height H ≥ 2.10m. (Applied clearance: <strong>2.10m</strong>)</li>
+                <li>[Compliant] <strong>Crop Yield Safeguard:</strong> Model predicts remaining crop yields above 66% for C3 cereals and forage under nominal shading.</li>
+                <li>[Compliant] <strong>Spatial Uniformity:</strong> Shading homogeneity (cv_PAR) is within tolerable limits (15%), preventing local wet zones or early ripening anomalies.</li>
+                <li>[Compliant] <strong>Dual Land Use:</strong> Standard agricultural procedures remain feasible beneath panels.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -893,7 +892,7 @@ with tab_din:
     with c_din2:
         st.markdown(f"""
         <div class="din-box" style="background-color: #f0fdf4; border-color: #bbf7d0;">
-            <h4 style="margin-top:0; color:#166534;">📊 Regulatory Irradiance Bounds</h4>
+            <h4 style="margin-top:0; color:#166534;">Regulatory Irradiance Bounds</h4>
             <table style="width:100%; border-collapse:collapse; color:#166534; font-size:0.9rem;">
                 <tr style="border-bottom:1px solid #bbf7d0;"><td style="padding:8px 0;"><strong>Remaining PAR Sum:</strong></td><td style="text-align:right;"><strong>{metrics['remaining_par_pct']:.1f}%</strong></td></tr>
                 <tr style="border-bottom:1px solid #bbf7d0;"><td style="padding:8px 0;"><strong>Spatial CV (Homogeneity):</strong></td><td style="text-align:right;"><strong>{metrics['cv_par']*100:.1f}%</strong></td></tr>
@@ -904,14 +903,14 @@ with tab_din:
         """, unsafe_allow_html=True)
         
     # SECTION 2: GERMAN WATER LAW PERMIT REQUIREMENT (AwSV Containment)
-    st.subheader("🌊 AwSV Water Protection Containment (Retention Basins)")
+    st.subheader("AwSV Water Protection Containment (Retention Basins)")
     
     st.markdown("""
     <div class="law-box">
-        <h4 style="margin-top:0; font-family:'Outfit';">⚠️ Environmental Regulations according to AwSV (Germany)</h4>
+        <h4 style="margin-top:0; font-family:'Outfit';">Environmental Regulations according to AwSV (Germany)</h4>
         <p style="font-size:0.95rem; margin-bottom:14px; line-height:1.6;">
             For Agrivoltaic systems in Germany, strict environmental regulations apply regarding water-polluting substances 
-            (e.g., gear oils in trackers, transformer coolants). The system operator must strictly comply with the following regulations:
+            (e.g., lubricants, transformer coolants). The system operator must strictly comply with the following regulations:
         </p>
         <ul style="padding-left:20px; font-size:0.92rem; line-height:1.6;">
             <li><strong>Retention Systems:</strong> Installations must be equipped with a containment system that can retain any leaked water-polluting substances.</li>
@@ -926,7 +925,7 @@ with tab_din:
     st.divider()
     
     # SECTION 3: EXECUTIVE REPORT GENERATION (PDF) & DATA EXPORT (CSV)
-    st.subheader("📥 Executive Report & Data Export")
+    st.subheader("Executive Report & Data Export")
     st.markdown("Download the complete, comprehensive technical validation report or the hourly calculations data:")
     
     def generate_full_pdf(lat, lon, metrics, crop_results, config):
@@ -1002,7 +1001,7 @@ with tab_din:
         pdf.set_font("Helvetica", "B", 13)
         pdf.cell(0, 8, "3. Environmental Containment Requirements (AwSV)", ln=True)
         pdf.set_font("Helvetica", "", 10)
-        pdf.multi_cell(0, 5, "In accordance with German AwSV environmental permits, all machinery or electrical systems handling water-hazardous fluids (trackers, transformers) must be equipped with fluid-impermeable (flüssigkeitsundurchlässig) containment systems with no open drains. Volumes must be sized to retain the maximum hazardous quantity released during system failures. A double-walled design is an approved alternative. For Gefährdungsstufe D systems, retention must equal the total capacity of the largest isolated unit.")
+        pdf.multi_cell(0, 5, "In accordance with German AwSV environmental permits, all machinery or electrical systems handling water-hazardous fluids (lubricants, transformers) must be equipped with fluid-impermeable (flüssigkeitsundurchlässig) containment systems with no open drains. Volumes must be sized to retain the maximum hazardous quantity released during system failures. A double-walled design is an approved alternative. For Hazard Level D systems, retention must equal the total capacity of the largest isolated unit.")
         pdf.ln(5)
         
         pdf.set_font("Helvetica", "B", 11)
@@ -1021,7 +1020,7 @@ with tab_din:
     
     c_exp1, c_exp2 = st.columns(2)
     with c_exp1:
-        st.markdown("**📁 Technical Report (PDF)**")
+        st.markdown("**Technical Report (PDF)**")
         st.download_button(
             "Download Full Technical Report (PDF)",
             pdf_bytes,
@@ -1031,7 +1030,7 @@ with tab_din:
             key="din_pdf_download"
         )
     with c_exp2:
-        st.markdown("**📊 Raw Hourly Simulation Data (CSV)**")
+        st.markdown("**Raw Hourly Simulation Data (CSV)**")
         st.download_button(
             "Download Hourly Simulation Data (CSV)",
             export_a.to_csv().encode('utf-8'),
