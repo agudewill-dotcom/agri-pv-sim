@@ -395,9 +395,11 @@ def evaluate_crop(
     final_score = float(np.clip(final_score, 0.0, 1.0))
 
     # Base Suitability
-    if r_ann >= crop.r_ann_target and r_crit >= crop.r_crit_target:
+    if final_score >= 0.80:
+        suitability = "sehr gut geeignet"
+    elif final_score >= 0.65:
         suitability = "geeignet"
-    elif r_ann >= crop.r_ann_min and r_crit >= crop.r_crit_min:
+    elif final_score >= 0.45:
         suitability = "grenzwertig"
     else:
         suitability = "ungeeignet"
@@ -413,7 +415,7 @@ def evaluate_crop(
     # Standard DIN classification and warnings
     warning_text = crop.warning_text
     if crop.evidence_tier in ["A", "B"] and crop.crop_group in ["forage", "robust_cereal", "ancient_grain", "niche_crop"]:
-        if suitability == "geeignet":
+        if suitability in ["geeignet", "sehr gut geeignet"]:
             classification = "geeignet als Hauptkultur"
         elif suitability == "grenzwertig":
             classification = "grenzwertig"
@@ -422,7 +424,7 @@ def evaluate_crop(
     else:
         # Special crop floor check
         passes_floor = (comp_a >= 0.65) and (comp_c >= 0.65) and (comp_h >= 0.50)
-        if suitability == "geeignet" and passes_floor:
+        if suitability in ["geeignet", "sehr gut geeignet"] and passes_floor:
             if crop.crop_group == "special_crop":
                 classification = "geeignet als Sonderkultur / Blühstreifen"
             else:
