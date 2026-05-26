@@ -541,9 +541,14 @@ with tab_crops:
             return 'color: #92400e; font-weight: 600;'
         else:
             return 'color: #991b1b; font-weight: 600;'
-            
+    styler = df_ranking.style
+    if hasattr(styler, "map"):
+        styler = styler.map(color_class, subset=['Eignungsklasse'])
+    else:
+        styler = styler.applymap(color_class, subset=['Eignungsklasse'])
+        
     st.dataframe(
-        df_ranking.style.applymap(color_class, subset=['Eignungsklasse']),
+        styler,
         use_container_width=True,
         hide_index=True
     )
