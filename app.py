@@ -584,6 +584,22 @@ with d2:
     )
 
 # --- NAVIGATION ADD-ON LINK BANNER ---
+def get_registered_page(target_keyword, default_path):
+    try:
+        from streamlit.source_util import get_pages
+        try:
+            pages = get_pages()
+        except TypeError:
+            pages = get_pages("app.py")
+            
+        for page_info in pages.values():
+            script_path = page_info.get("script_path", "")
+            if target_keyword in script_path.replace("\\", "/"):
+                return script_path
+    except Exception:
+        pass
+    return default_path
+
 st.divider()
 st.subheader("🧭 Detailed System Add-On Pages (Click below to navigate)")
 n_col1, n_col2, n_col3 = st.columns(3)
@@ -598,7 +614,7 @@ with n_col1:
         </p>
     </div>
     """, unsafe_allow_html=True)
-    st.page_link("pages/1_Light_Results.py", label="Open Light Results Page", icon="🌾")
+    st.page_link(get_registered_page("1_Light_Results", "pages/1_Light_Results.py"), label="Open Light Results Page", icon="🌾")
 
 with n_col2:
     top_3 = [r for r in crop_results if r.classification in {"sehr gut geeignet", "geeignet"}][:3]
@@ -614,7 +630,7 @@ with n_col2:
         <div style="font-size:0.85rem; font-weight:700; color:#047857;">Top Crops: {top_3_names}</div>
     </div>
     """, unsafe_allow_html=True)
-    st.page_link("pages/2_Kultureignung.py", label="Open Agronomic Suitability Page", icon="🌱")
+    st.page_link(get_registered_page("2_Kultureignung", "pages/2_Kultureignung.py"), label="Open Agronomic Suitability Page", icon="🌱")
 
 with n_col3:
     st.markdown("""
@@ -626,8 +642,8 @@ with n_col3:
         </p>
     </div>
     """, unsafe_allow_html=True)
-    st.page_link("pages/3_Electrical_Results.py", label="Open Electrical Results Page", icon="⚡")
+    st.page_link(get_registered_page("3_Electrical_Results", "pages/3_Electrical_Results.py"), label="Open Electrical Results Page", icon="⚡")
 
 st.write("")
-st.page_link("pages/4_DIN_Evidence.py", label="📋 Open DIN SPEC 91434 & AwSV Regulatory Permit Page", icon="📋")
+st.page_link(get_registered_page("4_DIN_Evidence", "pages/4_DIN_Evidence.py"), label="📋 Open DIN SPEC 91434 & AwSV Regulatory Permit Page", icon="📋")
 st.write("")
