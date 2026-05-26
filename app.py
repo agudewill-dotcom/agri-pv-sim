@@ -17,6 +17,7 @@ import simulation
 from crop_profiles import CROP_REGISTRY
 from crop_scoring import evaluate_all_crops, evaluate_crop
 from medicinal_crop_suitability import evaluate_all_medicinal_crops, MED_CROP_REGISTRY, MED_SOURCES_REGISTRY
+from crop_suitability import SOURCES_REGISTRY
 
 st.set_page_config(page_title="Agri-PV Strategic Analytics", layout="wide")
 
