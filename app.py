@@ -229,6 +229,45 @@ st.markdown("""
         margin-top: 10px;
         border-left: 3px solid #64748b;
     }
+    
+    /* --- TAB CONTROLLER PRESET OVERRIDES --- */
+    button[data-testid="stTab"] {
+        color: #475569 !important;
+        font-size: 1.05rem !important;
+        font-weight: 600 !important;
+        background-color: transparent !important;
+        border: none !important;
+        padding: 10px 20px !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    
+    button[data-testid="stTab"]:hover {
+        color: #1e3a8a !important;
+        background-color: rgba(30, 58, 138, 0.05) !important;
+        border-radius: 8px !important;
+    }
+    
+    button[data-testid="stTab"][aria-selected="true"] {
+        color: #1e3a8a !important;
+        font-weight: 800 !important;
+        border-bottom: 3px solid #1e3a8a !important;
+        background-color: rgba(30, 58, 138, 0.08) !important;
+        border-radius: 8px 8px 0 0 !important;
+    }
+    
+    button[data-testid="stTab"] p {
+        color: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        margin: 0 !important;
+    }
+    
+    div[role="tablist"] {
+        border-bottom: 2px solid #e2e8f0 !important;
+        padding-bottom: 5px !important;
+        margin-bottom: 25px !important;
+        gap: 10px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -250,6 +289,37 @@ crop_results = evaluate_all_crops(
 )
 st.session_state['crop_results'] = crop_results
 
+ENGLISH_CROP_NOTES = {
+    "luzerne": "Lucerne is relatively shade-tolerant and well-suited for Agri-PV systems with moderate shading.",
+    "wintergerste": "Winter barley shows stable yields in field trials under Agri-PV at ≥ 60% PAR availability.",
+    "winterroggen": "Winter rye is robust and relatively shade-tolerant; ear development in spring is sensitive to light limitation.",
+    "triticale": "Triticale (wheat-rye hybrid) shows similar shade tolerance to winter rye.",
+    "winterweizen": "Winter wheat is the best-studied crop under Agri-PV. Yield losses are likely at < 65% PAR.",
+    "dinkel": "Spelt is evaluated as a proxy of the winter wheat group. Direct Agrivoltaic trial data is missing.",
+    "einkorn": "Einkorn is evaluated as a proxy of the winter wheat group. Direct Agrivoltaic trial data is missing.",
+    "emmer": "Emmer is evaluated as a proxy of the winter wheat group. Direct Agrivoltaic trial data is missing.",
+    "hafer": "Oats are evaluated as a proxy of the winter wheat group. Direct Agrivoltaic trial data is missing.",
+    "schwarzhafer": "Black oat is highly light-demanding. Strong yield losses are likely under standard shading layouts.",
+    "mais": "Maize is a C4 plant with extremely high light requirements. Not recommended for shaded layouts under panels."
+}
+
+def translate_class(val):
+    mapping = {
+        "sehr gut geeignet": "Highly Suitable",
+        "geeignet": "Suitable",
+        "grenzwertig": "Marginal",
+        "nicht empfohlen": "Not Recommended"
+    }
+    return mapping.get(val.lower(), val)
+
+def translate_confidence(val):
+    mapping = {
+        "hoch": "High",
+        "mittel": "Medium",
+        "niedrig": "Low"
+    }
+    return mapping.get(val.lower(), val)
+
 # Define metrics variables for easy reference
 va, vs, vo = metrics['va'], metrics['vs'], metrics['vo']
 pa, ps = metrics['pa'], metrics['ps']
@@ -261,7 +331,7 @@ ta_cell, ts_cell, delta_t, temp_bonus_pct = metrics['ta_cell'], metrics['ts_cell
 tab_overview, tab_light, tab_crops, tab_elec, tab_din = st.tabs([
     "📊 Executive Summary", 
     "🌾 Light Results", 
-    "🌱 Kultureignung", 
+    "🌱 Crop Suitability", 
     "⚡ Electrical & Thermal", 
     "📋 DIN Spec & AwSV"
 ])
@@ -523,29 +593,29 @@ with tab_crops:
     
     df_ranking = pd.DataFrame([
         {
-            "Kultur": r.crop_name_de,
+            "Crop": CROP_REGISTRY[r.crop_id].name_en,
             "Score": f"{r.score*100:.1f}%",
-            "Eignungsklasse": r.classification.upper(),
-            "Konfidenz": f"{r.confidence.upper()} ({r.confidence_value*100:.0f}%)",
-            "Evidenzstärke": f"Tier {r.evidence_tier}",
-            "Hauptengpass": r.limiting_factor.replace("_", " ").upper(),
-            "Jahres-PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
+            "Suitability Class": translate_class(r.classification).upper(),
+            "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
+            "Evidence Strength": f"Tier {r.evidence_tier}",
+            "Limiting Factor": r.limiting_factor.replace("_", " ").upper(),
+            "Annual PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
         }
         for r in crop_results
     ])
     
     def color_class(val):
-        if "SEHR GUT" in val or "GEEIGNET" in val and "GRENZ" not in val:
+        if "HIGHLY" in val or "SUITABLE" in val and "MARGINAL" not in val:
             return 'color: #065f46; font-weight: 600;'
-        elif "GRENZ" in val:
+        elif "MARGINAL" in val:
             return 'color: #92400e; font-weight: 600;'
         else:
             return 'color: #991b1b; font-weight: 600;'
     styler = df_ranking.style
     if hasattr(styler, "map"):
-        styler = styler.map(color_class, subset=['Eignungsklasse'])
+        styler = styler.map(color_class, subset=['Suitability Class'])
     else:
-        styler = styler.applymap(color_class, subset=['Eignungsklasse'])
+        styler = styler.applymap(color_class, subset=['Suitability Class'])
         
     st.dataframe(
         styler,
@@ -591,7 +661,7 @@ with tab_crops:
             x=x_points, 
             y=spatial_scores[crop_id],
             mode='lines+markers',
-            name=crop.name_de,
+            name=crop.name_en,
             line=dict(width=3),
             marker=dict(size=7)
         ))
@@ -618,8 +688,8 @@ with tab_crops:
     
     st.info("""
     💡 **Agronomic Insights from Spatial Profile:** 
-    Cereals like Wheat (Weizen) show high suitability in the row gap center (left & right) but drop significantly directly under the modules (shaded zone).
-    Lucerne (Luzerne) remains highly robust and suited across the entire row pitch. Maize (Mais) is fully unsuited regardless of location.
+    Cereals like Wheat show high suitability in the row gap center (left & right) but drop significantly directly under the modules (shaded zone).
+    Lucerne remains highly robust and suited across the entire row pitch. Maize is fully unsuited regardless of location.
     """)
     
     st.divider()
@@ -643,20 +713,20 @@ with tab_crops:
         with cols[idx]:
             st.markdown(f"""
             <div class="crop-card {card_class}">
-                <h3 style="margin:0; color:#0f172a;">{r.crop_name_de}</h3>
-                <div style="font-size:0.9rem; color:#64748b; font-style:italic; margin-bottom:8px;">{crop.name_en}</div>
-                <div class="badge {badge_class}">{r.classification}</div>
+                <h3 style="margin:0; color:#0f172a;">{crop.name_en}</h3>
+                <div style="font-size:0.9rem; color:#64748b; font-style:italic; margin-bottom:8px;">(German: {crop.name_de})</div>
+                <div class="badge {badge_class}">{translate_class(r.classification)}</div>
                 <div style="margin-top:12px; font-size:1.6rem; font-weight:800; color:#0f172a;">Score: {r.score*100:.1f}%</div>
-                <p style="font-size:0.9rem; color:#334155; margin-top:8px; line-height:1.4;">{r.notes_de}</p>
+                <p style="font-size:0.9rem; color:#334155; margin-top:8px; line-height:1.4;">{ENGLISH_CROP_NOTES.get(r.crop_id, r.notes_de)}</p>
                 <div class="limiting-box">
                     <strong>Limiting Factor:</strong> {r.limiting_factor.replace("_", " ").upper()}<br/>
-                    <strong>Evidence Tier:</strong> {r.evidence_tier} ({r.confidence.upper()} CONFIDENCE)
+                    <strong>Evidence Tier:</strong> {r.evidence_tier} ({translate_confidence(r.confidence).upper()} CONFIDENCE)
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
             # Expander details
-            with st.expander(f"📖 View Agronomic Details for {r.crop_name_de}"):
+            with st.expander(f"📖 View Agronomic Details for {crop.name_en}"):
                 st.markdown(f"**Evidence Literature Sources:**")
                 for src in r.sources:
                     st.markdown(f"- *{src}*")
@@ -681,8 +751,8 @@ with tab_crops:
     st.markdown("""
     <div style="background-color:#eff6ff; border-left:6px solid #3b82f6; padding:18px 24px; border-radius:8px; margin-top:20px;">
         <strong style="color:#1e3a8a;">💡 Strategic Recommendation:</strong><br/>
-        For dynamic nachgeführte systems (Category II under DIN SPEC 91434) with row pitches ≥ 8m, <strong>Luzerne (Lucerne)</strong> 
-        and robust C3 cereals (such as <strong>Hafer</strong> and <strong>Dinkel</strong>) represent the most reliable agricultural choice. 
+        For dynamic tracker systems (Category II under DIN SPEC 91434) with row pitches ≥ 8m, <strong>Lucerne</strong> 
+        and robust C3 cereals (such as <strong>Oats</strong> and <strong>Spelt</strong>) represent the most reliable agricultural choice. 
         They maintain robust yields under partial shading and show high spatial homogeneity across the layout.
     </div>
     """, unsafe_allow_html=True)
@@ -834,21 +904,21 @@ with tab_din:
         """, unsafe_allow_html=True)
         
     # SECTION 2: GERMAN WATER LAW PERMIT REQUIREMENT (AwSV Containment)
-    st.subheader("🌊 AwSV Water Protection Containment (Rückhalteeinrichtungen)")
+    st.subheader("🌊 AwSV Water Protection Containment (Retention Basins)")
     
     st.markdown("""
     <div class="law-box">
-        <h4 style="margin-top:0; font-family:'Outfit';">⚠️ Umweltrechtliche Auflagen nach AwSV (Deutschland)</h4>
+        <h4 style="margin-top:0; font-family:'Outfit';">⚠️ Environmental Regulations according to AwSV (Germany)</h4>
         <p style="font-size:0.95rem; margin-bottom:14px; line-height:1.6;">
-            Für Agri-PV-Systeme in Deutschland gelten strenge umweltrechtliche Vorgaben bezüglich wassergefährdender Stoffe 
-            (z. B. Getriebeöle in Trackern, Trafo-Kühlmittel). Der Anlagenbetreiber muss folgende Vorschriften zwingend beachten:
+            For Agrivoltaic systems in Germany, strict environmental regulations apply regarding water-polluting substances 
+            (e.g., gear oils in trackers, transformer coolants). The system operator must strictly comply with the following regulations:
         </p>
         <ul style="padding-left:20px; font-size:0.92rem; line-height:1.6;">
-            <li><strong>Rückhaltesysteme:</strong> Anlagen müssen mit einer Rückhalteeinrichtung ausgerüstet sein, die ausgetretene wassergefährdende Stoffe zurückhalten kann.</li>
-            <li><strong>Flüssigkeitsundurchlässigkeit:</strong> Rückhalteeinrichtungen müssen flüssigkeitsundurchlässig sein und dürfen keinerlei Abläufe haben.</li>
-            <li><strong>Volumenbemessung:</strong> Das Rückhaltevolumen muss so bemessen sein, dass es die maximale Menge aufnehmen kann, die bei einer Betriebsstörung freigesetzt werden könnte.</li>
-            <li><strong>Alternative:</strong> Alternativ zur Rückhalteeinrichtung ist eine doppelwandige Anlage zulässig.</li>
-            <li><strong>Gefährdungsstufe D (Kritische Wasserschutzgebiete):</strong> Bei Anlagen der Gefährdungsstufe D muss die Rückhalteeinrichtung das gesamte Volumen der größten abgesperrten Betriebseinheit aufnehmen können.</li>
+            <li><strong>Retention Systems:</strong> Installations must be equipped with a containment system that can retain any leaked water-polluting substances.</li>
+            <li><strong>Fluid-Impermeability:</strong> Retention systems must be fluid-impermeable and must not have any outlets or drains.</li>
+            <li><strong>Volume Sizing:</strong> The retention volume must be sized to hold the maximum volume of fluids that could be released during an operational disturbance.</li>
+            <li><strong>Alternative:</strong> As an alternative to a retention system, a double-walled installation is permitted.</li>
+            <li><strong>Hazard Level D (Critical Water Protection Areas):</strong> For installations classified under Hazard Level D, the retention system must be able to hold the entire volume of the largest isolated operational unit.</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
@@ -915,18 +985,18 @@ with tab_din:
         pdf.ln(3)
         
         pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(60, 8, "Crop (German)", border=1)
-        pdf.cell(50, 8, "Suitability Grade", border=1)
+        pdf.cell(60, 8, "Crop", border=1)
+        pdf.cell(50, 8, "Suitability Class", border=1)
         pdf.cell(30, 8, "Score", border=1)
-        pdf.cell(50, 8, "Confidence Class", border=1, ln=True)
+        pdf.cell(50, 8, "Confidence", border=1, ln=True)
         
         pdf.set_font("Helvetica", "", 10)
         if crop_results is not None:
             for r in crop_results[:6]:
-                pdf.cell(60, 8, r.crop_name_de, border=1)
-                pdf.cell(50, 8, r.classification, border=1)
+                pdf.cell(60, 8, CROP_REGISTRY[r.crop_id].name_en, border=1)
+                pdf.cell(50, 8, translate_class(r.classification), border=1)
                 pdf.cell(30, 8, f"{r.score*100:.1f}%", border=1)
-                pdf.cell(50, 8, r.confidence, border=1, ln=True)
+                pdf.cell(50, 8, translate_confidence(r.confidence), border=1, ln=True)
         pdf.ln(8)
         
         pdf.set_font("Helvetica", "B", 13)
