@@ -194,13 +194,31 @@ def render_sidebar_and_run():
     if 'a' not in st.session_state:
         st.session_state.a = 180.0
     
+    if 'lat' not in st.session_state:
+        st.session_state.lat = 52.5200
+    if 'lon' not in st.session_state:
+        st.session_state.lon = 13.4000
+    
     st.sidebar.title("⚡ Simulation Setup")
     st.sidebar.markdown("**Project Site Coordinates**")
-    c1, c2 = st.sidebar.columns(2)
-    lat = c1.number_input("Latitude", -90.0, 90.0, 52.52, format="%.4f",
-                          help="Geographic latitude of the project site.")
-    lon = c2.number_input("Longitude", -180.0, 180.0, 13.40, format="%.4f",
-                          help="Geographic longitude of the project site.")
+    
+    coord_input = st.sidebar.text_input(
+        "Coordinates (Lat, Lon)",
+        value=f"{st.session_state.lat:.4f}, {st.session_state.lon:.4f}",
+        help="Copy-paste coordinates directly (e.g. '52.5200, 13.4000')"
+    )
+    
+    try:
+        if ',' in coord_input:
+            parts = coord_input.split(',')
+            if len(parts) == 2:
+                st.session_state.lat = float(parts[0].strip())
+                st.session_state.lon = float(parts[1].strip())
+    except ValueError:
+        st.sidebar.error("⚠️ Invalid coordinate format. Please use 'latitude, longitude' (e.g., 52.52, 13.40)")
+        
+    lat = st.session_state.lat
+    lon = st.session_state.lon
     
     if st.sidebar.button("Fetch Satellite Topography"):
         st.session_state.s, st.session_state.a = get_topo(lat, lon)
