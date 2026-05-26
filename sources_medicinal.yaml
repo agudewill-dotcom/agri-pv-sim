@@ -1,0 +1,44 @@
+DLI_Definition:
+  title: "Daily Light Integral"
+  relevance: "Definition and formula for DLI from PPFD."
+  key_point: "DLI is the daily integrated PAR photon flux in mol/m²/d."
+
+Echte_Kamille_Licht:
+  title: "Echte Kamille / Matricaria chamomilla"
+  relevance: "Light germinator, long-day plant, Landolt light value L=4 hell."
+  source_type: "ecological indicator / cultivation proxy"
+  note: "Use as evidence for high but not extreme light demand."
+
+Salbei_Licht:
+  title: "Echter Salbei / Salvia officinalis"
+  relevance: "Landolt light value L=4 hell; dry, warm, light-demanding Mediterranean ecology."
+  source_type: "ecological indicator / cultivation proxy"
+  note: "Use as evidence for high light preference."
+
+Echinacea_Licht:
+  title: "Echinacea purpurea"
+  relevance: "Full sun / sun to light shade; open prairie/barren habitat."
+  source_type: "cultivation and ecological proxy"
+  note: "Use as evidence for high light preference."
+
+EMA_Monographs:
+  title: "European Medicines Agency herbal monographs"
+  relevance: "Use for botanical/drug identity and medicinal crop status, not as PAR evidence."
+
+DIN_SPEC_91434:
+  title: "DIN SPEC 91434 Agri-Photovoltaik-Anlagen – Anforderungen an die landwirtschaftliche Hauptnutzung"
+  relevance: "Use for main agricultural use, documentation and monitoring context, not for plant PAR thresholds."
+
+Fraunhofer_ISE_APV_Leitfaden:
+  title: "Agri-Photovoltaik: Chance für Landwirtschaft und Energiewende – Leitfaden für Deutschland"
+  relevance: "German Agri-PV context and practical implementation."
+
+Laub_2022:
+  title: "Contrasting yield responses at varying levels of shade suggest different suitability of crops for dual land-use systems: a meta-analysis"
+  doi: "10.1007/s13593-022-00783-7"
+  relevance: "Use as general shade-response evidence for crop groups, but note that medicinal herbs and ornamentals were not the main basis for direct crop-specific thresholds."
+
+Weselek_2021:
+  title: "Agrivoltaic system impacts on microclimate and yield of different crops within an organic crop rotation in a temperate climate"
+  doi: "10.1007/s13593-021-00714-y"
+  relevance: "Use for temperate Agri-PV field context and PAR methodology."

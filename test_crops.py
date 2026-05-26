@@ -40,14 +40,18 @@ from crop_scoring import (
 
 
 def test_crop_registry():
-    """All 11 crops must be defined with valid thresholds and weight configurations."""
+    """All 35 crops must be defined with valid thresholds and weight configurations."""
     expected_crops = {
-        "luzerne", "wintergerste", "winterroggen", "triticale", "winterweizen",
-        "dinkel", "einkorn", "emmer", "hafer", "schwarzhafer", "mais"
+        "luzerne", "rotklee", "kleegras", "ackergras", "esparsette",
+        "winterroggen", "waldstaudenroggen", "triticale", "hafer", "schwarzhafer",
+        "dinkel", "emmer", "einkorn", "gerste", "weizen",
+        "buchweizen", "leindotter", "öllein", "hanf", "rohrglanzgras", "riesenweizengras", "silphie",
+        "mais", "sonnenblume", "soja",
+        "salbei", "echinacea", "kamille", "ringelblume", "kümmel", "koriander", "fenchel", "mariendistel", "borretsch", "kapuzinerkresse"
     }
     
     assert set(CROP_REGISTRY.keys()) == expected_crops, "Registry mismatch"
-    assert len(CROP_REGISTRY) == 11
+    assert len(CROP_REGISTRY) == 35
     
     for crop_id, crop in CROP_REGISTRY.items():
         assert crop.id == crop_id
@@ -78,10 +82,10 @@ def test_par_reference_and_thresholds():
     
     # Check Luzerne thresholds at par_ref = 8500
     luzerne = CROP_REGISTRY["luzerne"]
-    # f_min = 0.55, f_target = 0.75
+    # f_min = 0.55, f_target = 0.70 (new DB target is 0.70)
     p_min, p_tgt = get_absolute_thresholds(luzerne, 8500.0)
     assert np.isclose(p_min, 0.55 * 8500.0), f"Luzerne p_min error: {p_min}"
-    assert np.isclose(p_tgt, 0.75 * 8500.0), f"Luzerne p_tgt error: {p_tgt}"
+    assert np.isclose(p_tgt, 0.70 * 8500.0), f"Luzerne p_tgt error: {p_tgt}"
     
     # Check monthly weights sum to 1.0
     w_monthly = get_monthly_weights(luzerne)
@@ -106,13 +110,13 @@ def test_scoring_components():
     # Create low monthly PAR: 50% of open field for all months
     low_monthly = [350.0] * 12
     
-    luzerne = CROP_REGISTRY["luzerne"] # f_min=0.55, f_target=0.75
+    luzerne = CROP_REGISTRY["luzerne"] # f_min=0.55, f_target=0.70
     
-    # At 90% everywhere, seasonal score should be 0.92 under advanced model
+    # At 90% everywhere, seasonal score should be 0.9333 under the 0.70 target
     s_high = score_seasonal_par(high_monthly, luzerne, par_ref)
-    assert np.isclose(s_high, 0.92), f"Expected 0.92, got {s_high}"
+    assert np.isclose(s_high, 0.9333333333333333), f"Expected 0.9333, got {s_high}"
     
-    # At 50% everywhere, seasonal score should be 0.55 (since 0.50 is between f_limit=0.45 and f_min=0.55)
+    # At 50% everywhere, seasonal score should be 0.55
     s_low = score_seasonal_par(low_monthly, luzerne, par_ref)
     assert np.isclose(s_low, 0.55), f"Expected 0.55, got {s_low}"
     
@@ -140,9 +144,9 @@ def test_ranking_consistency():
     # Convert list of results to a dict for easy lookup
     res_dict = {r.crop_id: r for r in results_65}
     
-    # Ranking expectation: Luzerne > Winterweizen > Mais
-    assert res_dict["luzerne"].score > res_dict["winterweizen"].score, "Luzerne should score higher than Winterweizen at 65% remaining PAR"
-    assert res_dict["winterweizen"].score > res_dict["mais"].score, "Winterweizen should score higher than Mais at 65% remaining PAR"
+    # Ranking expectation: Luzerne > Weizen > Mais
+    assert res_dict["luzerne"].score > res_dict["weizen"].score, "Luzerne should score higher than Weizen at 65% remaining PAR"
+    assert res_dict["weizen"].score > res_dict["mais"].score, "Weizen should score higher than Mais at 65% remaining PAR"
     
     # Scenario B: High Shading (58% Remaining PAR)
     par_ann_58 = par_ref * 0.58
@@ -152,7 +156,7 @@ def test_ranking_consistency():
     )
     res_dict_58 = {r.crop_id: r for r in results_58}
     
-    # Mais has f_min = 0.85, so at 58% it must be classified as 'nicht empfohlen'
+    # Mais has f_min = 0.80, so at 58% it must be classified as 'nicht empfohlen'
     assert res_dict_58["mais"].classification == "nicht empfohlen", f"Mais classification at 58% should be 'nicht empfohlen', got {res_dict_58['mais'].classification}"
     
     # Scenario C: Very Light Shading (80% Remaining PAR)
@@ -163,8 +167,18 @@ def test_ranking_consistency():
     )
     res_dict_80 = {r.crop_id: r for r in results_80}
     
-    # Luzerne (f_target = 0.75) at 80% remaining PAR should score 1.0 and be 'sehr gut geeignet'
-    assert res_dict_80["luzerne"].classification == "sehr gut geeignet", f"Luzerne at 80% PAR should be 'sehr gut geeignet'"
+    # Luzerne (f_target = 0.70) at 80% remaining PAR should score and be 'geeignet als Hauptkultur'
+    assert res_dict_80["luzerne"].classification == "geeignet als Hauptkultur", f"Luzerne at 80% PAR should be 'geeignet als Hauptkultur'"
+
+    # Waldstaudenroggen proxy check
+    wald = res_dict["waldstaudenroggen"]
+    assert wald.is_proxy is True
+    assert wald.confidence in ["mittel", "niedrig"]
+
+    # Salbei / Echinacea checks
+    salbei = res_dict["salbei"]
+    assert salbei.par_min_abs >= 0.70 * par_ref
+    assert "abnehmernachweis" in salbei.warning.lower() or salbei.evidence_tier == "C"
     
     print("  ✓ Ranking consistency matches agronomic expectations.")
 
@@ -191,15 +205,42 @@ def test_confidence_calculations():
 
 def test_classification_mapping():
     """Verify core score-to-classification boundary logic."""
-    assert classify_score(0.85) == "sehr gut geeignet"
-    assert classify_score(0.80) == "sehr gut geeignet"
-    assert classify_score(0.79) == "geeignet"
-    assert classify_score(0.65) == "geeignet"
+    assert classify_score(0.85) == "geeignet als Hauptkultur"
+    assert classify_score(0.80) == "geeignet als Hauptkultur"
+    assert classify_score(0.79) == "geeignet als Hauptkultur"
+    assert classify_score(0.65) == "geeignet als Hauptkultur"
     assert classify_score(0.64) == "grenzwertig"
     assert classify_score(0.45) == "grenzwertig"
     assert classify_score(0.44) == "nicht empfohlen"
     assert classify_score(0.10) == "nicht empfohlen"
     print("  ✓ Classification threshold mappings verified.")
+
+
+def test_special_crops_floor():
+    """Verify that evidence_tier C special crops are subjected to the strict suitability floors."""
+    par_ref = 8000.0
+    kapuzinerkresse = CROP_REGISTRY["kapuzinerkresse"]  # evidence_tier C, f_min=0.65, f_target=0.80
+    
+    # Case 1: High PAR, perfect homogeneity -> should be suitable as special crop
+    par_ann_high = 7500.0
+    monthly_high = [7500.0 / 12.0] * 12
+    res_suitable = evaluate_crop(kapuzinerkresse, par_ann_high, par_ref, monthly_high, cv_par=0.0)
+    assert res_suitable.classification == "geeignet als Sonderkultur / Blühstreifen"
+    
+    # Case 2: Fails homogeneity floor (cv_par = 0.25, max is 0.30, homogeneity score = 1 - 0.25/0.30 = 0.167 < 0.50)
+    # Even if score >= 0.65, failing floor must result in "nur mit agronomischer Prüfung"
+    res_fail_homog = evaluate_crop(kapuzinerkresse, par_ann_high, par_ref, monthly_high, cv_par=0.25)
+    assert res_fail_homog.homogeneity_score < 0.50
+    assert res_fail_homog.classification == "nur mit agronomischer Prüfung"
+
+    # Case 3: Fails annual PAR floor (par_ann is 5100, which gives comp_a = 0.625 < 0.65)
+    par_ann_low = 5100.0
+    monthly_low = [5100.0 / 12.0] * 12
+    res_fail_par = evaluate_crop(kapuzinerkresse, par_ann_low, par_ref, monthly_low, cv_par=0.0)
+    assert res_fail_par.annual_PAR_score < 0.65
+    assert res_fail_par.classification == "nicht empfohlen"
+
+    print("  ✓ Special crops suitability floors validated successfully.")
 
 
 def test_integration_scenarios():
@@ -219,12 +260,12 @@ def test_integration_scenarios():
     )
     res_dict_a = {r.crop_id: r for r in results_a}
     
-    # Expected results from spec:
-    # Luzerne = geeignet
-    # Weizen = grenzwertig
-    # Mais = ungeeignet (nicht empfohlen)
-    assert res_dict_a["luzerne"].classification == "geeignet", f"Fall A Luzerne should be 'geeignet', got {res_dict_a['luzerne'].classification}"
-    assert res_dict_a["winterweizen"].classification == "grenzwertig", f"Fall A Winterweizen should be 'grenzwertig', got {res_dict_a['winterweizen'].classification}"
+    # Expected results under new database rules:
+    # Luzerne f_target is 0.70, so at 63.8% remaining PAR it is classified as 'grenzwertig'
+    # Weizen f_min is 0.65, so at 63.8% remaining PAR it is classified as 'nicht empfohlen'
+    # Mais f_min is 0.80, so at 63.8% remaining PAR it is classified as 'nicht empfohlen'
+    assert res_dict_a["luzerne"].classification == "grenzwertig", f"Fall A Luzerne should be 'grenzwertig', got {res_dict_a['luzerne'].classification}"
+    assert res_dict_a["weizen"].classification == "nicht empfohlen", f"Fall A Weizen should be 'nicht empfohlen', got {res_dict_a['weizen'].classification}"
     assert res_dict_a["mais"].classification == "nicht empfohlen", f"Fall A Mais should be 'nicht empfohlen', got {res_dict_a['mais'].classification}"
     
     # ----------------------------------------------------
@@ -242,10 +283,10 @@ def test_integration_scenarios():
     )
     res_dict_b = {r.crop_id: r for r in results_b}
     
-    # Expected results from spec:
-    # Luzerne = geeignet bis grenzwertig
-    # Mais = ungeeignet
-    assert res_dict_b["luzerne"].classification in {"grenzwertig", "geeignet"}, f"Fall B Luzerne should be 'grenzwertig' or 'geeignet', got {res_dict_b['luzerne'].classification}"
+    # Expected results from new database:
+    # Luzerne = grenzwertig
+    # Mais = nicht empfohlen
+    assert res_dict_b["luzerne"].classification == "grenzwertig", f"Fall B Luzerne should be 'grenzwertig', got {res_dict_b['luzerne'].classification}"
     assert res_dict_b["mais"].classification == "nicht empfohlen", f"Fall B Mais should be 'nicht empfohlen', got {res_dict_b['mais'].classification}"
     
     print("  ✓ Full integration scenarios (Fall A and Fall B) validated perfectly.")
@@ -259,6 +300,7 @@ if __name__ == "__main__":
         ("Ranking Consistency", test_ranking_consistency),
         ("Confidence Calculations", test_confidence_calculations),
         ("Classification Boundary Mappings", test_classification_mapping),
+        ("Special Crop Floor Requirements", test_special_crops_floor),
         ("Fall A / Fall B Validation Scenarios", test_integration_scenarios),
     ]
     

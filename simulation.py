@@ -199,7 +199,7 @@ def render_sidebar_and_run():
     if 'lon' not in st.session_state:
         st.session_state.lon = 13.4000
     
-    st.sidebar.title("⚡ Simulation Setup")
+    st.sidebar.title("Simulation Setup")
     st.sidebar.markdown("**Project Site Coordinates**")
     
     coord_input = st.sidebar.text_input(
@@ -215,7 +215,7 @@ def render_sidebar_and_run():
                 st.session_state.lat = float(parts[0].strip())
                 st.session_state.lon = float(parts[1].strip())
     except ValueError:
-        st.sidebar.error("⚠️ Invalid coordinate format. Please use 'latitude, longitude' (e.g., 52.52, 13.40)")
+        st.sidebar.error("Invalid coordinate format. Please use 'latitude, longitude' (e.g., 52.52, 13.40)")
         
     lat = st.session_state.lat
     lon = st.session_state.lon
@@ -224,7 +224,7 @@ def render_sidebar_and_run():
         st.session_state.s, st.session_state.a = get_topo(lat, lon)
         st.sidebar.success("Terrain Applied")
     
-    st.sidebar.subheader("🌍 Terrain & Topography")
+    st.sidebar.subheader("Terrain & Topography")
     use_manual = st.sidebar.toggle("Manual Terrain Override", value=False,
                                     help="Enable to manually set slope/aspect.")
     

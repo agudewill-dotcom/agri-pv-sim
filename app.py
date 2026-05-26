@@ -16,6 +16,7 @@ import thermal
 import simulation
 from crop_profiles import CROP_REGISTRY
 from crop_scoring import evaluate_all_crops, evaluate_crop
+from medicinal_crop_suitability import evaluate_all_medicinal_crops, MED_CROP_REGISTRY, MED_SOURCES_REGISTRY
 
 st.set_page_config(page_title="Agri-PV Strategic Analytics", layout="wide")
 
@@ -289,6 +290,17 @@ crop_results = evaluate_all_crops(
 )
 st.session_state['crop_results'] = crop_results
 
+# Compute medicinal crop suitability results
+crop_results_med = evaluate_all_medicinal_crops(
+    annual_PAR_agri=metrics['pa'],
+    annual_PAR_openfield=metrics['par_open_field'],
+    monthly_PAR_agri=metrics['monthly_par_agri'],
+    monthly_PAR_openfield=metrics['monthly_par_open'],
+    cv_PAR=metrics['cv_par'],
+    hourly_par=res_a['par']
+)
+st.session_state['crop_results_med'] = crop_results_med
+
 ENGLISH_CROP_NOTES = {
     "luzerne": "Lucerne is relatively shade-tolerant and well-suited for Agri-PV systems with moderate shading.",
     "wintergerste": "Winter barley shows stable yields in field trials under Agri-PV at ≥ 60% PAR availability.",
@@ -328,10 +340,11 @@ ta_cell, ts_cell, delta_t, temp_bonus_pct = metrics['ta_cell'], metrics['ts_cell
 
 
 # --- NAVIGATION TABS ---
-tab_overview, tab_light, tab_crops, tab_elec, tab_din = st.tabs([
+tab_overview, tab_light, tab_crops, tab_med, tab_elec, tab_din = st.tabs([
     "Executive Summary", 
     "Light Results", 
-    "Crop Suitability", 
+    "Arable Crops",
+    "Sonder- und Arzneikulturen",
     "Electrical & Thermal", 
     "DIN Spec & AwSV"
 ])
@@ -586,58 +599,344 @@ with tab_crops:
         <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Literature-Backed Crop Compatibility Modeling and spatial micro-climate scoring</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # SECTION 1: DETAILED RANKING TABLE
-    st.subheader("Farm-Average Crop Suitability Ranking")
-    st.markdown("All 11 arable crops sorted by composite suitability score based on farm-average light levels:")
-    
-    df_ranking = pd.DataFrame([
-        {
-            "Crop": CROP_REGISTRY[r.crop_id].name_en,
-            "Score": f"{r.score*100:.1f}%",
-            "Suitability Class": translate_class(r.classification).upper(),
-            "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
-            "Evidence Strength": f"Tier {r.evidence_tier}",
-            "Limiting Factor": r.limiting_factor.replace("_", " ").upper(),
-            "Annual PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
-        }
-        for r in crop_results
-    ])
-    
-    def color_class(val):
-        if "HIGHLY" in val or "SUITABLE" in val and "MARGINAL" not in val:
-            return 'color: #065f46; font-weight: 600;'
-        elif "MARGINAL" in val:
-            return 'color: #92400e; font-weight: 600;'
+
+    m_names_crops = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    # DIN SPEC 91434 helper functions
+    def get_din_compliance(r):
+        class_lower = r.classification.lower()
+        if "hauptkultur" in class_lower:
+            return "Plausibel"
+        elif "nicht empfohlen" in class_lower:
+            return "Nicht empfehlenswert"
         else:
-            return 'color: #991b1b; font-weight: 600;'
-    styler = df_ranking.style
-    if hasattr(styler, "map"):
-        styler = styler.map(color_class, subset=['Suitability Class'])
-    else:
-        styler = styler.applymap(color_class, subset=['Suitability Class'])
+            return "Prüfpflichtig"
+
+    # Multi-criteria sorting logic: classification suitability, confidence level, and relative PAR margin
+    def sort_key(r):
+        class_lower = r.classification.lower()
+        if "hauptkultur" in class_lower or "sonderkultur" in class_lower or "geeignet" in class_lower:
+            class_rank = 3
+        elif "prüfung" in class_lower or "grenzwertig" in class_lower:
+            class_rank = 2
+        else:
+            class_rank = 1
+            
+        conf_lower = r.confidence.lower()
+        if conf_lower == "hoch":
+            conf_rank = 3
+        elif conf_lower == "mittel":
+            conf_rank = 2
+        else:
+            conf_rank = 1
+            
+        r_ann = metrics['pa'] / metrics['par_open_field'] if metrics['par_open_field'] > 0 else 0.0
+        margin = r_ann - CROP_REGISTRY[r.crop_id].r_ann_target
+        return (class_rank, conf_rank, margin)
+
+    crop_results_sorted = sorted(crop_results, key=sort_key, reverse=True)
+
+    # SECTION 1: DETAILED RANKING TABLE & GROUP COMPARISON
+    col_left, col_right = st.columns([1.8, 1])
+
+    with col_left:
+        st.subheader("Farm-Average Crop Suitability Ranking")
+        st.markdown("All 35 arable crops sorted by suitability classification, confidence level, and relative PAR margins:")
+
+        df_ranking = pd.DataFrame([
+            {
+                "Crop": CROP_REGISTRY[r.crop_id].name_en,
+                "Score": f"{r.score*100:.1f}%",
+                "DIN 91434 Plausibility": get_din_compliance(r).upper(),
+                "Suitability Class": translate_class(r.classification).upper(),
+                "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
+                "Evidence Strength": f"Tier {r.evidence_tier}",
+                "Limiting Factor": r.limiting_factor.replace("_", " ").upper(),
+                "Annual PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
+            }
+            for r in crop_results_sorted
+        ])
+
+        def color_class(val):
+            val_upper = str(val).upper()
+            if "HIGHLY" in val_upper or "SUITABLE" in val_upper or "PLAUSIBEL" in val_upper:
+                return 'color: #065f46; font-weight: 700;'
+            elif "MARGINAL" in val_upper or "PRÜFPFLICHTIG" in val_upper or "VALIDATION" in val_upper:
+                return 'color: #b45309; font-weight: 700;'
+            else:
+                return 'color: #b91c1c; font-weight: 700;'
+
+        styler = df_ranking.style
+        if hasattr(styler, "map"):
+            styler = styler.map(color_class, subset=['Suitability Class', 'DIN 91434 Plausibility'])
+        else:
+            styler = styler.applymap(color_class, subset=['Suitability Class', 'DIN 91434 Plausibility'])
+
+        st.dataframe(
+            styler,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.write("") # Spacer
+
+        # SECTION 2: PLOTLY CROP GROUP COMPARISON CHART
+        st.subheader("Remaining PAR vs. Crop Group Suitability Thresholds")
+        st.markdown("Comparison of simulated remaining PAR against the physiological ranges (minimum to target) for each crop group:")
+
+        # Crop Groups dynamically loaded from DB
+        group_names_en = {
+            "forage": "Forage & Grasses",
+            "robust_cereal": "Robust C3 Cereals",
+            "ancient_grain": "Ancient & Mod. Grains",
+            "niche_crop": "Niche & Oil Crops",
+            "high_light_crop": "High-Light & C4 Crops",
+            "special_crop": "Specialty & Medicinal"
+        }
+
+        group_data = []
+        for grp, grp_name in group_names_en.items():
+            group_crops = [crop for crop in CROP_REGISTRY.values() if crop.crop_group == grp]
+            if not group_crops:
+                continue
+            min_f_min = min(c.r_ann_min for c in group_crops) * 100.0
+            max_f_target = max(c.r_ann_target for c in group_crops) * 100.0
+            group_data.append({
+                "Group Name": grp_name,
+                "Min Threshold (%)": min_f_min,
+                "Target Threshold (%)": max_f_target,
+                "Range (%)": max_f_target - min_f_min
+            })
+        df_groups = pd.DataFrame(group_data)
+
+        fig_groups = go.Figure()
         
-    st.dataframe(
-        styler,
-        use_container_width=True,
-        hide_index=True
-    )
-    
+        # Add suitability bands
+        fig_groups.add_trace(go.Bar(
+            x=df_groups['Group Name'],
+            y=df_groups['Range (%)'],
+            base=df_groups['Min Threshold (%)'],
+            name="Suitability Range (Min to Target)",
+            marker_color="rgba(16, 185, 129, 0.35)",
+            marker_line=dict(color="#10b981", width=1.5),
+            hovertemplate="<b>%{x}</b><br>Minimum Threshold: %{base:.1f}%<br>Target Threshold: %{customdata:.1f}%<extra></extra>",
+            customdata=df_groups['Target Threshold (%)']
+        ))
+
+        # Add horizontal simulated remaining PAR line
+        rem_par_val = metrics['remaining_par_pct']
+        fig_groups.add_hline(
+            y=rem_par_val,
+            line=dict(color="#1e3a8a", width=3, dash="dash"),
+            annotation=dict(
+                text=f"Simulated Agri-PV Remaining PAR: {rem_par_val:.1f}%",
+                font=dict(color="#1e3a8a", size=11, family="Outfit", weight="bold"),
+                bgcolor="white",
+                bordercolor="#1e3a8a",
+                borderwidth=1,
+                borderpad=4
+            ),
+            annotation_position="top left"
+        )
+
+        fig_groups.update_layout(
+            yaxis_title="Light Availability Ratio (Remaining PAR %)",
+            xaxis_title="Arable Crop Groups",
+            yaxis=dict(range=[30, 105], ticksuffix="%"),
+            height=380,
+            margin=dict(l=0, r=0, t=10, b=0),
+            showlegend=False
+        )
+        st.plotly_chart(fig_groups, use_container_width=True)
+
+    with col_right:
+        st.subheader("DIN SPEC 91434 Regulatory Summary")
+        st.markdown("""
+        <div class="din-box" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; font-size: 0.92rem; color: #334155; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; color: #1e3a8a; font-family: 'Outfit';">Category II Dual-Use Plausibility</h4>
+            <p>Under Category II of the German <strong>DIN SPEC 91434</strong> framework, agricultural land use must remain the primary activity beneath elevated PV installations.</p>
+            <p>Crops are classified based on standard agrivoltaic trial evidence, shade tolerance, and site light levels:</p>
+            <ul style="padding-left: 20px; margin-top: 5px;">
+                <li><span style="color: #065f46; font-weight: 700;">● PLAUSIBEL (Plausible)</span>: Field-tested crops highly suitable as agricultural main use under modules.</li>
+                <li><span style="color: #b45309; font-weight: 700;">● PRÜFPFLICHTIG (Audit Required)</span>: Niche or special crops requiring an agricultural contract or agronomic validation.</li>
+                <li><span style="color: #b91c1c; font-weight: 700;">● NICHT EMPFOHLEN (Not Recommended)</span>: High-light crops with severe expected yield losses under shaded designs.</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="background-color:#eff6ff; border-left:6px solid #3b82f6; padding:18px 24px; border-radius:8px; margin-bottom:20px;">
+            <strong style="color:#1e3a8a; font-family: 'Outfit';">Strategic Recommendation:</strong><br/>
+            For high-clearance fixed-tilt systems (Category II under DIN SPEC 91434) with row pitches ≥ 8m, <strong>Lucerne (Luzerne)</strong>, 
+            robust C3 cereals (such as <strong>Oats</strong> and <strong>Spelt</strong>), and shade-tolerant species from the <strong>forage & grass groups</strong> represent the most reliable agricultural choice. 
+            They maintain robust yields under partial shading and show high spatial homogeneity across the layout.
+        </div>
+        """, unsafe_allow_html=True)
+
     st.divider()
-    
-    # SECTION 2: PREMIUM CELL-LEVEL SPATIAL CROP Explorer
+
+    # SECTION 3: CROP DETAILED EXPLORATION PANEL
+    st.subheader("Arable Crop Detailed Exploration Panel")
+    st.markdown("Select a specific crop from the 35 available species to explore its coordinate-adjusted light requirements, growth season metrics, and evidence bibliography:")
+
+    # Selection dropdown
+    crop_options = {CROP_REGISTRY[cid].name_en: cid for cid in CROP_REGISTRY.keys()}
+    sorted_options_names = sorted(list(crop_options.keys()))
+
+    # Default to Wheat or Lucerne if available
+    default_idx = sorted_options_names.index("Wheat") if "Wheat" in sorted_options_names else 0
+    selected_crop_en = st.selectbox(
+        "Select Arable Crop for Detailed Agronomic Analysis:",
+        options=sorted_options_names,
+        index=default_idx,
+        key="crop_detailed_selector"
+    )
+    selected_crop_id = crop_options[selected_crop_en]
+
+    r_sel = next(r for r in crop_results if r.crop_id == selected_crop_id)
+    crop_sel = CROP_REGISTRY[selected_crop_id]
+
+    # Calculate r_crit
+    monthly_ref = metrics['par_open_field'] / 12.0
+    sum_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.critical_months)
+    sum_ref = monthly_ref * len(crop_sel.critical_months)
+    r_crit = sum_agri / sum_ref if sum_ref > 0 else 0.0
+
+    # DLI calculations
+    days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    growing_days = sum(days_per_month[m - 1] for m in crop_sel.growing_months)
+    growing_par_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.growing_months)
+    growing_par_ref = sum((metrics['par_open_field']/12.0) for m in crop_sel.growing_months)
+    dli_agri = growing_par_agri / growing_days if growing_days > 0 else 0.0
+    dli_ref = growing_par_ref / growing_days if growing_days > 0 else 0.0
+
+    # Simulated Peak PPFD
+    peak_ppfd_val = float(res_a['par'].max())
+
+    # DIN compliance label mapping
+    din_compliance = get_din_compliance(r_sel) # "Plausibel", "Prüfpflichtig", "Nicht empfehlenswert"
+    if din_compliance == "Plausibel":
+        din_color = "#065f46"
+        din_bg = "#d1fae5"
+    elif din_compliance == "Prüfpflichtig":
+        din_color = "#b45309"
+        din_bg = "#fef3c7"
+    else:
+        din_color = "#b91c1c"
+        din_bg = "#fee2e2"
+
+    # Render detailed view columns
+    det_col1, det_col2, det_col3 = st.columns([1.2, 1.2, 1.6])
+
+    with det_col1:
+        st.markdown(f"""
+        <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
+            <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Physiological Light Metrics</h4>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Coordinates-adjusted simulation vs crop thresholds:</p>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Annual Relative PAR:</td><td style="text-align: right; font-weight: 700;">{(metrics['pa']/metrics['par_open_field'])*100:.1f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.r_ann_target*100:.0f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Min Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.r_ann_min*100:.0f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Critical Phase PAR:</td><td style="text-align: right; font-weight: 700;">{r_crit*100:.1f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.r_crit_target*100:.0f}%</td></tr>
+                <tr><td style="padding: 6px 0; color: #475569;">Min Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.r_crit_min*100:.0f}%</td></tr>
+            </table>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with det_col2:
+        st.markdown(f"""
+        <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
+            <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Growth Season & Microclimate</h4>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Active vegetation periods and spatial distribution:</p>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Growing Season DLI:</td><td style="text-align: right; font-weight: 700;">{dli_agri:.1f} mol/m²/d</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Open-Field DLI:</td><td style="text-align: right; font-weight: 700; color: #64748b;">{dli_ref:.1f} mol/m²/d</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Simulated Peak PPFD:</td><td style="text-align: right; font-weight: 700;">{peak_ppfd_val:.0f} µmol/m²/s</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Crop Min Peak PPFD:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.peak_PPFD_min:.0f} µmol/m²/s</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Spatial Homogeneity:</td><td style="text-align: right; font-weight: 700;">{(1.0 - metrics['cv_par'])*100:.1f}%</td></tr>
+                <tr><td style="padding: 6px 0; color: #475569;">Max Tolerable CV:</td><td style="text-align: right; font-weight: 700; color: #64748b;">{crop_sel.cv_max:.2f}</td></tr>
+            </table>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with det_col3:
+        st.markdown(f"""
+        <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
+            <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Agronomic Evaluation</h4>
+            <div style="margin-top: 8px; margin-bottom: 8px;">
+                <span style="font-size: 1.3rem; font-weight: 800; color: #1e293b;">{crop_sel.name_en}</span>
+                <span style="font-size: 0.85rem; color: #64748b; font-style: italic; margin-left: 6px;">({crop_sel.botanical_name})</span>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="background-color: {din_bg}; color: {din_color}; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; border: 1px solid {din_color};">
+                    DIN COMPLIANCE: {din_compliance}
+                </span>
+            </div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-top: 8px;">Evaluation Summary (German):</div>
+            <p style="font-size: 0.88rem; color: #334155; margin-top: 4px; line-height: 1.45; font-style: italic;">
+                "{r_sel.notes_de}"
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Render warning banners and references
+    if r_sel.warning or r_sel.evidence_tier == 'C':
+        warning_msg = r_sel.warning if r_sel.warning else (
+            "For this crop, no reliable species-specific Agri-PV PAR curve is available. "
+            "Evaluation is performed conservatively as a proxy based on functional crop group, light preference, and site-specific PAR."
+        )
+        st.warning(f"**CONSERVATIVE AGRONOMIC DISCLOSURE (Tier C Evidence):** {warning_msg}")
+
+    # Growing season and critical phase calendars
+    c_cal1, c_cal2 = st.columns(2)
+
+    with c_cal1:
+        st.markdown(f"**Active Growing Season Calendar for {crop_sel.name_en}**")
+        calendar_html = "".join([
+            f'<span style="background-color:#065f46; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>' if m in crop_sel.growing_months
+            else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>'
+            for m in range(1, 13)
+        ])
+        st.markdown(f'<div style="margin-top:8px;">{calendar_html}</div>', unsafe_allow_html=True)
+
+    with c_cal2:
+        st.markdown(f"**Critical Shade Sensitivity Window for {crop_sel.name_en}**")
+        crit_html = "".join([
+            f'<span style="background-color:#b91c1c; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>' if m in crop_sel.critical_months
+            else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem;">{m_names_crops[m-1]}</span>'
+            for m in range(1, 13)
+        ])
+        st.markdown(f'<div style="margin-top:8px;">{crit_html}</div>', unsafe_allow_html=True)
+
+    # Bibliography
+    with st.expander(f"Show Bibliography and Literature References for {crop_sel.name_en}"):
+        st.markdown(f"**Agronomic Evidence Group:** `{crop_sel.source_group}` (Evidence Tier {crop_sel.evidence_tier})")
+        st.markdown("**Literature Sources mapped in `sources.yaml`:**")
+        for src_ref in crop_sel.source_references:
+            src_info = SOURCES_REGISTRY.get(src_ref, {})
+            if src_info:
+                st.markdown(f"- **{src_info.get('authors', 'Authors')} ({src_info.get('year', 'Year')})**: *{src_info.get('title', 'Title')}*")
+                st.markdown(f"  *Journal:* {src_info.get('journal', 'N/A')} | *DOI:* [{src_info.get('doi', 'N/A')}](https://doi.org/{src_info.get('doi', '')})")
+                st.markdown(f"  *Relevance:* {src_info.get('relevance', 'N/A')}")
+            else:
+                st.markdown(f"- **{src_ref}**: Reference mapped dynamically.")
+
+    st.divider()
+
+    # SECTION 4: PREMIUM CELL-LEVEL SPATIAL CROP EXPLORER
     st.subheader("Cell-Level Spatial Suitability Explorer (Micro-Climate)")
     st.markdown("""
     Since the module rows shade some parts of the ground more than others, crop suitability changes across the pitch period.
     This Rigorous Spatial simulation models suitability at 11 separate cells across the row pitch period (from row-to-row spacing).
     """)
-    
+
     # Run 1D spatial simulation
     x_points, spatial_par_annual, spatial_par_monthly = simulation.compute_spatial_annual_par(
         config['lat'], config['lon'], config['g_slope'], config['g_aspect'], 
         config['tau'], config['albedo'], config['pitch'], n_points=11
     )
-    
+
     # Compute suitability at each cell
     spatial_scores = {crop_id: [] for crop_id in CROP_REGISTRY.keys()}
     for idx in range(11):
@@ -653,9 +952,9 @@ with tab_crops:
             
     # Plot Spatial Suitability Profile
     fig_spatial = go.Figure()
-    
+
     # Plot top crops
-    for crop_id in ["luzerne", "winterweizen", "hafer", "mais"]:
+    for crop_id in ["luzerne", "weizen", "hafer", "mais"]:
         crop = CROP_REGISTRY[crop_id]
         fig_spatial.add_trace(go.Scatter(
             x=x_points, 
@@ -675,7 +974,7 @@ with tab_crops:
         fillcolor="rgba(0,0,0,0.06)", layer="below", line_width=0, 
         annotation_text="Module Table"
     )
-    
+
     fig_spatial.update_layout(
         title="Spatial Suitability Score across Row Pitch (0m = row gap center, middle = directly under module)",
         xaxis_title="Horizontal Distance across Row Pitch (m)",
@@ -685,31 +984,50 @@ with tab_crops:
         margin=dict(l=0, r=0, t=40, b=0)
     )
     st.plotly_chart(fig_spatial, use_container_width=True)
-    
+
     st.info("""
     **Agronomic Insights from Spatial Profile:** 
     Cereals like Wheat show high suitability in the row gap center (left & right) but drop significantly directly under the modules (shaded zone).
     Lucerne remains highly robust and suited across the entire row pitch. Maize is fully unsuited regardless of location.
     """)
-    
+
     st.divider()
-    
-    # SECTION 3: TOP RECOMMENDED CROP DETAIL CARDS
+
+    # SECTION 5: TOP RECOMMENDED CROP DETAIL CARDS
     st.subheader("Detailed Crop Recommendation Cards")
     st.markdown("Detailed breakdown of the top recommended crops:")
-    
+
     # Group crops by classification
-    rec_crops = [r for r in crop_results if r.classification in {"sehr gut geeignet", "geeignet"}]
+    rec_crops = [r for r in crop_results if "geeignet" in r.classification.lower()]
     if not rec_crops:
         rec_crops = crop_results[:3]  # fallback to top 3 if none suitable
         
     cols = st.columns(len(rec_crops[:3]))
-    
+
     for idx, r in enumerate(rec_crops[:3]):
         crop = CROP_REGISTRY[r.crop_id]
-        card_class = "crop-card-geeignet" if r.classification == "geeignet" else "crop-card-grenzwertig"
-        badge_class = "badge-geeignet" if r.classification == "geeignet" else "badge-grenzwertig"
         
+        # Color coding classes matching new labels
+        class_lower = r.classification.lower()
+        if "hauptkultur" in class_lower or "sonderkultur" in class_lower or "geeignet" in class_lower:
+            card_class = "crop-card-geeignet"
+            badge_class = "badge-geeignet"
+        elif "prüfung" in class_lower or "grenzwertig" in class_lower:
+            card_class = "crop-card-grenzwertig"
+            badge_class = "badge-grenzwertig"
+        else:
+            card_class = "crop-card-nicht"
+            badge_class = "badge-nicht"
+            
+        # Warning banner if evidence_tier == 'C'
+        warning_html = ""
+        if r.evidence_tier == 'C':
+            warning_html = (
+                f'<div style="background-color:#fffbeb; border-left:3px solid #d97706; padding:8px 12px; border-radius:4px; font-size:0.8rem; color:#b45309; margin-top:10px; line-height:1.35;">'
+                f'For this crop, no reliable species-specific Agri-PV PAR curve is available. Evaluation is performed as a proxy based on light preference, crop group, and site-specific PAR.'
+                f'</div>'
+            )
+            
         with cols[idx]:
             st.markdown(f"""
             <div class="crop-card {card_class}">
@@ -718,6 +1036,7 @@ with tab_crops:
                 <div class="badge {badge_class}">{translate_class(r.classification)}</div>
                 <div style="margin-top:12px; font-size:1.6rem; font-weight:800; color:#0f172a;">Score: {r.score*100:.1f}%</div>
                 <p style="font-size:0.9rem; color:#334155; margin-top:8px; line-height:1.4;">{ENGLISH_CROP_NOTES.get(r.crop_id, r.notes_de)}</p>
+                {warning_html}
                 <div class="limiting-box">
                     <strong>Limiting Factor:</strong> {r.limiting_factor.replace("_", " ").upper()}<br/>
                     <strong>Evidence Tier:</strong> {r.evidence_tier} ({translate_confidence(r.confidence).upper()} CONFIDENCE)
@@ -740,11 +1059,11 @@ with tab_crops:
                 
                 # Show growing calendar months
                 st.markdown(f"**Growing Season Calendar:**")
-                calendar_str = " | ".join([f"**{m}**" if m in crop.growing_months else f"{m}" for m in range(1, 13)])
+                calendar_str = " | ".join([f"**{m_names_crops[m-1]}**" if m in crop.growing_months else f"{m_names_crops[m-1]}" for m in range(1, 13)])
                 st.markdown(f"Months (active in bold): {calendar_str}")
                 
                 st.markdown(f"**Critical Light Sensitivity Window:**")
-                crit_str = " | ".join([f"**{m}**" if m in crop.critical_months else f"{m}" for m in range(1, 13)])
+                crit_str = " | ".join([f"**{m_names_crops[m-1]}**" if m in crop.critical_months else f"{m_names_crops[m-1]}" for m in range(1, 13)])
                 st.markdown(f"Months (critical in bold): {crit_str}")
                 
     st.markdown("""
@@ -757,8 +1076,141 @@ with tab_crops:
     """, unsafe_allow_html=True)
 
 
+
 # ==============================================================================
-# TAB 4: ELECTRICAL & THERMAL RESULTS
+# TAB 4: MEDICINAL & SPECIAL CROPS
+# ==============================================================================
+with tab_med:
+    st.markdown("""
+    <div class="header-crops">
+        <h2 style="margin:0; font-weight:800; color:white;">Arznei- und Sonderkulturen</h2>
+        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Lichtplausibilität für Sonderkulturen, Heilpflanzen und Nischenkulturen unter Agri-PV</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.warning("**WICHTIGER HINWEIS:** Die Bewertung beschreibt die lichtseitige Plausibilität einer Kultur unter den simulierten Agri-PV-Bedingungen. Sie ersetzt keine standortspezifische Anbauplanung, keinen Abnehmernachweis, keine Ertragsprognose und keine formale Prüfung der landwirtschaftlichen Hauptnutzung nach DIN SPEC 91434. Für viele Arznei- und Gewürzpflanzen liegen keine robusten artspezifischen Agri-PV-PAR-Ertragskurven vor. Die Bewertung erfolgt daher teilweise über DLI, PPFD, ökologische Lichtzahlen, Standortpräferenzen und Proxy-Gruppen.")
+
+    # Convert results to dataframe for display
+    med_data = []
+    for r in crop_results_med:
+        med_data.append({
+            "Kultur": r.crop_name,
+            "Botanisch": r.botanical_name,
+            "Typ": r.use_type,
+            "Klasse": translate_class(r.suitability_class).upper(),
+            "DLI Crit": f"{r.DLI_crit:.1f} / min {r.DLI_min:.1f} mol",
+            "Homogenität": r.homogeneity_class.upper(),
+            "Confidence": translate_confidence(r.confidence_level).upper(),
+            "Limiting": r.limiting_factor,
+            "ID": r.crop_id
+        })
+    df_med = pd.DataFrame(med_data)
+
+    st.subheader("Filter & Übersicht")
+    # Filters
+    filters = ["Alle", "Arzneipflanzen", "Gewürzpflanzen", "hohe Lichtpräferenz", "moderate Lichtpräferenz", "Blüh-/Sonderkulturen"]
+    sel_filter = st.radio("Kulturgruppe filtern:", filters, horizontal=True)
+
+    if sel_filter != "Alle":
+        filtered_ids = []
+        for r in crop_results_med:
+            cg = MED_CROP_REGISTRY[r.crop_id].crop_group
+            ut = MED_CROP_REGISTRY[r.crop_id].use_type
+            if sel_filter == "Arzneipflanzen" and "Arznei" in ut: filtered_ids.append(r.crop_id)
+            elif sel_filter == "Gewürzpflanzen" and "Gewürz" in ut: filtered_ids.append(r.crop_id)
+            elif sel_filter == "hohe Lichtpräferenz" and "high_light" in cg: filtered_ids.append(r.crop_id)
+            elif sel_filter == "moderate Lichtpräferenz" and "moderate_light" in cg: filtered_ids.append(r.crop_id)
+            elif sel_filter == "Blüh-/Sonderkulturen" and ("flowering" in cg or "special" in cg): filtered_ids.append(r.crop_id)
+        df_med_disp = df_med[df_med["ID"].isin(filtered_ids)]
+    else:
+        df_med_disp = df_med
+
+    def color_med_class(val):
+        val_upper = str(val).upper()
+        if "GEEIGNET" in val_upper and "SONDER" not in val_upper and "PRÜFUNG" not in val_upper:
+            return 'color: #065f46; font-weight: 700;'
+        elif "PRÜFUNG" in val_upper or "GRENZWERTIG" in val_upper or "FELDVERSUCH" in val_upper:
+            return 'color: #b45309; font-weight: 700;'
+        else:
+            return 'color: #b91c1c; font-weight: 700;'
+
+    styler = df_med_disp.drop(columns=["ID"]).style.applymap(color_med_class, subset=['Klasse']) if hasattr(df_med_disp.style, "applymap") else df_med_disp.drop(columns=["ID"]).style.map(color_med_class, subset=['Klasse'])
+    st.dataframe(styler, use_container_width=True, hide_index=True)
+
+    c_exp_csv1, _ = st.columns(2)
+    with c_exp_csv1:
+        csv = df_med.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="Download CSV",
+            data=csv,
+            file_name='medicinal_crop_suitability.csv',
+            mime='text/csv',
+        )
+
+    st.divider()
+
+    st.subheader("Kultur-Detailanalyse")
+    disp_names = df_med_disp["Kultur"].tolist()
+    if disp_names:
+        sel_crop_name = st.selectbox("Sonderkultur auswählen:", disp_names)
+        sel_row = df_med[df_med["Kultur"] == sel_crop_name].iloc[0]
+        sel_res = next(r for r in crop_results_med if r.crop_id == sel_row["ID"])
+        sel_crop = MED_CROP_REGISTRY[sel_res.crop_id]
+
+        c_med1, c_med2, c_med3 = st.columns([1,1,1.5])
+        with c_med1:
+            st.markdown(f"### {sel_res.crop_name}")
+            st.markdown(f"*{sel_res.botanical_name}*")
+            st.write(f"**Nutzung:** {sel_res.use_type}")
+            st.write(f"**Gruppe:** {sel_res.crop_group.replace('_', ' ').title()}")
+            st.write(f"**Evidenzklasse:** Tier {sel_res.evidence_tier} ({translate_confidence(sel_res.confidence_level)})")
+        with c_med2:
+            st.markdown(f"**Kritische Phase (Monate):** {', '.join(map(str, sel_res.critical_months))}")
+            st.write(f"**Relative PAR (Jahr):** {sel_res.r_ann*100:.1f} %")
+            st.write(f"**Relative PAR (krit.):** {sel_res.r_crit*100:.1f} %")
+            st.write(f"**Mittlere DLI (krit.):** {sel_res.DLI_crit:.1f} mol/m²/d (Ziel: {sel_res.DLI_target})")
+            st.write(f"**Peak PPFD (krit.):** {sel_res.peak_PPFD_crit:.0f} µmol/m²/s (Min: {sel_res.peak_PPFD_min})")
+            st.write(f"**Lichtheterogenität (CV):** {sel_res.cv_PAR*100:.1f}% ({sel_res.homogeneity_class})")
+        with c_med3:
+            st.markdown("**Bewertung:**")
+            st.info(sel_res.explanation_de)
+            if sel_res.warning_text:
+                st.warning(sel_res.warning_text)
+
+        st.markdown("**Literatur- und Proxy-Quellen:**")
+        for src in sel_res.source_references:
+            st.markdown(f"- {src}")
+            
+        # Chart
+        st.markdown("**Jahresverlauf Lichtangebot (PAR) vs. Bedarf**")
+        m_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        m_agri = metrics['monthly_par_agri']
+        m_open = metrics['monthly_par_open']
+        days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        dli_agri_m = [m_agri[i] / days[i] if days[i] > 0 else 0 for i in range(12)]
+        dli_open_m = [m_open[i] / days[i] if days[i] > 0 else 0 for i in range(12)]
+        
+        df_chart = pd.DataFrame({
+            "Monat": m_names,
+            "Agri-PV DLI": dli_agri_m,
+            "Freiland DLI": dli_open_m
+        })
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=df_chart["Monat"], y=df_chart["Agri-PV DLI"], name="Agri-PV (mol/m²/d)", marker_color="#10b981"))
+        fig.add_trace(go.Scatter(x=df_chart["Monat"], y=df_chart["Freiland DLI"], name="Freiland (mol/m²/d)", mode="lines+markers", marker_color="#475569"))
+        fig.add_hline(y=sel_res.DLI_target, line_dash="dash", line_color="#059669", annotation_text="DLI Ziel (krit. Phase)")
+        fig.add_hline(y=sel_res.DLI_min, line_dash="dot", line_color="#d97706", annotation_text="DLI Min (krit. Phase)")
+        
+        # Highlight critical months
+        for m in sel_res.critical_months:
+            fig.add_vrect(x0=m-1.4, x1=m-0.6, fillcolor="rgba(239,68,68,0.1)", line_width=0)
+            
+        fig.update_layout(height=350, margin=dict(l=0,r=0,t=20,b=0), yaxis_title="Daily Light Integral (mol/m²/d)")
+        st.plotly_chart(fig, use_container_width=True)
+
+
+# ==============================================================================
+# TAB 5: ELECTRICAL & THERMAL RESULTS
 # ==============================================================================
 with tab_elec:
     st.markdown("""
