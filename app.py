@@ -1149,7 +1149,7 @@ with tab_med:
             return 'color: #b45309; font-weight: 700;'
 
     styler = df_med_disp.drop(columns=["ID"]).style.applymap(color_med_class, subset=['Suitability Class']) if hasattr(df_med_disp.style, "applymap") else df_med_disp.drop(columns=["ID"]).style.map(color_med_class, subset=['Suitability Class'])
-    st.dataframe(styler, use_container_width=True, hide_index=True)
+    st.dataframe(styler, use_container_width=True, hide_index=True, key="med_table", column_order=df_med_disp.columns.drop("ID").tolist())
 
     c_exp_csv1, _ = st.columns(2)
     with c_exp_csv1:
