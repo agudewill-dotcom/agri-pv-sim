@@ -12,8 +12,11 @@ import solar
 import geometry
 import shading
 import irradiance
+import spatial
 import thermal
 import simulation
+import importlib
+importlib.reload(simulation)
 from crop_profiles import CROP_REGISTRY
 from crop_scoring import evaluate_all_crops, evaluate_crop
 from medicinal_crop_suitability import evaluate_all_medicinal_crops, MED_CROP_REGISTRY, MED_SOURCES_REGISTRY
@@ -281,7 +284,7 @@ st.session_state['res_a'] = res_a
 st.session_state['res_s'] = res_s
 st.session_state['metrics'] = metrics
 
-# Compute crop suitability results
+# Compute crop suitability results (Reproductive)
 crop_results = evaluate_all_crops(
     par_ann=metrics['pa'],
     par_ref=metrics['par_open_field'],
@@ -290,6 +293,12 @@ crop_results = evaluate_all_crops(
     has_hourly=True
 )
 st.session_state['crop_results'] = crop_results
+
+# Compute crop suitability results (Biomass)
+import biomass_suitability
+site_context = biomass_suitability.SiteContext(hot_dry_index=0.5, water_stress_risk=0.5, humidity_disease_index=0.2)
+crop_results_bio = biomass_suitability.evaluate_all_biomass(metrics, res_a, site_context)
+st.session_state['crop_results_bio'] = crop_results_bio
 
 # Compute medicinal crop suitability results
 crop_results_med = evaluate_all_medicinal_crops(
@@ -356,9 +365,10 @@ ta_cell, ts_cell, delta_t, temp_bonus_pct = metrics['ta_cell'], metrics['ts_cell
 
 
 # --- NAVIGATION TABS ---
-tab_overview, tab_light, tab_crops, tab_med, tab_elec, tab_din = st.tabs([
+tab_overview, tab_light, tab_spatial, tab_crops, tab_med, tab_elec, tab_din = st.tabs([
     "Executive Summary", 
     "Light Results", 
+    "Spatial Heatmaps",
     "Arable Crops",
     "Medicinal & Special Crops",
     "Electrical & Thermal", 
@@ -387,7 +397,7 @@ with tab_overview:
     # Baseline & Agri-PV light metrics row
     k1, k2, k3, k4 = st.columns(4)
     k1.metric("Agricultural Light", f"{(va/vo)*100:.1f}%", f"+{(va/vs-1)*100:.1f}% vs Std. PV", help="Percentage of total open-field irradiance reaching the ground under the system.")
-    k2.metric("Annual PAR Sum", f"{pa:.0f} mol/m²", f"+{(pa/ps-1)*100:.1f}% vs Std. PV", help="Annual cumulative Photosynthetic Active Radiation (PAR) for crop growth.")
+    k2.metric("Annual PAR Sum", f"{pa:.0f} mol/m² ({(metrics['pa']/metrics['par_open_field'])*100:.1f}%)", f"+{(pa/ps-1)*100:.1f}% vs Std. PV", help="Annual cumulative Photosynthetic Active Radiation (PAR) for crop growth.")
     k3.metric("BASELINE: STANDARD GROUND-PV", f"{vs:.0f} kWh/m²", f"RESTRICTED: {(vs/vo)*100:.1f}% LIGHT", help="Annual ground irradiance for a standard 0.8m high system.")
     k4.metric("VS. STANDARD GROUND-PV", f"+{va-vs:.0f} kWh/m²", help="The absolute irradiance advantage of Agri-PV over Standard PV.")
     
@@ -606,6 +616,100 @@ with tab_light:
 
 
 # ==============================================================================
+
+# ==============================================================================
+# TAB 2.5: SPATIAL HEATMAPS
+# ==============================================================================
+with tab_spatial:
+    st.markdown('''
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #38bdf8;">
+        <h2 style="margin:0; font-weight:800; color:white;">Spatial Light and PAR Heatmaps</h2>
+        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">2D Spatio-Temporal Shading Matrix across 8760 hours.</p>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        res_sel = st.selectbox("Grid Resolution (m)", [1.0, 0.5, 0.25], index=1)
+        st.info("Higher resolution = slower rendering.")
+        
+    with st.spinner("Calculating 2D Matrix (millions of data points)..."):
+        layers, kpis = spatial.compute_spatial_grid_2d(config, res_a, resolution=res_sel, field_length=20.0)
+    
+    st.subheader("Key Spatial Statistics")
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Mean Remaining PAR", f"{kpis['mean_rem']:.1f}%")
+    k2.metric("CV (Heterogeneity)", f"{kpis['cv_rem']*100:.1f}%")
+    k3.metric("Shadow Frequency", f"{kpis['mean_shadow_freq']:.1f}%")
+    k4.metric("Area < 50% PAR", f"{kpis['below_50_pct']:.1f}%")
+    
+    st.divider()
+    
+    fig_spatial_dict = {}
+    
+    def plot_heatmap(z_matrix, title, colorscale="Viridis", zmin=None, zmax=None):
+        fig = go.Figure(data=go.Heatmap(
+            z=z_matrix,
+            x=layers['X'][0],
+            y=layers['Y'][:, 0],
+            colorscale=colorscale,
+            zmin=zmin, zmax=zmax
+        ))
+        
+        for rect in layers['pv_rects']:
+            fig.add_shape(type="rect",
+                x0=rect['x0'], y0=rect['y0'], x1=rect['x1'], y1=rect['y1'],
+                line=dict(color="rgba(255, 255, 255, 0.8)", width=2),
+                fillcolor="rgba(0, 0, 0, 0.5)"
+            )
+            
+        fig.update_layout(
+            title=title,
+            xaxis_title="Distance parallel to rows (m)",
+            yaxis_title="Distance across rows (m)",
+            height=450,
+            margin=dict(l=70, r=20, t=65, b=65)
+        )
+        return fig
+        
+    hm1, hm2, hm3 = st.tabs(["Remaining PAR", "Shadow Frequency", "PAR Loss"])
+    
+    with hm1:
+        fig_hm_rem = plot_heatmap(layers['rem_par'], "Annual Remaining PAR (%)", "Viridis", 20, 100)
+        st.plotly_chart(fig_hm_rem, use_container_width=True)
+        fig_spatial_dict['rem_par'] = fig_hm_rem
+        
+    with hm2:
+        fig_hm_freq = plot_heatmap(layers['shadow_freq'], "Direct Shadow Frequency (% of daylight hours)", "Plasma")
+        st.plotly_chart(fig_hm_freq, use_container_width=True)
+        fig_spatial_dict['shadow_freq'] = fig_hm_freq
+        
+    with hm3:
+        fig_hm_loss = plot_heatmap(layers['par_loss'], "Annual PAR Loss (%)", "Reds", 0, 80)
+        st.plotly_chart(fig_hm_loss, use_container_width=True)
+        fig_spatial_dict['par_loss'] = fig_hm_loss
+        
+    st.markdown("### Seasonal PAR")
+    sc1, sc2 = st.columns(2)
+    with sc1:
+        fig_spr = plot_heatmap(layers['par_spring'], "Spring PAR", "YlGnBu")
+        st.plotly_chart(fig_spr, use_container_width=True)
+        fig_spatial_dict['spring'] = fig_spr
+        
+        fig_aut = plot_heatmap(layers['par_autumn'], "Autumn PAR", "YlGnBu")
+        st.plotly_chart(fig_aut, use_container_width=True)
+        fig_spatial_dict['autumn'] = fig_aut
+    with sc2:
+        fig_sum = plot_heatmap(layers['par_summer'], "Summer PAR", "YlGnBu")
+        st.plotly_chart(fig_sum, use_container_width=True)
+        fig_spatial_dict['summer'] = fig_sum
+        
+        fig_win = plot_heatmap(layers['par_winter'], "Winter PAR", "YlGnBu")
+        st.plotly_chart(fig_win, use_container_width=True)
+        fig_spatial_dict['winter'] = fig_win
+
+
+
 # TAB 3: AGRONOMIC SUITABILITY (CROP COMPATIBILITY)
 # ==============================================================================
 with tab_crops:
@@ -627,6 +731,15 @@ with tab_crops:
             return "Nicht empfehlenswert"
         else:
             return "Prüfpflichtig"
+
+    yield_mode = st.radio(
+        "Select Agricultural Yield Objective:",
+        options=["Korn-/Fruchtbildung (Reproductive Yield)", "Biomasse / Ganzpflanze (Vegetative Biomass)"],
+        index=0,
+        horizontal=True
+    )
+    
+    is_biomass = "Biomasse" in yield_mode
 
     # Multi-criteria sorting logic: classification suitability, confidence level, and relative PAR margin
     def sort_key(r):
@@ -657,20 +770,34 @@ with tab_crops:
 
     with col_left:
         st.subheader("Farm-Average Crop Suitability Ranking")
-        st.markdown("All 35 arable crops sorted by suitability classification, confidence level, and relative PAR margins:")
+        st.markdown("All arable crops sorted by suitability classification, confidence level, and relative PAR margins:")
 
-        df_ranking = pd.DataFrame([
-            {
-                "Crop": CROP_REGISTRY[r.crop_id].name_en,
-                "Score": f"{r.score*100:.1f}%",
-                "Suitability Class": translate_class(r.classification).upper(),
-                "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
-                "Evidence Strength": f"Tier {r.evidence_tier}",
-                "Limiting Factor": translate_limiting(r.limiting_factor).upper(),
-                "Annual PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
-            }
-            for r in crop_results_sorted
-        ])
+        if not is_biomass:
+            df_ranking = pd.DataFrame([
+                {
+                    "Crop": CROP_REGISTRY[r.crop_id].name_en,
+                    "Score": f"{r.score*100:.1f}%",
+                    "Suitability Class": translate_class(r.classification).upper(),
+                    "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
+                    "Evidence Strength": f"Tier {r.evidence_tier}",
+                    "Limiting Factor": translate_limiting(r.limiting_factor).upper(),
+                    "Annual PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
+                }
+                for r in crop_results_sorted
+            ])
+        else:
+            df_ranking = pd.DataFrame([
+                {
+                    "Crop": r['crop'],
+                    "Score": f"{r['score']:.1f}",
+                    "Suitability Class": translate_class(r['label']).upper(),
+                    "Confidence": translate_confidence(r['confidence']).upper(),
+                    "Evidence Strength": f"Tier {r['evidence_tier']}",
+                    "Biomass Target": r['biomass_target_type'],
+                    "Limiting Factor": translate_limiting(r['limiting_factor']).upper()
+                }
+                for r in st.session_state.get('crop_results_bio', [])
+            ])
 
         def color_class(val):
             val_upper = str(val).upper()
@@ -711,11 +838,19 @@ with tab_crops:
 
         group_data = []
         for grp, grp_name in group_names_en.items():
-            group_crops = [crop for crop in CROP_REGISTRY.values() if crop.crop_group == grp]
-            if not group_crops:
-                continue
-            min_f_min = min(c.r_ann_min for c in group_crops) * 100.0
-            max_f_target = max(c.r_ann_target for c in group_crops) * 100.0
+            if is_biomass:
+                group_crops = [crop for crop in CROP_REGISTRY.values() if crop.crop_group == grp and 'biomass' in crop.supported_objectives]
+                if not group_crops:
+                    continue
+                min_f_min = min(c.thresholds['biomass']['r_gs_min'] for c in group_crops) * 100.0
+                max_f_target = max(c.thresholds['biomass']['r_gs_target'] for c in group_crops) * 100.0
+            else:
+                group_crops = [crop for crop in CROP_REGISTRY.values() if crop.crop_group == grp]
+                if not group_crops:
+                    continue
+                min_f_min = min(c.r_ann_min for c in group_crops) * 100.0
+                max_f_target = max(c.r_ann_target for c in group_crops) * 100.0
+                
             group_data.append({
                 "Group Name": grp_name,
                 "Min Threshold (%)": min_f_min,
@@ -759,7 +894,7 @@ with tab_crops:
             xaxis_title="Arable Crop Groups",
             yaxis=dict(range=[30, 105], ticksuffix="%"),
             height=380,
-            margin=dict(l=0, r=0, t=10, b=0),
+            margin=dict(l=40, r=0, t=10, b=0),
             showlegend=False
         )
         st.plotly_chart(fig_groups, use_container_width=True)
@@ -807,37 +942,50 @@ with tab_crops:
     )
     selected_crop_id = crop_options[selected_crop_en]
 
-    r_sel = next(r for r in crop_results if r.crop_id == selected_crop_id)
+    if is_biomass:
+        try:
+            r_sel_bio = next(r for r in st.session_state.get('crop_results_bio', []) if r['crop'] == getattr(CROP_REGISTRY[selected_crop_id], 'display_name', getattr(CROP_REGISTRY[selected_crop_id], 'name_de', '')))
+        except StopIteration:
+            r_sel_bio = None
+    else:
+        r_sel = next(r for r in crop_results if r.crop_id == selected_crop_id)
+        
     crop_sel = CROP_REGISTRY[selected_crop_id]
 
-    # Calculate r_crit
-    monthly_ref = metrics['par_open_field'] / 12.0
-    sum_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.critical_months)
-    sum_ref = monthly_ref * len(crop_sel.critical_months)
-    r_crit = sum_agri / sum_ref if sum_ref > 0 else 0.0
+    if not is_biomass:
+        monthly_ref = metrics['par_open_field'] / 12.0
+        sum_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.reproductive_critical_months)
+        sum_ref = monthly_ref * len(crop_sel.reproductive_critical_months)
+        r_crit = sum_agri / sum_ref if sum_ref > 0 else 0.0
 
-    # DLI calculations
-    days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    growing_days = sum(days_per_month[m - 1] for m in crop_sel.growing_months)
-    growing_par_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.growing_months)
-    growing_par_ref = sum((metrics['par_open_field']/12.0) for m in crop_sel.growing_months)
-    dli_agri = growing_par_agri / growing_days if growing_days > 0 else 0.0
-    dli_ref = growing_par_ref / growing_days if growing_days > 0 else 0.0
+        days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        growing_days = sum(days_per_month[m - 1] for m in crop_sel.growing_season_months)
+        growing_par_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.growing_season_months)
+        growing_par_ref = sum((metrics['par_open_field']/12.0) for m in crop_sel.growing_season_months)
+        dli_agri = growing_par_agri / growing_days if growing_days > 0 else 0.0
+        dli_ref = growing_par_ref / growing_days if growing_days > 0 else 0.0
 
-    # Simulated Peak PPFD
-    peak_ppfd_val = float(res_a['par'].max())
+        peak_ppfd_val = float(res_a['par'].max())
 
-    # DIN compliance label mapping
-    din_compliance = get_din_compliance(r_sel) # "Plausibel", "Prüfpflichtig", "Nicht empfehlenswert"
-    if din_compliance == "Plausibel":
-        din_color = "#065f46"
-        din_bg = "#d1fae5"
-    elif din_compliance == "Prüfpflichtig":
-        din_color = "#b45309"
-        din_bg = "#fef3c7"
+        din_compliance = get_din_compliance(r_sel) # "Plausibel", "Prüfpflichtig", "Nicht empfehlenswert"
+        if din_compliance == "Plausibel":
+            din_color = "#065f46"
+            din_bg = "#d1fae5"
+        elif din_compliance == "Prüfpflichtig":
+            din_color = "#b45309"
+            din_bg = "#fef3c7"
+        else:
+            din_color = "#b91c1c"
+            din_bg = "#fee2e2"
     else:
-        din_color = "#b91c1c"
-        din_bg = "#fee2e2"
+        if r_sel_bio:
+            din_compliance = "Plausibel" if r_sel_bio['score'] >= 75 else "Prüfpflichtig" if r_sel_bio['score'] >= 50 else "Nicht empfehlenswert"
+            din_color = "#065f46" if r_sel_bio['score'] >= 75 else "#b45309" if r_sel_bio['score'] >= 50 else "#b91c1c"
+            din_bg = "#d1fae5" if r_sel_bio['score'] >= 75 else "#fef3c7" if r_sel_bio['score'] >= 50 else "#fee2e2"
+        else:
+            din_compliance = "Nicht empfehlenswert"
+            din_color = "#b91c1c"
+            din_bg = "#fee2e2"
 
     # Render detailed view columns
     det_col1, det_col2, det_col3 = st.columns([1.2, 1.2, 1.6])
@@ -848,12 +996,19 @@ with tab_crops:
             <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Physiological Light Metrics</h4>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Coordinates-adjusted simulation vs crop thresholds:</p>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                {f'''
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Biomass Growing Season PAR:</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['r_gs']*100:.1f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Growing PAR:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.thresholds['biomass']['r_gs_target']*100:.0f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Min Growing PAR:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['biomass']['r_gs_min']*100:.0f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Biomass Target Type:</td><td style="text-align: right; font-weight: 700;">{crop_sel.biomass_target_type}</td></tr>
+                ''' if is_biomass and r_sel_bio else f'''
                 <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Annual Relative PAR:</td><td style="text-align: right; font-weight: 700;">{(metrics['pa']/metrics['par_open_field'])*100:.1f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.r_ann_target*100:.0f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Min Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.r_ann_min*100:.0f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.thresholds['reproductive']['r_ann_target']*100:.0f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Min Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['reproductive']['r_ann_min']*100:.0f}%</td></tr>
                 <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Critical Phase PAR:</td><td style="text-align: right; font-weight: 700;">{r_crit*100:.1f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.r_crit_target*100:.0f}%</td></tr>
-                <tr><td style="padding: 6px 0; color: #475569;">Min Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.r_crit_min*100:.0f}%</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.thresholds['reproductive']['r_crit_target']*100:.0f}%</td></tr>
+                <tr><td style="padding: 6px 0; color: #475569;">Min Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['reproductive']['r_crit_min']*100:.0f}%</td></tr>
+                '''}
             </table>
         </div>
         """, unsafe_allow_html=True)
@@ -864,10 +1019,17 @@ with tab_crops:
             <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Growth Season & Microclimate</h4>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Active vegetation periods and spatial distribution:</p>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                {f'''
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Mean DLI:</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['DLI_gs_mean']:.1f} mol/m²/d</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">p10 DLI (darkest spots):</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['DLI_gs_p10']:.1f} mol/m²/d</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Simulated Peak PPFD:</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['peak_PPFD_gs']:.0f} µmol/m²/s</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Crop Min Peak PPFD:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['biomass']['peak_PPFD_min']:.0f} µmol/m²/s</td></tr>
+                ''' if is_biomass and r_sel_bio else f'''
                 <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Growing Season DLI:</td><td style="text-align: right; font-weight: 700;">{dli_agri:.1f} mol/m²/d</td></tr>
                 <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Open-Field DLI:</td><td style="text-align: right; font-weight: 700; color: #64748b;">{dli_ref:.1f} mol/m²/d</td></tr>
                 <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Simulated Peak PPFD:</td><td style="text-align: right; font-weight: 700;">{peak_ppfd_val:.0f} µmol/m²/s</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Crop Min Peak PPFD:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.peak_PPFD_min:.0f} µmol/m²/s</td></tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Crop Min Peak PPFD:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['reproductive']['peak_PPFD_min']:.0f} µmol/m²/s</td></tr>
+                '''}
                 <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Spatial Homogeneity:</td><td style="text-align: right; font-weight: 700;">{(1.0 - metrics['cv_par'])*100:.1f}%</td></tr>
                 <tr><td style="padding: 6px 0; color: #475569;">Max Tolerable CV:</td><td style="text-align: right; font-weight: 700; color: #64748b;">{crop_sel.cv_max:.2f}</td></tr>
             </table>
@@ -889,35 +1051,40 @@ with tab_crops:
             </div>
             <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-top: 8px;">Evaluation Summary (German):</div>
             <p style="font-size: 0.88rem; color: #334155; margin-top: 4px; line-height: 1.45; font-style: italic;">
-                "{r_sel.notes_de}"
+                "{crop_sel.notes_de}"
             </p>
         </div>
         """, unsafe_allow_html=True)
 
     # Render warning banners and references
-    if r_sel.warning or r_sel.evidence_tier == 'C':
-        warning_msg = r_sel.warning if r_sel.warning else (
-            "For this crop, no reliable species-specific Agri-PV PAR curve is available. "
-            "Evaluation is performed conservatively as a proxy based on functional crop group, light preference, and site-specific PAR."
-        )
-        st.warning(f"**CONSERVATIVE AGRONOMIC DISCLOSURE (Tier C Evidence):** {warning_msg}")
+    if is_biomass and r_sel_bio:
+        for w in r_sel_bio.get('warnings', []):
+            st.warning(f"**CONSERVATIVE AGRONOMIC DISCLOSURE:** {w}")
+    elif not is_biomass and r_sel:
+        if r_sel.warning or r_sel.evidence_tier == 'C':
+            warning_msg = r_sel.warning if r_sel.warning else (
+                "For this crop, no reliable species-specific Agri-PV PAR curve is available. "
+                "Evaluation is performed conservatively as a proxy based on functional crop group, light preference, and site-specific PAR."
+            )
+            st.warning(f"**CONSERVATIVE AGRONOMIC DISCLOSURE (Tier C Evidence):** {warning_msg}")
 
     # Growing season and critical phase calendars
     st.markdown(f"**Active Growing Season Calendar for {crop_sel.name_en}**")
     calendar_html = "".join([
-        f'<span style="background-color:#065f46; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.growing_months
+        f'<span style="background-color:#065f46; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.growing_season_months
         else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>'
         for m in range(1, 13)
     ])
     st.markdown(f'<div style="margin-top:8px; margin-bottom:16px;">{calendar_html}</div>', unsafe_allow_html=True)
 
-    st.markdown(f"**Critical Shade Sensitivity Window for {crop_sel.name_en}**")
-    crit_html = "".join([
-        f'<span style="background-color:#b91c1c; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.critical_months
-        else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>'
-        for m in range(1, 13)
-    ])
-    st.markdown(f'<div style="margin-top:8px; margin-bottom:16px;">{crit_html}</div>', unsafe_allow_html=True)
+    if not is_biomass:
+        st.markdown(f"**Critical Shade Sensitivity Window for {crop_sel.name_en}**")
+        crit_html = "".join([
+            f'<span style="background-color:#b91c1c; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.reproductive_critical_months
+            else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>'
+            for m in range(1, 13)
+        ])
+        st.markdown(f'<div style="margin-top:8px; margin-bottom:16px;">{crit_html}</div>', unsafe_allow_html=True)
 
     # Bibliography
     with st.expander(f"Show Bibliography and Literature References for {crop_sel.name_en}"):
@@ -931,6 +1098,14 @@ with tab_crops:
                 st.markdown(f"  *Relevance:* {src_info.get('relevance', 'N/A')}")
             else:
                 st.markdown(f"- **{src_ref}**: Reference mapped dynamically.")
+                
+    if is_biomass:
+        st.markdown("""
+        <div style="margin-top:20px; padding:15px; background-color:#fef2f2; border-left:5px solid #dc2626; border-radius:4px; font-size:0.85rem; color:#7f1d1d;">
+            <strong>Wichtiger Hinweis zur DIN SPEC 91434 & Nutzungskonzept:</strong><br/>
+            Die Biomassebewertung beschreibt die lichtseitige Plausibilität einer Kultur unter den simulierten Agri-PV-Bedingungen. Sie ersetzt keine standortspezifische Anbauplanung, keinen Referenzertragsnachweis, keine Wirtschaftlichkeitsprüfung und keine formale Prüfung der landwirtschaftlichen Hauptnutzung nach DIN SPEC 91434.
+        </div>
+        """, unsafe_allow_html=True)
 
     st.divider()
 
@@ -1390,107 +1565,50 @@ with tab_din:
     st.subheader("Executive Report & Data Export")
     st.markdown("Download the complete, comprehensive technical validation report or the hourly calculations data:")
     
-    def generate_full_pdf(lat, lon, metrics, crop_results, config):
-        pdf = FPDF()
-        pdf.add_page()
-        
-        pdf.set_font("Helvetica", "B", 18)
-        pdf.set_text_color(15, 23, 42)
-        pdf.cell(0, 12, "Agri-PV Strategic Analytics: Technical Validation Report", ln=True, align="C")
-        
-        pdf.set_font("Helvetica", "I", 9)
-        pdf.set_text_color(100, 116, 139)
-        pdf.cell(0, 5, f"Location Coordinates: Latitude {lat:.4f}, Longitude {lon:.4f} | Local Time: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="C")
-        pdf.cell(0, 5, "Physics Engine Model: v9.0 (Hottel crossed-strings, Faiman thermal log, McCree PAR)", ln=True, align="C")
-        pdf.ln(10)
-        
-        pdf.set_font("Helvetica", "B", 13)
-        pdf.set_text_color(15, 23, 42)
-        pdf.cell(0, 8, "1. Executive Summary", ln=True)
-        pdf.set_font("Helvetica", "", 10)
-        pdf.set_text_color(51, 65, 85)
-        pdf.multi_cell(0, 5, f"This document represents a rigorous technical validation report for the elevated Agri-PV system. The physical model compares an elevated 2.10m mounting height against a standard 0.80m ground system (same hardware: SUNfarming SF600-72N, 15deg tilt, pitch {config['pitch']:.2f}m). The estimated electrical yield advantage is +{metrics['y_bonus']:.1f} kWh/kWp (+{metrics['temp_bonus_pct']:.2f}%) due to exposed convective wind ventilation under the elevated configuration.")
-        pdf.ln(5)
-        
-        pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(70, 8, "Performance Metric", border=1)
-        pdf.cell(60, 8, "Agri-PV System (2.10m)", border=1)
-        pdf.cell(60, 8, "Standard PV System (0.80m)", border=1, ln=True)
-        
-        pdf.set_font("Helvetica", "", 10)
-        pdf.cell(70, 8, "Annual Ground Irradiance Sum", border=1)
-        pdf.cell(60, 8, f"{metrics['va']:.1f} kWh/m2", border=1)
-        pdf.cell(60, 8, f"{metrics['vs']:.1f} kWh/m2", border=1, ln=True)
-        
-        pdf.cell(70, 8, "Exposed PAR Potential Sum", border=1)
-        pdf.cell(60, 8, f"{metrics['pa']:.1f} mol/m2", border=1)
-        pdf.cell(60, 8, f"{metrics['ps']:.1f} mol/m2", border=1, ln=True)
-        
-        pdf.cell(70, 8, "Specific Yield", border=1)
-        pdf.cell(60, 8, f"{metrics['ya_spec']:.1f} kWh/kWp", border=1)
-        pdf.cell(60, 8, f"{metrics['ys_spec']:.1f} kWh/kWp", border=1, ln=True)
-        
-        pdf.cell(70, 8, "Mean Cell Temperature (Daylight)", border=1)
-        pdf.cell(60, 8, f"{metrics['ta_cell']:.1f} C", border=1)
-        pdf.cell(60, 8, f"{metrics['ts_cell']:.1f} C", border=1, ln=True)
-        
-        pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(130, 8, "ANNUAL ELECTRICAL GENERATION ADVANTAGE", border=1)
-        pdf.cell(60, 8, f"+{metrics['y_bonus']:.1f} kWh/kWp", border=1, ln=True)
-        pdf.ln(8)
-        
-        pdf.set_font("Helvetica", "B", 13)
-        pdf.cell(0, 8, "2. Agronomic Crop Suitability", ln=True)
-        pdf.set_font("Helvetica", "", 10)
-        pdf.multi_cell(0, 5, f"Arable crops have been assessed based on the 4-component suitability engine (Annual PAR adequacy, Seasonal PAR activity, Critical Phase DLI, and Spatial shadow homogeneity). Relative remaining agricultural light is {metrics['remaining_par_pct']:.1f}% with cv_PAR of {metrics['cv_par']*100:.1f}%.")
-        pdf.ln(3)
-        
-        pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(60, 8, "Crop", border=1)
-        pdf.cell(50, 8, "Suitability Class", border=1)
-        pdf.cell(30, 8, "Score", border=1)
-        pdf.cell(50, 8, "Confidence", border=1, ln=True)
-        
-        pdf.set_font("Helvetica", "", 10)
-        if crop_results is not None:
-            for r in crop_results[:6]:
-                pdf.cell(60, 8, CROP_REGISTRY[r.crop_id].name_en, border=1)
-                pdf.cell(50, 8, translate_class(r.classification), border=1)
-                pdf.cell(30, 8, f"{r.score*100:.1f}%", border=1)
-                pdf.cell(50, 8, translate_confidence(r.confidence), border=1, ln=True)
-        pdf.ln(8)
-        
-        pdf.set_font("Helvetica", "B", 13)
-        pdf.cell(0, 8, "3. Environmental Containment Requirements (AwSV)", ln=True)
-        pdf.set_font("Helvetica", "", 10)
-        pdf.multi_cell(0, 5, "In accordance with German AwSV environmental permits, all machinery or electrical systems handling water-hazardous fluids (lubricants, transformers) must be equipped with fluid-impermeable (flüssigkeitsundurchlässig) containment systems with no open drains. Volumes must be sized to retain the maximum hazardous quantity released during system failures. A double-walled design is an approved alternative. For Hazard Level D systems, retention must equal the total capacity of the largest isolated unit.")
-        pdf.ln(5)
-        
-        pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(0, 8, "4. Technical Validation Status: COMPLIANT", ln=True)
-        pdf.set_font("Helvetica", "I", 10)
-        pdf.multi_cell(0, 5, "All models conform to DIN SPEC 91434 Category II guidelines. Physical models have been validated against first-principle analytical methods with no arbitrary empirical multipliers.")
-        
-        return bytes(pdf.output())
+    import importlib
+    import report.report_generator
+    import report.report_charts
+    importlib.reload(report.report_charts)
+    importlib.reload(report.report_generator)
+    from report.report_generator import ReportGenerator
+    
+    figures = {
+        'heat': fig_heat,
+        'crop': fig_groups,
+        'elec': None,
+        'weather': fig_irr,
+        'layout': fig_sp,
+        'spatial_dict': fig_spatial_dict,
+        'radar': None
+    }
         
     export_cols = ['ghi', 'dni', 'dhi', 'temp_air', 't_avg', 't_cell', 'temp_factor', 'g_g', 'par']
     col_names   = ['GHI [W/m²]', 'DNI [W/m²]', 'DHI [W/m²]', 'T_ambient [°C]',
                    'Beam_transmission', 'T_cell [°C]', 'Temp_factor', 'G_ground [W/m²]', 'PAR [μmol/m²/s]']
     export_a = res_a[export_cols].copy(); export_a.columns = col_names
     
-    pdf_bytes = generate_full_pdf(config['lat'], config['lon'], metrics, crop_results, config)
+
     
     c_exp1, c_exp2 = st.columns(2)
     with c_exp1:
         st.markdown("**Technical Report (PDF)**")
-        st.download_button(
-            "Download Full Technical Report (PDF)",
-            pdf_bytes,
-            "Agri-PV_Technical_Validation_Report.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-            key="din_pdf_download"
-        )
+        
+        # We must clear old PDF if inputs change, but to keep it simple, we just label it clearly
+        if st.button("Generate Technical Report (PDF)", use_container_width=True, type="primary"):
+            with st.spinner("Generating 15-page PDF with charts..."):
+                metrics['spatial_kpis'] = kpis
+                generator = ReportGenerator(config, metrics, crop_results, figures)
+                st.session_state['pdf_bytes'] = generator.generate().getvalue()
+                
+        if 'pdf_bytes' in st.session_state:
+            st.download_button(
+                "Download Ready: Technical Report (PDF)",
+                st.session_state['pdf_bytes'],
+                "Agri-PV_Technical_Validation_Report.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key="din_pdf_download"
+            )
     with c_exp2:
         st.markdown("**Raw Hourly Simulation Data (CSV)**")
         st.download_button(

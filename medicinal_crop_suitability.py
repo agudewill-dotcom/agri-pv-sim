@@ -34,13 +34,21 @@ class MedicinalCropProfile:
     DLI_min: float
     DLI_target: float
     peak_PPFD_min: float
-    homogeneity_sensitivity: str
     evidence_tier: str
     confidence_default: str
     source_group: str
     source_references: List[str]
     warning_text: str
     notes_de: str
+    
+    # Phase 2 dual-objective fields
+    supported_objectives: List[str]
+    biomass_target_type: str
+    growing_season_months: List[int]
+    biomass_critical_months: List[int]
+    reproductive_critical_months: List[int]
+    thresholds: Dict[str, Dict[str, float]]
+    quality_warning: bool
 
 @dataclass
 class MedicinalSuitabilityResult:
@@ -79,27 +87,34 @@ def parse_months(month_list: List[str]) -> List[int]:
 # Build registry
 MED_CROP_REGISTRY: Dict[str, MedicinalCropProfile] = {}
 for cid, entry in MED_CROP_DB.items():
+    t_rep = entry.get("thresholds", {}).get("reproductive", {})
     MED_CROP_REGISTRY[cid] = MedicinalCropProfile(
         id=cid,
-        display_name=entry["display_name"],
+        display_name=entry.get("display_name", ""),
         botanical_name=entry.get("botanical_name", ""),
-        crop_group=entry["crop_group"],
+        crop_group=entry.get("crop_group", ""),
         use_type=entry.get("use_type", ""),
-        critical_months=parse_months(entry["critical_months"]),
-        r_ann_min=entry["r_ann_min"],
-        r_ann_target=entry["r_ann_target"],
-        r_crit_min=entry["r_crit_min"],
-        r_crit_target=entry["r_crit_target"],
-        DLI_min=entry["DLI_min"],
-        DLI_target=entry["DLI_target"],
-        peak_PPFD_min=entry["peak_PPFD_min"],
-        homogeneity_sensitivity=entry["homogeneity_sensitivity"],
-        evidence_tier=entry["evidence_tier"],
-        confidence_default=entry["confidence_default"],
-        source_group=entry["source_group"],
+        critical_months=parse_months(entry.get("reproductive_critical_months", [])),
+        r_ann_min=t_rep.get("r_ann_min", 0.8),
+        r_ann_target=t_rep.get("r_ann_target", 0.95),
+        r_crit_min=t_rep.get("r_crit_min", 0.8),
+        r_crit_target=t_rep.get("r_crit_target", 0.95),
+        DLI_min=t_rep.get("DLI_min", 20.0),
+        DLI_target=t_rep.get("DLI_target", 28.0),
+        peak_PPFD_min=t_rep.get("peak_PPFD_min", 800.0),
+        evidence_tier=entry.get("evidence_tier", "C"),
+        confidence_default=entry.get("confidence_default", "low"),
+        source_group=entry.get("source_group", ""),
         source_references=entry.get("source_references", []),
         warning_text=entry.get("warning_text", ""),
         notes_de=entry.get("notes_de", ""),
+        supported_objectives=entry.get("supported_objectives", ["reproductive"]),
+        biomass_target_type=entry.get("biomass_target_type", ""),
+        growing_season_months=entry.get("growing_season_months", []),
+        biomass_critical_months=entry.get("biomass_critical_months", []),
+        reproductive_critical_months=entry.get("reproductive_critical_months", []),
+        thresholds=entry.get("thresholds", {}),
+        quality_warning=entry.get("quality_warning", False)
     )
 
 def calculate_dli_and_peak(hourly_par: pd.Series, critical_months: List[int]) -> tuple[float, float]:

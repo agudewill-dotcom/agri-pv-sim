@@ -2,20 +2,44 @@ echte_kamille:
   display_name: Echte Kamille
   botanical_name: Matricaria chamomilla / Matricaria recutita
   crop_group: medicinal_flowering_light_demanding
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id001
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id001
+  reproductive_critical_months:
   - Apr
   - May
   - Jun
   - Jul
-  r_ann_min: 0.7
-  r_ann_target: 0.85
-  r_crit_min: 0.7
-  r_crit_target: 0.85
-  DLI_min: 18
-  DLI_target: 24
-  peak_PPFD_min: 800.0
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.7
+      r_ann_target: 0.85
+      r_crit_min: 0.7
+      r_crit_target: 0.85
+      DLI_min: 18
+      DLI_target: 24
+      peak_PPFD_min: 800.0
+    biomass:
+      r_gs_min: 0.7
+      r_gs_target: 0.85
+      DLI_min: 18
+      DLI_target: 24
+      DLI_p10_min: 14
+      peak_PPFD_min: 800
+      cv_PAR_warning: 0.22
+      cv_PAR_critical: 0.3
+  quality_warning: true
+  notes_de: Kamille kann als Sonder-Hauptackerfrucht geprüft werden. Biomasse- oder
+    Blütenbiomasse-Eignung ist nicht gleich Wirkstoff-/Ölgehalt.
   evidence_tier: C
   confidence_default: low-medium
   source_group: light germination + long-day plant + Landolt L=4 hell + medicinal
@@ -23,71 +47,145 @@ echte_kamille:
   source_references:
   - Echte_Kamille_Licht
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
-  notes_de: Kamille ist als Arznei-Hauptackerfrucht plausibler als viele mediterrane
-    Kräuter, sollte aber bei starker Verschattung oder hoher Lichtheterogenität nur
-    mit Feldtest empfohlen werden.
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 ringelblume:
   display_name: Ringelblume
   botanical_name: Calendula officinalis
   crop_group: medicinal_flowering_light_demanding
-  use_type: Arznei-/Blühpflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id002
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id002
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.68
-  r_ann_target: 0.82
-  r_crit_min: 0.68
-  r_crit_target: 0.82
-  DLI_min: 17
-  DLI_target: 23
-  peak_PPFD_min: 750.0
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.68
+      r_ann_target: 0.82
+      r_crit_min: 0.68
+      r_crit_target: 0.82
+      DLI_min: 17
+      DLI_target: 23
+      peak_PPFD_min: 750.0
+    biomass:
+      r_gs_min: 0.68
+      r_gs_target: 0.82
+      DLI_min: 17
+      DLI_target: 23
+      DLI_p10_min: 13
+      peak_PPFD_min: 750
+      cv_PAR_warning: 0.22
+      cv_PAR_critical: 0.3
+  quality_warning: true
+  notes_de: Nur als Sonder-Hauptackerfrucht mit Abnehmer-, Feld- und Nutzungskonzeptnachweis
+    bewerten.
   evidence_tier: C
   confidence_default: low
   source_group: flowering medicinal crop proxy
+  source_references: []
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+  use_type: Arznei-/Bl├╝hpflanze / Sonder-Hauptackerfrucht
 borretsch:
   display_name: Borretsch
   botanical_name: Borago officinalis
   crop_group: pollinator_medicinal_special_crop
-  use_type: Sonder-Hauptackerfrucht / Öl-/Blühpflanze
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id003
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id003
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.68
-  r_ann_target: 0.82
-  r_crit_min: 0.68
-  r_crit_target: 0.82
-  DLI_min: 17
-  DLI_target: 23
-  peak_PPFD_min: 750.0
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.68
+      r_ann_target: 0.82
+      r_crit_min: 0.68
+      r_crit_target: 0.82
+      DLI_min: 17
+      DLI_target: 23
+      peak_PPFD_min: 750.0
+    biomass:
+      r_gs_min: 0.68
+      r_gs_target: 0.82
+      DLI_min: 17
+      DLI_target: 23
+      DLI_p10_min: 13
+      peak_PPFD_min: 750
+      cv_PAR_warning: 0.22
+      cv_PAR_critical: 0.3
+  quality_warning: true
+  notes_de: Nur als Sonder-Hauptackerfrucht mit Abnehmer-, Feld- und Nutzungskonzeptnachweis
+    bewerten.
   evidence_tier: C
   confidence_default: low
   source_group: pollinator/medicinal crop proxy
+  source_references: []
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+  use_type: Sonder-Hauptackerfrucht / ├ûl-/Bl├╝hpflanze
 salbei:
   display_name: Echter Salbei
   botanical_name: Salvia officinalis
   crop_group: medicinal_spice_high_light
-  use_type: Arznei-/Gewürzpflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id004
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id004
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.75
-  r_ann_target: 0.9
-  r_crit_min: 0.75
-  r_crit_target: 0.9
-  DLI_min: 20
-  DLI_target: 28
-  peak_PPFD_min: 950.0
-  homogeneity_sensitivity: high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.75
+      r_ann_target: 0.9
+      r_crit_min: 0.75
+      r_crit_target: 0.9
+      DLI_min: 20
+      DLI_target: 28
+      peak_PPFD_min: 950.0
+    biomass:
+      r_gs_min: 0.75
+      r_gs_target: 0.9
+      DLI_min: 20
+      DLI_target: 28
+      DLI_p10_min: 16
+      peak_PPFD_min: 950
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Hohe Lichtpräferenz. Nur bei hoher Rest-PAR und guter Homogenität als
+    Sonder-Hauptackerfrucht plausibel. Wirkstoffqualität separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: Landolt L=4 hell + Mediterranean dry/warm full-light ecology + medicinal
@@ -95,300 +193,640 @@ salbei:
   source_references:
   - Salbei_Licht
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
-  notes_de: Bei r_ann < 0.75 oder DLI_crit < 22 mol/m²/d höchstens grenzwertig ausgeben.
+  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
 echinacea_purpurea:
   display_name: Echinacea / Purpur-Sonnenhut
   botanical_name: Echinacea purpurea
   crop_group: medicinal_flowering_high_light
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id005
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id005
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.75
-  r_ann_target: 0.9
-  r_crit_min: 0.75
-  r_crit_target: 0.9
-  DLI_min: 20
-  DLI_target: 28
-  peak_PPFD_min: 950.0
-  homogeneity_sensitivity: high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.75
+      r_ann_target: 0.9
+      r_crit_min: 0.75
+      r_crit_target: 0.9
+      DLI_min: 20
+      DLI_target: 28
+      peak_PPFD_min: 950.0
+    biomass:
+      r_gs_min: 0.75
+      r_gs_target: 0.9
+      DLI_min: 20
+      DLI_target: 28
+      DLI_p10_min: 16
+      peak_PPFD_min: 950
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Hohe Lichtpräferenz. Nur bei hoher Rest-PAR und guter Homogenität als
+    Sonder-Hauptackerfrucht plausibel. Wirkstoffqualität separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: full sun / sun to light shade ecology + medicinal crop proxy
   source_references:
   - Echinacea_Licht
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 echinacea_angustifolia:
-  display_name: Schmalblättriger Sonnenhut
+  display_name: Schmalbl├ñttriger Sonnenhut
   botanical_name: Echinacea angustifolia
   crop_group: medicinal_flowering_high_light
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id006
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id006
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.75
-  r_ann_target: 0.9
-  r_crit_min: 0.75
-  r_crit_target: 0.9
-  DLI_min: 20
-  DLI_target: 28
-  peak_PPFD_min: 950.0
-  homogeneity_sensitivity: high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.75
+      r_ann_target: 0.9
+      r_crit_min: 0.75
+      r_crit_target: 0.9
+      DLI_min: 20
+      DLI_target: 28
+      peak_PPFD_min: 950.0
+    biomass:
+      r_gs_min: 0.75
+      r_gs_target: 0.9
+      DLI_min: 20
+      DLI_target: 28
+      DLI_p10_min: 16
+      peak_PPFD_min: 950
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Hohe Lichtpräferenz. Nur bei hoher Rest-PAR und guter Homogenität als
+    Sonder-Hauptackerfrucht plausibel. Wirkstoffqualität separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: sun-loving Echinacea proxy
+  source_references: []
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 johanniskraut:
   display_name: Echtes Johanniskraut
   botanical_name: Hypericum perforatum
   crop_group: medicinal_open_habitat_light_demanding
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id007
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id007
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.7
-  r_ann_target: 0.85
-  r_crit_min: 0.7
-  r_crit_target: 0.85
-  DLI_min: 20
-  DLI_target: 30
-  peak_PPFD_min: 700
-  homogeneity_sensitivity: medium-high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.7
+      r_ann_target: 0.85
+      r_crit_min: 0.7
+      r_crit_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      peak_PPFD_min: 700
+    biomass:
+      r_gs_min: 0.75
+      r_gs_target: 0.9
+      DLI_min: 20
+      DLI_target: 28
+      DLI_p10_min: 16
+      peak_PPFD_min: 950
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Hohe Lichtpräferenz. Nur bei hoher Rest-PAR und guter Homogenität als
+    Sonder-Hauptackerfrucht plausibel. Wirkstoffqualität separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: open habitat medicinal plant proxy
+  source_references: []
   warning_text: No robust species-specific Agri-PV PAR yield curve. Only plausible
     as a main crop with sufficient summer PAR and buyer confirmation.
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 pfefferminze:
   display_name: Pfefferminze
   botanical_name: Mentha x piperita
   crop_group: medicinal_leaf_crop_moderate_light
-  use_type: Arznei-/Gewürzpflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id008
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id008
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
   - Sep
-  r_ann_min: 0.6
-  r_ann_target: 0.78
-  r_crit_min: 0.6
-  r_crit_target: 0.78
-  DLI_min: 16
-  DLI_target: 24
-  peak_PPFD_min: 550
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.6
+      r_ann_target: 0.78
+      r_crit_min: 0.6
+      r_crit_target: 0.78
+      DLI_min: 16
+      DLI_target: 24
+      peak_PPFD_min: 550
+    biomass:
+      r_gs_min: 0.6
+      r_gs_target: 0.78
+      DLI_min: 15
+      DLI_target: 23
+      DLI_p10_min: 12
+      peak_PPFD_min: 500
+      cv_PAR_warning: 0.25
+      cv_PAR_critical: 0.35
+  quality_warning: true
+  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
+    Qualität und Ernteverfahren separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: leafy medicinal crop proxy
+  source_references: []
   warning_text: Likely more plausible for biomass production than for highly light-dependent
     floral drugs, but lacks a robust Agri-PV PAR yield curve.
+  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
 zitronenmelisse:
   display_name: Zitronenmelisse
   botanical_name: Melissa officinalis
   crop_group: medicinal_leaf_crop_moderate_light
-  use_type: Arznei-/Gewürzpflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id009
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id009
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
   - Sep
-  r_ann_min: 0.6
-  r_ann_target: 0.78
-  r_crit_min: 0.6
-  r_crit_target: 0.78
-  DLI_min: 16
-  DLI_target: 24
-  peak_PPFD_min: 550
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.6
+      r_ann_target: 0.78
+      r_crit_min: 0.6
+      r_crit_target: 0.78
+      DLI_min: 16
+      DLI_target: 24
+      peak_PPFD_min: 550
+    biomass:
+      r_gs_min: 0.6
+      r_gs_target: 0.78
+      DLI_min: 15
+      DLI_target: 23
+      DLI_p10_min: 12
+      peak_PPFD_min: 500
+      cv_PAR_warning: 0.25
+      cv_PAR_critical: 0.35
+  quality_warning: true
+  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
+    Qualität und Ernteverfahren separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: leafy medicinal crop proxy
+  source_references: []
   warning_text: No robust species-specific Agri-PV PAR yield curve. Field trial and
     market viability should be verified.
+  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
 baldrian:
   display_name: Baldrian
   botanical_name: Valeriana officinalis
   crop_group: medicinal_root_crop_moderate_light
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id010
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id010
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
   - Sep
-  r_ann_min: 0.58
-  r_ann_target: 0.75
-  r_crit_min: 0.58
-  r_crit_target: 0.75
-  DLI_min: 15
-  DLI_target: 23
-  peak_PPFD_min: 500
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.58
+      r_ann_target: 0.75
+      r_crit_min: 0.58
+      r_crit_target: 0.75
+      DLI_min: 15
+      DLI_target: 23
+      peak_PPFD_min: 500
+    biomass:
+      r_gs_min: 0.6
+      r_gs_target: 0.78
+      DLI_min: 15
+      DLI_target: 23
+      DLI_p10_min: 12
+      peak_PPFD_min: 500
+      cv_PAR_warning: 0.25
+      cv_PAR_critical: 0.35
+  quality_warning: true
+  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
+    Qualität und Ernteverfahren separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: root medicinal crop / moderate-light proxy
+  source_references: []
   warning_text: Do not evaluate Valerian based solely on light; water, soil, and harvesting
     methods are critical factors.
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 spitzwegerich:
   display_name: Spitzwegerich
   botanical_name: Plantago lanceolata
   crop_group: medicinal_leaf_crop_moderate_light
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id011
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id011
+  reproductive_critical_months:
   - Apr
   - May
   - Jun
   - Jul
   - Aug
   - Sep
-  r_ann_min: 0.58
-  r_ann_target: 0.75
-  r_crit_min: 0.58
-  r_crit_target: 0.75
-  DLI_min: 15
-  DLI_target: 23
-  peak_PPFD_min: 500
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.58
+      r_ann_target: 0.75
+      r_crit_min: 0.58
+      r_crit_target: 0.75
+      DLI_min: 15
+      DLI_target: 23
+      peak_PPFD_min: 500
+    biomass:
+      r_gs_min: 0.6
+      r_gs_target: 0.78
+      DLI_min: 15
+      DLI_target: 23
+      DLI_p10_min: 12
+      peak_PPFD_min: 500
+      cv_PAR_warning: 0.25
+      cv_PAR_critical: 0.35
+  quality_warning: true
+  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
+    Qualität und Ernteverfahren separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: robust herbaceous medicinal crop proxy
+  source_references: []
   warning_text: No robust species-specific Agri-PV PAR yield curve; should be evaluated
     as a resilient special crop.
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 schafgarbe:
   display_name: Schafgarbe
   botanical_name: Achillea millefolium
   crop_group: medicinal_perennial_light_demanding
-  use_type: Arznei-/Blühpflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id012
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id012
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.65
-  r_ann_target: 0.82
-  r_crit_min: 0.65
-  r_crit_target: 0.82
-  DLI_min: 18
-  DLI_target: 27
-  peak_PPFD_min: 625
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.65
+      r_ann_target: 0.82
+      r_crit_min: 0.65
+      r_crit_target: 0.82
+      DLI_min: 18
+      DLI_target: 27
+      peak_PPFD_min: 625
+    biomass:
+      r_gs_min: 0.6
+      r_gs_target: 0.78
+      DLI_min: 15
+      DLI_target: 23
+      DLI_p10_min: 12
+      peak_PPFD_min: 500
+      cv_PAR_warning: 0.25
+      cv_PAR_critical: 0.35
+  quality_warning: true
+  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
+    Qualität und Ernteverfahren separat prüfen.
   evidence_tier: C
   confidence_default: low
   source_group: open grassland medicinal proxy
+  source_references: []
   warning_text: No robust species-specific Agri-PV PAR yield curve. Evaluated as a
     proxy.
+  use_type: Arznei-/Bl├╝hpflanze / Sonder-Hauptackerfrucht
 fenchel:
   display_name: Fenchel
   botanical_name: Foeniculum vulgare
   crop_group: spice_seed_high_light
-  use_type: Gewürz-/Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id013
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id013
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.7
-  r_ann_target: 0.85
-  r_crit_min: 0.7
-  r_crit_target: 0.85
-  DLI_min: 20
-  DLI_target: 30
-  peak_PPFD_min: 700
-  homogeneity_sensitivity: high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.7
+      r_ann_target: 0.85
+      r_crit_min: 0.7
+      r_crit_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      peak_PPFD_min: 700
+    biomass:
+      r_gs_min: 0.7
+      r_gs_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      DLI_p10_min: 16
+      peak_PPFD_min: 900
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
+    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
   evidence_tier: C
   confidence_default: low
   source_group: seed spice crop high-light proxy
+  source_references: []
   warning_text: Seed/fruit drugs are highly dependent on light and heat. Buyer confirmation
     and field trial evidence required.
+  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
 kuemmel:
-  display_name: Kümmel
+  display_name: K├╝mmel
   botanical_name: Carum carvi
   crop_group: spice_seed_high_light
-  use_type: Gewürz-/Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id014
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id014
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
-  r_ann_min: 0.7
-  r_ann_target: 0.85
-  r_crit_min: 0.7
-  r_crit_target: 0.85
-  DLI_min: 20
-  DLI_target: 30
-  peak_PPFD_min: 700
-  homogeneity_sensitivity: high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.7
+      r_ann_target: 0.85
+      r_crit_min: 0.7
+      r_crit_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      peak_PPFD_min: 700
+    biomass:
+      r_gs_min: 0.7
+      r_gs_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      DLI_p10_min: 16
+      peak_PPFD_min: 900
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
+    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
   evidence_tier: C
   confidence_default: low
   source_group: seed spice crop high-light proxy
+  source_references: []
+  warning_text: ''
+  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
 koriander:
   display_name: Koriander
   botanical_name: Coriandrum sativum
   crop_group: spice_seed_high_light
-  use_type: Gewürz-/Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id015
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id015
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
-  r_ann_min: 0.68
-  r_ann_target: 0.85
-  r_crit_min: 0.68
-  r_crit_target: 0.85
-  DLI_min: 20
-  DLI_target: 30
-  peak_PPFD_min: 675
-  homogeneity_sensitivity: high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.68
+      r_ann_target: 0.85
+      r_crit_min: 0.68
+      r_crit_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      peak_PPFD_min: 675
+    biomass:
+      r_gs_min: 0.7
+      r_gs_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      DLI_p10_min: 16
+      peak_PPFD_min: 900
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
+    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
   evidence_tier: C
   confidence_default: low
   source_group: seed spice crop high-light proxy
+  source_references: []
+  warning_text: ''
+  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
 mariendistel:
   display_name: Mariendistel
   botanical_name: Silybum marianum
   crop_group: medicinal_seed_high_light
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id016
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id016
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
-  r_ann_min: 0.7
-  r_ann_target: 0.85
-  r_crit_min: 0.7
-  r_crit_target: 0.85
-  DLI_min: 20
-  DLI_target: 30
-  peak_PPFD_min: 700
-  homogeneity_sensitivity: high
+  thresholds:
+    reproductive:
+      r_ann_min: 0.7
+      r_ann_target: 0.85
+      r_crit_min: 0.7
+      r_crit_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      peak_PPFD_min: 700
+    biomass:
+      r_gs_min: 0.7
+      r_gs_target: 0.85
+      DLI_min: 20
+      DLI_target: 30
+      DLI_p10_min: 16
+      peak_PPFD_min: 900
+      cv_PAR_warning: 0.2
+      cv_PAR_critical: 0.28
+  quality_warning: true
+  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
+    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
   evidence_tier: C
   confidence_default: low
   source_group: seed medicinal high-light proxy
+  source_references: []
+  warning_text: ''
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 kapuzinerkresse:
   display_name: Kapuzinerkresse
   botanical_name: Tropaeolum majus
   crop_group: edible_medicinal_flowering_special_crop
-  use_type: Sonder-Hauptackerfrucht / essbare Blüten
-  critical_months:
+  supported_objectives:
+  - reproductive
+  - biomass
+  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  growing_season_months: &id017
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  biomass_critical_months: *id017
+  reproductive_critical_months:
   - May
   - Jun
   - Jul
   - Aug
   - Sep
-  r_ann_min: 0.68
-  r_ann_target: 0.82
-  r_crit_min: 0.68
-  r_crit_target: 0.82
-  DLI_min: 17
-  DLI_target: 23
-  peak_PPFD_min: 750.0
-  homogeneity_sensitivity: medium
+  thresholds:
+    reproductive:
+      r_ann_min: 0.68
+      r_ann_target: 0.82
+      r_crit_min: 0.68
+      r_crit_target: 0.82
+      DLI_min: 17
+      DLI_target: 23
+      peak_PPFD_min: 750.0
+    biomass:
+      r_gs_min: 0.68
+      r_gs_target: 0.82
+      DLI_min: 17
+      DLI_target: 23
+      DLI_p10_min: 13
+      peak_PPFD_min: 750
+      cv_PAR_warning: 0.22
+      cv_PAR_critical: 0.3
+  quality_warning: true
+  notes_de: Nur als Sonder-Hauptackerfrucht mit Abnehmer-, Feld- und Nutzungskonzeptnachweis
+    bewerten.
   evidence_tier: C-D
   confidence_default: low
   source_group: special crop proxy
+  source_references: []
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+  use_type: Sonder-Hauptackerfrucht / essbare Bl├╝ten

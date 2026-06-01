@@ -4,7 +4,7 @@ Laub2022:
   journal: "Agronomy for Sustainable Development"
   year: 2022
   doi: "10.1007/s13593-022-00783-7"
-  relevance: "Crop type response curves to reduced solar radiation; forage, C3 cereals, maize, grain legumes."
+  relevance: "Crop-group response to radiation reduction. Important for forage tolerance, C3 cereal response, maize sensitivity, grain legumes."
 
 Weselek2021:
   title: "Agrivoltaic system impacts on microclimate and yield of different crops within an organic crop rotation in a temperate climate"
@@ -12,7 +12,7 @@ Weselek2021:
   journal: "Agronomy for Sustainable Development"
   year: 2021
   doi: "10.1007/s13593-021-00714-y"
-  relevance: "German/temperate Agri-PV field data; PAR monitoring; winter wheat, potato, grass-clover, microclimate."
+  relevance: "German/temperate Agri-PV field data; PAR reduction, crop yield, biomass and harvest index observations."
 
 Edouard2023:
   title: "Increasing land productivity with agriphotovoltaics: Application to an alfalfa field"
@@ -20,7 +20,7 @@ Edouard2023:
   journal: "Applied Energy"
   year: 2023
   doi: "10.1016/j.apenergy.2022.120207"
-  relevance: "Direct alfalfa Agri-PV evidence; biomass response under 29–44% shading."
+  relevance: "Direct alfalfa/lucerne biomass evidence under Agri-PV shading."
 
 ArenasCorraliza2019:
   title: "Wheat and barley can increase grain yield in shade through acclimation of physiological and morphological traits in Mediterranean conditions"
@@ -28,22 +28,23 @@ ArenasCorraliza2019:
   journal: "Scientific Reports"
   year: 2019
   doi: "10.1038/s41598-019-46027-9"
-  relevance: "Wheat and barley response to 100%, 90%, and 50% PAR; barley more shade-tolerant than wheat."
+  relevance: "Wheat/barley low-light acclimation, C3 cereal shade physiology, physiological vs morphological adaptation."
 
 DIN_SPEC_91434:
-  title: "DIN SPEC 91434: Agri-Photovoltaik-Anlagen – Anforderungen an die landwirtschaftliche Hauptnutzung"
+  title: "DIN SPEC 91434 Agri-Photovoltaik-Anlagen – Anforderungen an die landwirtschaftliche Hauptnutzung"
   institution: "DIN"
   year: 2021
-  doi: "10.31030/3257526"
-  relevance: "German Agri-PV main agricultural use, documentation, monitoring, and quality criteria."
+  relevance: "Agricultural main-use context, monitoring, documentation, and German Agri-PV requirements."
 
-Fraunhofer_ISE_APV_Leitfaden_2025:
+Fraunhofer_ISE_APV_Leitfaden:
   title: "Agri-Photovoltaik: Chance für Landwirtschaft und Energiewende – Ein Leitfaden für Deutschland"
   institution: "Fraunhofer ISE"
-  year: 2025
-  relevance: "German Agri-PV context, design, regulation, and implementation guidance."
+  relevance: "German Agri-PV implementation, crop suitability context, light homogeneity, fixed system implications."
 
-KU_Leuven_Agrivoltaic_Webtool_Report:
-  title: "Agrivoltaic simulation report / KU Leuven agrivoltaics webtool"
-  relevance: "Reference structure for Remaining PAR, Deviation PAR, light-result maps, and crop yield curve output."
-  note: "Use only as comparison/reporting structure, not as sole agronomic evidence."
+DLI_Definition:
+  title: "Daily Light Integral / Photosynthetically Active Radiation definitions"
+  relevance: "DLI conversion from PPFD and interpretation of daily accumulated PAR."
+
+Existing_User_Reports:
+  title: "Uploaded Agri-PV simulation and DIN SPEC sample reports"
+  relevance: "Reference structure for Remaining PAR, Deviation PAR, Light Results, crop yield reporting and DIN-style documentation."

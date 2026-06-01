@@ -105,43 +105,62 @@ class CropProfile:
     warning_text: str
     source_group: str
     source_references: List[str]
+    
+    # Phase 2 dual-objective fields
+    supported_objectives: List[str]
+    biomass_target_type: str
+    growing_season_months: List[int]
+    biomass_critical_months: List[int]
+    reproductive_critical_months: List[int]
+    thresholds: Dict[str, Dict[str, float]]
+    quality_warning: bool
+    confidence_default: str
 
 
 # Build backward-compatible profile registry
 CROP_REGISTRY: Dict[str, CropProfile] = {}
 for cid, entry in CROP_DB.items():
+    t_rep = entry.get("thresholds", {}).get("reproductive", {})
     CROP_REGISTRY[cid] = CropProfile(
         id=cid,
-        name_de=entry["display_name"],
+        name_de=entry.get("display_name", ""),
         name_en=cid.replace("_", " ").title(),
-        f_min=entry["r_ann_min"],
-        f_target=entry["r_ann_target"],
-        evidence_tier=entry["evidence_tier"],
+        f_min=t_rep.get("r_ann_min", 0.8),
+        f_target=t_rep.get("r_ann_target", 0.95),
+        evidence_tier=entry.get("evidence_tier", "C"),
         evidence_sources=[
             f"{s}: {SOURCES_REGISTRY.get(s, {}).get('title', 'Ref')}"
             for s in entry.get("source_references", [])
         ],
-        crop_group=entry["crop_group"],
-        critical_months=entry["critical_months"],
-        growing_months=entry["growing_months"],
-        peak_ppfd_min=entry["peak_PPFD_min"],
-        cv_max=entry["cv_max"],
-        weights=entry["weights"],
-        notes_de=entry["notes"],
-        is_proxy=(entry["evidence_tier"] == "C"),
+        crop_group=entry.get("crop_group", ""),
+        critical_months=entry.get("reproductive_critical_months", []),
+        growing_months=entry.get("growing_season_months", []),
+        peak_ppfd_min=t_rep.get("peak_PPFD_min", 800.0),
+        cv_max=entry.get("cv_max", 0.3),
+        weights=entry.get("weights", {"wA": 0.35, "wS": 0.25, "wC": 0.30, "wH": 0.10}),
+        notes_de=entry.get("notes_de", ""),
+        is_proxy=entry.get("is_proxy", False),
         botanical_name=entry.get("botanical_name", ""),
         proxy_group=entry.get("proxy_group", ""),
         use_type=entry.get("use_type", ""),
-        r_ann_min=entry["r_ann_min"],
-        r_ann_target=entry["r_ann_target"],
-        r_crit_min=entry["r_crit_min"],
-        r_crit_target=entry["r_crit_target"],
-        DLI_min=entry.get("DLI_min", 20.0),
-        DLI_target=entry.get("DLI_target", 28.0),
-        peak_PPFD_min=entry["peak_PPFD_min"],
+        r_ann_min=t_rep.get("r_ann_min", 0.8),
+        r_ann_target=t_rep.get("r_ann_target", 0.95),
+        r_crit_min=t_rep.get("r_crit_min", 0.8),
+        r_crit_target=t_rep.get("r_crit_target", 0.95),
+        DLI_min=t_rep.get("DLI_min", 20.0),
+        DLI_target=t_rep.get("DLI_target", 28.0),
+        peak_PPFD_min=t_rep.get("peak_PPFD_min", 800.0),
         warning_text=entry.get("warning_text", ""),
         source_group=entry.get("source_group", ""),
         source_references=entry.get("source_references", []),
+        supported_objectives=entry.get("supported_objectives", ["reproductive"]),
+        biomass_target_type=entry.get("biomass_target_type", ""),
+        growing_season_months=entry.get("growing_season_months", []),
+        biomass_critical_months=entry.get("biomass_critical_months", []),
+        reproductive_critical_months=entry.get("reproductive_critical_months", []),
+        thresholds=entry.get("thresholds", {}),
+        quality_warning=entry.get("quality_warning", False),
+        confidence_default=entry.get("confidence_default", "low")
     )
 
 

@@ -261,6 +261,7 @@ def render_sidebar_and_run():
         'lat': lat, 'lon': lon,
         'g_slope': g_slope, 'g_aspect': g_aspect,
         'tau': tau, 'albedo': albedo, 'pitch': pitch,
+        'azimuth': 180.0, 'tilt': 15.0, 'height': 2.10
     }
     
     return config, res_a, res_s, metrics
