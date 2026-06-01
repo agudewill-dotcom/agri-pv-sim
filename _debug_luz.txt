@@ -1,0 +1,11 @@
+evidence_tier=A
+crop_group=forage
+r_ann_min=0.6
+r_ann_target=0.75
+r_crit_min=0.6
+r_crit_target=0.75
+DLI_min=18
+DLI_target=24
+critical_months=[5, 6, 7, 8]
+growing_months=[4, 5, 6, 7, 8, 9]
+weights={'wA': 0.35, 'wS': 0.25, 'wC': 0.3, 'wH': 0.1}

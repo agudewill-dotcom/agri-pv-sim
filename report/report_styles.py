@@ -2,6 +2,17 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
 from reportlab.platypus import TableStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# Register Arial (supports full Unicode including German umlauts)
+pdfmetrics.registerFont(TTFont('Arial', 'C:/Windows/Fonts/arial.ttf'))
+pdfmetrics.registerFont(TTFont('Arial-Bold', 'C:/Windows/Fonts/arialbd.ttf'))
+pdfmetrics.registerFont(TTFont('Arial-Italic', 'C:/Windows/Fonts/ariali.ttf'))
+pdfmetrics.registerFont(TTFont('Arial-BoldItalic', 'C:/Windows/Fonts/arialbi.ttf'))
+
+from reportlab.pdfbase.pdfmetrics import registerFontFamily
+registerFontFamily('Arial', normal='Arial', bold='Arial-Bold', italic='Arial-Italic', boldItalic='Arial-BoldItalic')
 
 # Brand Colors
 BRAND_BLUE = HexColor("#1e3a8a")  # Deep blue from logo
@@ -19,7 +30,7 @@ def get_report_styles():
     base_style = ParagraphStyle(
         'BaseStyle',
         parent=styles['Normal'],
-        fontName='Helvetica',
+        fontName='Arial',
         fontSize=10,
         leading=14,
         textColor=BRAND_DARK,
@@ -39,12 +50,12 @@ def get_report_styles():
             fontSize=8,
             leading=10,
             textColor=BRAND_GRAY,
-            fontName='Helvetica-Oblique'
+            fontName='Arial-Italic'
         ),
         'Title': ParagraphStyle(
             'Title',
             parent=base_style,
-            fontName='Helvetica-Bold',
+            fontName='Arial-Bold',
             fontSize=28,
             leading=34,
             textColor=BRAND_BLUE,
@@ -54,7 +65,7 @@ def get_report_styles():
         'Heading1': ParagraphStyle(
             'Heading1',
             parent=base_style,
-            fontName='Helvetica-Bold',
+            fontName='Arial-Bold',
             fontSize=20,
             leading=24,
             textColor=BRAND_BLUE,
@@ -65,7 +76,7 @@ def get_report_styles():
         'Heading2': ParagraphStyle(
             'Heading2',
             parent=base_style,
-            fontName='Helvetica-Bold',
+            fontName='Arial-Bold',
             fontSize=16,
             leading=20,
             textColor=BRAND_DARK,
@@ -75,7 +86,7 @@ def get_report_styles():
         'Heading3': ParagraphStyle(
             'Heading3',
             parent=base_style,
-            fontName='Helvetica-Bold',
+            fontName='Arial-Bold',
             fontSize=12,
             leading=16,
             textColor=BRAND_DARK,
@@ -126,13 +137,13 @@ def get_table_style_standard():
         ('BACKGROUND', (0, 0), (-1, 0), BRAND_BLUE),
         ('TEXTCOLOR', (0, 0), (-1, 0), HexColor("#ffffff")),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Arial-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 10),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('TOPPADDING', (0, 0), (-1, 0), 8),
         ('BACKGROUND', (0, 1), (-1, -1), HexColor("#ffffff")),
         ('TEXTCOLOR', (0, 1), (-1, -1), BRAND_DARK),
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Arial'),
         ('FONTSIZE', (0, 1), (-1, -1), 9),
         ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
         ('TOPPADDING', (0, 1), (-1, -1), 6),
@@ -144,7 +155,7 @@ def get_table_style_kpi():
     """Returns a table style designed for KPI blocks without vertical grid lines."""
     return TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Arial-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 12),
         ('TEXTCOLOR', (0, 0), (-1, -1), BRAND_DARK),
         ('TEXTCOLOR', (1, 0), (1, -1), BRAND_BLUE),

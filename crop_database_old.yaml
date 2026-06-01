@@ -1,0 +1,1339 @@
+﻿luzerne:
+  display_name: Luzerne
+  botanical_name: Medicago sativa
+  proxy_group: forage
+  crop_group: forage
+  use_type: Futterbau
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.6
+  r_ann_target: 0.75
+  r_crit_min: 0.6
+  r_crit_target: 0.75
+  peak_PPFD_min: 800.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: A
+  confidence_default: high
+  source_group: Laub2022 forage + Edouard2023 alfalfa
+  source_references:
+  - Laub2022
+  - Edouard2023
+  warning_text: ''
+  notes: Luzerne ist als tiefwurzelnde Futterleguminose hervorragend schattenvertr├ñglich
+    und zeigt stabile APV-Ertr├ñge.
+  DLI_min: 18
+  DLI_target: 24
+rotklee:
+  display_name: Rotklee
+  botanical_name: Trifolium pratense
+  proxy_group: forage
+  crop_group: forage
+  use_type: Futterbau
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.65
+  r_ann_target: 0.8
+  r_crit_min: 0.65
+  r_crit_target: 0.8
+  peak_PPFD_min: 700.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: medium
+  source_group: forage proxy / clover-grass field evidence from Weselek2021
+  source_references:
+  - Laub2022
+  - Weselek2021
+  warning_text: ''
+  notes: Rotklee ist sehr schattenvertr├ñglich und eignet sich gut f├╝r Kleegrasgemische
+    unter Agri-PV.
+  DLI_min: 18
+  DLI_target: 25
+kleegras:
+  display_name: Kleegras
+  botanical_name: Trifolium spp. / Poaceae
+  proxy_group: forage
+  crop_group: forage
+  use_type: Futterbau
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  r_ann_min: 0.65
+  r_ann_target: 0.8
+  r_crit_min: 0.65
+  r_crit_target: 0.8
+  peak_PPFD_min: 700.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: medium
+  source_group: Weselek2021 grass-clover + Laub2022 forage
+  source_references:
+  - Weselek2021
+  - Laub2022
+  warning_text: ''
+  notes: Kleegras ist eine etablierte Hauptkultur im ├Âkologischen Ackerbau und zeigt
+    unter APV stabile Ertr├ñge.
+  DLI_min: 18
+  DLI_target: 25
+ackergras:
+  display_name: Ackergras
+  botanical_name: Lolium multiflorum / spp.
+  proxy_group: forage
+  crop_group: forage
+  use_type: Futterbau
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  r_ann_min: 0.65
+  r_ann_target: 0.8
+  r_crit_min: 0.65
+  r_crit_target: 0.8
+  peak_PPFD_min: 700.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: medium
+  source_group: forage proxy
+  source_references:
+  - Laub2022
+  warning_text: ''
+  notes: Ein- und mehrj├ñhrige Gr├ñser zeigen hohe Ertragsstabilit├ñt bei Halbschattenbedingungen.
+  DLI_min: 18
+  DLI_target: 25
+esparsette:
+  display_name: Esparsette
+  botanical_name: Onobrychis viciifolia
+  proxy_group: forage
+  crop_group: forage
+  use_type: Futterbau
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.58
+  r_ann_target: 0.75
+  r_crit_min: 0.58
+  r_crit_target: 0.75
+  peak_PPFD_min: 550.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low-medium
+  source_group: forage legume proxy
+  source_references:
+  - Laub2022
+  warning_text: Keine robuste artspezifische Agri-PV-PAR-Kurve; Bewertung ├╝ber Futterleguminosen-Proxy.
+  notes: Trockenheitsresistente Futterleguminose. Da keine direkten APV-Lichtkurven
+    existieren, erfolgt eine conservative Bewertung als Proxy.
+  DLI_min: 20
+  DLI_target: 28
+winterroggen:
+  display_name: Winterroggen
+  botanical_name: Secale cereale
+  proxy_group: robust_cereal
+  crop_group: robust_cereal
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 900.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: medium
+  source_group: C3 cereal proxy / Laub2022
+  source_references:
+  - Laub2022
+  warning_text: ''
+  notes: Winterroggen ist robust und schattentoleranter als Weizen; die Halmentwicklung
+    im Fr├╝hjahr ist jedoch lichtempfindlich.
+  DLI_min: 20
+  DLI_target: 28
+waldstaudenroggen:
+  display_name: Waldstaudenroggen
+  botanical_name: Secale cereale subsp. ancestrale
+  proxy_group: robust_cereal
+  crop_group: robust_cereal
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 900.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: medium-low
+  source_group: rye / C3 cereal proxy
+  source_references:
+  - Laub2022
+  warning_text: Alte Roggenform; keine separate Agri-PV-PAR-Kurve. Bewertung ├╝ber
+    Roggen/C3-Getreide-Proxy.
+  notes: Urgetreide mit langen Halmen. Bewertung erfolgt als C3-Getreide-Proxy auf
+    Basis von Roggen.
+  DLI_min: 20
+  DLI_target: 28
+triticale:
+  display_name: Triticale
+  botanical_name: x Triticosecale
+  proxy_group: robust_cereal
+  crop_group: robust_cereal
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 900.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: medium
+  source_group: C3 cereal proxy / robust cereal agronomy
+  source_references:
+  - Laub2022
+  warning_text: ''
+  notes: Triticale (Weizen-Roggen-Kreuzung) kombiniert die Ertragsst├ñrke des Weizens
+    mit der Schattentoleranz des Roggens.
+  DLI_min: 20
+  DLI_target: 28
+hafer:
+  display_name: Hafer
+  botanical_name: Avena sativa
+  proxy_group: robust_cereal
+  crop_group: robust_cereal
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.6
+  r_ann_target: 0.8
+  r_crit_min: 0.58
+  r_crit_target: 0.78
+  peak_PPFD_min: 550.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: medium
+  source_group: C3 cereal proxy / German agronomic guidance
+  source_references:
+  - Laub2022
+  warning_text: ''
+  notes: Hafer ist als C3-Sommerung moderat schattentolerant und profitiert von feuchtk├╝hlerem
+    Mikroklima unter Modulen.
+  DLI_min: 20
+  DLI_target: 28
+schwarzhafer:
+  display_name: Schwarzhafer
+  botanical_name: Avena strigosa
+  proxy_group: robust_cereal
+  crop_group: robust_cereal
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 900.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low-medium
+  source_group: oat proxy
+  source_references:
+  - Laub2022
+  warning_text: Keine robuste artspezifische Agri-PV-PAR-Kurve; Bewertung ├╝ber Hafer/C3-Getreide-Proxy.
+  notes: Besonders im Zwischenfruchtanbau und Pferdefutter genutzt. Erh├ñlt conservative
+    C3-Getreide-Scoring-Klassifizierung.
+  DLI_min: 20
+  DLI_target: 28
+dinkel:
+  display_name: Dinkel
+  botanical_name: Triticum spelta
+  proxy_group: ancient_grain
+  crop_group: ancient_grain
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 900.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low-medium
+  source_group: wheat/spelt C3 cereal proxy + German agronomic guidance
+  source_references:
+  - Laub2022
+  - Weselek2021
+  warning_text: ''
+  notes: Spelzweizen mit stabilen Strohertr├ñgen; schattentoleranter als Weichweizen,
+    aber Spelzenbildung braucht Mindestlicht.
+  DLI_min: 20
+  DLI_target: 28
+emmer:
+  display_name: Emmer
+  botanical_name: Triticum dicoccum
+  proxy_group: ancient_grain
+  crop_group: ancient_grain
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 900.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: ancient wheat proxy
+  source_references:
+  - Laub2022
+  warning_text: Extensive alte Weizenart; keine robuste artspezifische Agri-PV-PAR-Kurve.
+  notes: Robuste Spelzweizenart, die extensiven Anbaubedingungen gut vertr├ñgt, aber
+    nur schwach untersucht ist.
+  DLI_min: 20
+  DLI_target: 28
+einkorn:
+  display_name: Einkorn
+  botanical_name: Triticum monococcum
+  proxy_group: ancient_grain
+  crop_group: ancient_grain
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 900.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: ancient wheat proxy
+  source_references:
+  - Laub2022
+  warning_text: ├ältestes domestiziertes Getreide; keine robuste artspezifische Agri-PV-PAR-Kurve.
+  notes: Urgetreide mit extrem geringem N├ñhrstoffbedarf; Halmfestigkeit und Kornansatz
+    im Teilschatten bed├╝rfen agronomischer Pr├╝fung.
+  DLI_min: 20
+  DLI_target: 28
+gerste:
+  display_name: Gerste
+  botanical_name: Hordeum vulgare
+  proxy_group: ancient_grain
+  crop_group: ancient_grain
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  growing_months:
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  r_ann_min: 0.62
+  r_ann_target: 0.82
+  r_crit_min: 0.6
+  r_crit_target: 0.8
+  peak_PPFD_min: 575.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: medium
+  source_group: ArenasCorraliza2019 + C3 cereals
+  source_references:
+  - ArenasCorraliza2019
+  - Laub2022
+  notes: Gerste zeigte in physiologischen Studien eine h├Âhere Schattentoleranz und
+    st├ñrkere Chlorophyll-Akklimatisierung als Weizen.
+  DLI_min: 20
+  DLI_target: 28
+weizen:
+  display_name: Weizen
+  botanical_name: Triticum aestivum
+  proxy_group: ancient_grain
+  crop_group: ancient_grain
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.65
+  r_ann_target: 0.85
+  r_crit_min: 0.62
+  r_crit_target: 0.82
+  peak_PPFD_min: 600.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: A
+  confidence_default: medium-high
+  source_group: Weselek2021 + ArenasCorraliza2019 + Laub2022
+  source_references:
+  - Weselek2021
+  - ArenasCorraliza2019
+  - Laub2022
+  notes: Weizen ist moderat tolerant, aber Bl├╝te (Anthese) und Kornf├╝llungsphase reagieren
+    empfindlich auf ausgepr├ñgte Verschattung.
+  DLI_min: 20
+  DLI_target: 28
+buchweizen:
+  display_name: Buchweizen
+  botanical_name: Fagopyrum esculentum
+  proxy_group: niche_crop
+  crop_group: niche_crop
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.62
+  r_ann_target: 0.8
+  r_crit_min: 0.62
+  r_crit_target: 0.8
+  peak_PPFD_min: 600.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: niche crop proxy
+  source_references:
+  - Laub2022
+  warning_text: Nischenhauptackerfrucht; keine robuste Agri-PV-Ertragskurve. Sommer-PAR
+    besonders pr├╝fen.
+  notes: Pseudogetreide mit kurzer Vegetationszeit; sehr frostempfindlich. Lichtanspruch
+    im Sommer ist hoch.
+  DLI_min: 20
+  DLI_target: 28
+leindotter:
+  display_name: Leindotter
+  botanical_name: Camelina sativa
+  proxy_group: niche_crop
+  crop_group: niche_crop
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.62
+  r_ann_target: 0.8
+  r_crit_min: 0.6
+  r_crit_target: 0.78
+  peak_PPFD_min: 575.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: low-input oilseed proxy
+  source_references:
+  - Laub2022
+  warning_text: Low-input ├ûlfrucht, aber keine robuste Agri-PV-PAR-Kurve.
+  notes: Sehr widerstandsf├ñhige Nischen├Âlfrucht; eignet sich gut f├╝r Mischkulturanbau
+    mit Erbsen oder Weizen.
+  DLI_min: 20
+  DLI_target: 28
+├Âllein:
+  display_name: ├ûllein
+  botanical_name: Linum usitatissimum
+  proxy_group: niche_crop
+  crop_group: niche_crop
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  r_ann_min: 0.65
+  r_ann_target: 0.82
+  r_crit_min: 0.63
+  r_crit_target: 0.8
+  peak_PPFD_min: 600.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: oilseed proxy
+  source_references:
+  - Laub2022
+  notes: Faser- und ├ûllein sind sonnenliebende Kulturen, deren Kapselentwicklung ausreichende
+    Direktstrahlung ben├Âtigt.
+  DLI_min: 20
+  DLI_target: 28
+hanf:
+  display_name: Hanf
+  botanical_name: Cannabis sativa
+  proxy_group: niche_crop
+  crop_group: niche_crop
+  use_type: Mehrfachnutzung
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 700.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: high-light niche crop
+  source_references:
+  - Laub2022
+  warning_text: Hanf ist licht- und w├ñrmebed├╝rftig; nur bei hoher Sommer-PAR und gesicherter
+    Verwertung.
+  notes: Industriehanf w├ñchst extrem schnell und bildet hohe Biomasse, ben├Âtigt jedoch
+    erhebliche Strahlungssummen.
+  DLI_min: 20
+  DLI_target: 28
+rohrglanzgras:
+  display_name: Rohrglanzgras
+  botanical_name: Phalaris arundinacea
+  proxy_group: niche_crop
+  crop_group: niche_crop
+  use_type: Biomasse
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.58
+  r_ann_target: 0.75
+  r_crit_min: 0.58
+  r_crit_target: 0.75
+  peak_PPFD_min: 550.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low-medium
+  source_group: perennial grass / forage proxy
+  source_references:
+  - Laub2022
+  notes: Mehrj├ñhriges Wildgras mit exzellenter Anpassungsf├ñhigkeit im Halbschatten.
+  DLI_min: 20
+  DLI_target: 28
+riesenweizengras:
+  display_name: Riesenweizengras
+  botanical_name: Thinopyrum ponticum
+  proxy_group: niche_crop
+  crop_group: niche_crop
+  use_type: Biomasse
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.58
+  r_ann_target: 0.75
+  r_crit_min: 0.58
+  r_crit_target: 0.75
+  peak_PPFD_min: 550.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: perennial grass proxy
+  source_references:
+  - Laub2022
+  notes: Szene-Energiepflanze (Szarvasi), robust und mit m├ñ├ƒigen Anspr├╝chen an die
+    Einstrahlung.
+  DLI_min: 20
+  DLI_target: 28
+silphie:
+  display_name: Durchwachsene Silphie
+  botanical_name: Silphium perfoliatum
+  proxy_group: niche_crop
+  crop_group: niche_crop
+  use_type: Biomasse
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 700.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: perennial bioenergy crop
+  source_references:
+  - Laub2022
+  warning_text: Biomasse-Dauerkultur mit hoher Licht- und W├ñrmepr├ñferenz; nur bei
+    hoher Rest-PAR.
+  notes: Mehrj├ñhrige insektenfreundliche Energiepflanze, deren Etablierung viel Licht
+    und W├ñrme ben├Âtigt.
+  DLI_min: 20
+  DLI_target: 28
+mais:
+  display_name: Mais
+  botanical_name: Zea mays
+  proxy_group: high_light_crop
+  crop_group: high_light_crop
+  use_type: Silage/Korn
+  critical_months:
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.8
+  r_ann_target: 0.9
+  r_crit_min: 0.85
+  r_crit_target: 0.92
+  peak_PPFD_min: 900.0
+  cv_max: 0.2
+  weights:
+    wA: 0.25
+    wS: 0.2
+    wC: 0.45
+    wH: 0.1
+  evidence_tier: A
+  confidence_default: high
+  source_group: Laub2022 maize
+  source_references:
+  - Laub2022
+  notes: Mais ist eine C4-Pflanze mit extrem hoher Lichts├ñttigung und starker Ertragsreduktion
+    unter Solarmodulen.
+  DLI_min: 20
+  DLI_target: 28
+sonnenblume:
+  display_name: Sonnenblume
+  botanical_name: Helianthus annuus
+  proxy_group: high_light_crop
+  crop_group: high_light_crop
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.8
+  r_ann_target: 0.9
+  r_crit_min: 0.8
+  r_crit_target: 0.9
+  peak_PPFD_min: 850.0
+  cv_max: 0.2
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low-medium
+  source_group: high-light oilseed
+  source_references:
+  - Laub2022
+  warning_text: Hohe Lichtpr├ñferenz; nur bei hoher Rest-PAR.
+  notes: Sehr lichtbed├╝rftige Kultur; Heliotropismus und Bl├╝tenkorbentwicklung werden
+    durch starre Tracker oder Module beeintr├ñchtigt.
+  DLI_min: 20
+  DLI_target: 28
+soja:
+  display_name: Soja
+  botanical_name: Glycine max
+  proxy_group: high_light_crop
+  crop_group: high_light_crop
+  use_type: K├Ârnerdrusch
+  critical_months:
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.75
+  r_ann_target: 0.88
+  r_crit_min: 0.78
+  r_crit_target: 0.9
+  peak_PPFD_min: 800.0
+  cv_max: 0.25
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: B
+  confidence_default: low-medium
+  source_group: grain legume proxy
+  source_references:
+  - Laub2022
+  notes: K├Ârnerleguminosen zeigen in der Meta-Analyse Laub et al. 2022 eine ausgepr├ñgte
+    Lichtempfindlichkeit.
+  DLI_min: 20
+  DLI_target: 28
+salbei:
+  display_name: Salbei
+  botanical_name: Salvia officinalis
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.75
+  r_ann_target: 0.88
+  r_crit_min: 0.75
+  r_crit_target: 0.88
+  peak_PPFD_min: 750.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: high-light herb proxy
+  source_references:
+  - Laub2022
+  warning_text: Arznei-/Gew├╝rzpflanze mit hoher Lichtpr├ñferenz; keine robuste Agri-PV-Ertragskurve.
+    Hauptkultur nur bei hoher Rest-PAR und Abnehmernachweis.
+  notes: Mehrj├ñhrige Gew├╝rzpflanze mit hoher Licht- und W├ñrmeanforderung.
+  DLI_min: 20
+  DLI_target: 28
+echinacea:
+  display_name: Echinacea
+  botanical_name: Echinacea purpurea
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.75
+  r_ann_target: 0.9
+  r_crit_min: 0.75
+  r_crit_target: 0.9
+  peak_PPFD_min: 750.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: medicinal flower proxy
+  source_references:
+  - Laub2022
+  warning_text: Sonnenliebende Arzneipflanze; keine belastbare Agri-PV-PAR-Kurve.
+    Nur bei hoher Rest-PAR als Hauptkultur plausibel.
+  notes: Stauden-Arzneipflanze f├╝r sonnige Habitate. Sehr wertvoll f├╝r Biodiversit├ñtskonzepte
+    im Agri-PV-Feld.
+  DLI_min: 20
+  DLI_target: 28
+kamille:
+  display_name: Kamille
+  botanical_name: Matricaria chamomilla
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  r_ann_min: 0.65
+  r_ann_target: 0.82
+  r_crit_min: 0.65
+  r_crit_target: 0.82
+  peak_PPFD_min: 650.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: medicinal herb proxy
+  source_references:
+  - Laub2022
+  notes: Heilpflanze mit breiter ├Âkologischer Toleranz, die Wirkstoffakkumulation
+    braucht jedoch ausreichende Strahlung.
+  DLI_min: 20
+  DLI_target: 28
+ringelblume:
+  display_name: Ringelblume
+  botanical_name: Calendula officinalis
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.65
+  r_ann_target: 0.82
+  r_crit_min: 0.65
+  r_crit_target: 0.82
+  peak_PPFD_min: 650.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: medicinal flower proxy
+  source_references:
+  - Laub2022
+  notes: Etablierte Sonderkultur f├╝r Heilpflanzen├Âle; m├ñ├ƒige Schattentoleranz.
+  DLI_min: 20
+  DLI_target: 28
+k├╝mmel:
+  display_name: K├╝mmel
+  botanical_name: Carum carvi
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 700.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: apiaceae herb proxy
+  source_references:
+  - Laub2022
+  notes: Zweij├ñhrige Gew├╝rzpflanze, deren Samenreife im zweiten Standjahr ausreichend
+    PAR erfordert.
+  DLI_min: 20
+  DLI_target: 28
+koriander:
+  display_name: Koriander
+  botanical_name: Coriandrum sativum
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  r_ann_min: 0.68
+  r_ann_target: 0.85
+  r_crit_min: 0.68
+  r_crit_target: 0.85
+  peak_PPFD_min: 675.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: apiaceae herb proxy
+  source_references:
+  - Laub2022
+  notes: Einj├ñhriges Doldengew├ñchs; m├ñ├ƒiger Lichtanspruch, aber anf├ñllig f├╝r Schimmelbildung
+    bei Staun├ñsse.
+  DLI_min: 20
+  DLI_target: 28
+fenchel:
+  display_name: Fenchel
+  botanical_name: Foeniculum vulgare
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 700.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: apiaceae herb proxy
+  source_references:
+  - Laub2022
+  notes: Gew├╝rz- und Arzneikultur (K├Ârnernutzung); hohe Strahlungsanspr├╝che f├╝r die
+    ├ñtherischen ├ûle.
+  DLI_min: 20
+  DLI_target: 28
+mariendistel:
+  display_name: Mariendistel
+  botanical_name: Silybum marianum
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  peak_PPFD_min: 700.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: high-light herb proxy
+  source_references:
+  - Laub2022
+  notes: Sonnengewohnte Pflanze mit hohem Lichtanspruch; Wirkstoff Silymarin erfordert
+    ausreichende Strahlsummen.
+  DLI_min: 20
+  DLI_target: 28
+borretsch:
+  display_name: Borretsch
+  botanical_name: Borago officinalis
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  growing_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.65
+  r_ann_target: 0.82
+  r_crit_min: 0.65
+  r_crit_target: 0.82
+  peak_PPFD_min: 650.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: special crop proxy
+  source_references:
+  - Laub2022
+  notes: Exzellente Bienenweide und ├ûlpflanze, die gut unter Teilschattierung gedeiht.
+  DLI_min: 20
+  DLI_target: 28
+kapuzinerkresse:
+  display_name: Kapuzinerkresse
+  botanical_name: Tropaeolum majus
+  proxy_group: special_crop
+  crop_group: special_crop
+  use_type: Sonderkultur
+  critical_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  growing_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  r_ann_min: 0.65
+  r_ann_target: 0.8
+  r_crit_min: 0.65
+  r_crit_target: 0.8
+  peak_PPFD_min: 650.0
+  cv_max: 0.3
+  weights:
+    wA: 0.35
+    wS: 0.25
+    wC: 0.3
+    wH: 0.1
+  evidence_tier: C
+  confidence_default: low
+  source_group: special crop proxy
+  source_references:
+  - Laub2022
+  warning_text: Nicht als klassische deutsche Hauptackerfrucht validiert. Nur als
+    Sonderackerfrucht mit Vermarktungs-/Feldnachweis.
+  notes: Schnellw├╝chsige bodendeckende Sonderkultur mit hohem Zier- und N├ñhrwert;
+    sehr frostempfindlich.
+  DLI_min: 20
+  DLI_target: 28

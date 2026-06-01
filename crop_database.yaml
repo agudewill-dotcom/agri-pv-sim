@@ -101,7 +101,7 @@ rotklee:
   source_references:
   - Laub2022
   - Weselek2021
-  notes_de: Rotklee ist sehr schattenvertr├ñglich und eignet sich gut f├╝r Kleegrasgemische
+  notes_de: Rotklee ist sehr schattenvertr├ñglich und eignet sich gut für Kleegrasgemische
     unter Agri-PV.
   warning_text: ''
   use_type: Futterbau
@@ -162,7 +162,7 @@ kleegras:
   source_references:
   - Weselek2021
   - Laub2022
-  notes_de: Kleegras ist eine etablierte Hauptkultur im ├Âkologischen Ackerbau und
+  notes_de: Kleegras ist eine etablierte Hauptkultur im Ökologischen Ackerbau und
     zeigt unter APV stabile Ertr├ñge.
   warning_text: ''
   use_type: Futterbau
@@ -279,7 +279,7 @@ esparsette:
   - Laub2022
   notes_de: Trockenheitsresistente Futterleguminose. Da keine direkten APV-Lichtkurven
     existieren, erfolgt eine conservative Bewertung als Proxy.
-  warning_text: Keine robuste artspezifische Agri-PV-PAR-Kurve; Bewertung ├╝ber Futterleguminosen-Proxy.
+  warning_text: Keine robuste artspezifische Agri-PV-PAR-Kurve; Bewertung über Futterleguminosen-Proxy.
   use_type: Futterbau
   proxy_group: forage
   cv_max: 0.3
@@ -333,9 +333,9 @@ winterroggen:
   source_references:
   - Laub2022
   notes_de: Winterroggen ist robust und schattentoleranter als Weizen; die Halmentwicklung
-    im Fr├╝hjahr ist jedoch lichtempfindlich.
+    im Frühjahr ist jedoch lichtempfindlich.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -391,7 +391,7 @@ waldstaudenroggen:
     auf Basis von Roggen.
   warning_text: Alte Roggenform; keine separate Agri-PV-PAR-Biomassekurve. Bewertung
     über Roggen/C3-Getreide-Proxy.
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -446,7 +446,7 @@ triticale:
   notes_de: Triticale (Weizen-Roggen-Kreuzung) kombiniert die Ertragsst├ñrke des Weizens
     mit der Schattentoleranz des Roggens.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -499,9 +499,9 @@ hafer:
   source_references:
   - Laub2022
   notes_de: Hafer ist als C3-Sommerung moderat schattentolerant und profitiert von
-    feuchtk├╝hlerem Mikroklima unter Modulen.
+    feuchtkühlerem Mikroklima unter Modulen.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -555,8 +555,8 @@ schwarzhafer:
   - Laub2022
   notes_de: Besonders im Zwischenfruchtanbau und Pferdefutter genutzt. Erh├ñlt conservative
     C3-Getreide-Scoring-Klassifizierung.
-  warning_text: Keine robuste artspezifische Agri-PV-PAR-Kurve; Bewertung ├╝ber Hafer/C3-Getreide-Proxy.
-  use_type: K├Ârnerdrusch
+  warning_text: Keine robuste artspezifische Agri-PV-PAR-Kurve; Bewertung über Hafer/C3-Getreide-Proxy.
+  use_type: KÖrnerdrusch
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -612,7 +612,7 @@ dinkel:
   notes_de: Spelzweizen mit stabilen Strohertr├ñgen; schattentoleranter als Weichweizen,
     aber Spelzenbildung braucht Mindestlicht.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -667,7 +667,7 @@ emmer:
   notes_de: Robuste Spelzweizenart, die extensiven Anbaubedingungen gut vertr├ñgt,
     aber nur schwach untersucht ist.
   warning_text: Extensive alte Weizenart; keine robuste artspezifische Agri-PV-PAR-Kurve.
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -720,9 +720,9 @@ einkorn:
   source_references:
   - Laub2022
   notes_de: Urgetreide mit extrem geringem N├ñhrstoffbedarf; Halmfestigkeit und Kornansatz
-    im Teilschatten bed├╝rfen agronomischer Pr├╝fung.
+    im Teilschatten bedürfen agronomischer Prüfung.
   warning_text: ├ältestes domestiziertes Getreide; keine robuste artspezifische Agri-PV-PAR-Kurve.
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -764,10 +764,10 @@ gerste:
   source_references:
   - ArenasCorraliza2019
   - Laub2022
-  notes_de: Gerste zeigte in physiologischen Studien eine h├Âhere Schattentoleranz
+  notes_de: Gerste zeigte in physiologischen Studien eine hÖhere Schattentoleranz
     und st├ñrkere Chlorophyll-Akklimatisierung als Weizen.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -821,10 +821,10 @@ weizen:
   - Weselek2021
   - ArenasCorraliza2019
   - Laub2022
-  notes_de: Weizen ist moderat tolerant, aber Bl├╝te (Anthese) und Kornf├╝llungsphase
+  notes_de: Weizen ist moderat tolerant, aber Blüte (Anthese) und Kornfüllungsphase
     reagieren empfindlich auf ausgepr├ñgte Verschattung.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -868,8 +868,8 @@ buchweizen:
   notes_de: Pseudogetreide mit kurzer Vegetationszeit; sehr frostempfindlich. Lichtanspruch
     im Sommer ist hoch.
   warning_text: Nischenhauptackerfrucht; keine robuste Agri-PV-Ertragskurve. Sommer-PAR
-    besonders pr├╝fen.
-  use_type: K├Ârnerdrusch
+    besonders prüfen.
+  use_type: KÖrnerdrusch
   proxy_group: niche_crop
   cv_max: 0.3
   weights:
@@ -911,10 +911,10 @@ leindotter:
   source_group: low-input oilseed proxy
   source_references:
   - Laub2022
-  notes_de: Sehr widerstandsf├ñhige Nischen├Âlfrucht; eignet sich gut f├╝r Mischkulturanbau
+  notes_de: Sehr widerstandsf├ñhige NischenÖlfrucht; eignet sich gut für Mischkulturanbau
     mit Erbsen oder Weizen.
-  warning_text: Low-input ├ûlfrucht, aber keine robuste Agri-PV-PAR-Kurve.
-  use_type: K├Ârnerdrusch
+  warning_text: Low-input Ölfrucht, aber keine robuste Agri-PV-PAR-Kurve.
+  use_type: KÖrnerdrusch
   proxy_group: niche_crop
   cv_max: 0.25
   weights:
@@ -922,8 +922,8 @@ leindotter:
     wS: 0.25
     wC: 0.3
     wH: 0.1
-├Âllein:
-  display_name: ├ûllein
+Öllein:
+  display_name: Öllein
   botanical_name: Linum usitatissimum
   crop_group: niche_crop
   supported_objectives:
@@ -955,10 +955,10 @@ leindotter:
   source_group: oilseed proxy
   source_references:
   - Laub2022
-  notes_de: Faser- und ├ûllein sind sonnenliebende Kulturen, deren Kapselentwicklung
-    ausreichende Direktstrahlung ben├Âtigt.
+  notes_de: Faser- und Öllein sind sonnenliebende Kulturen, deren Kapselentwicklung
+    ausreichende Direktstrahlung benÖtigt.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: niche_crop
   cv_max: 0.25
   weights:
@@ -1000,9 +1000,9 @@ hanf:
   source_group: high-light niche crop
   source_references:
   - Laub2022
-  notes_de: Industriehanf w├ñchst extrem schnell und bildet hohe Biomasse, ben├Âtigt
+  notes_de: Industriehanf w├ñchst extrem schnell und bildet hohe Biomasse, benÖtigt
     jedoch erhebliche Strahlungssummen.
-  warning_text: Hanf ist licht- und w├ñrmebed├╝rftig; nur bei hoher Sommer-PAR und
+  warning_text: Hanf ist licht- und w├ñrmebedürftig; nur bei hoher Sommer-PAR und
     gesicherter Verwertung.
   use_type: Mehrfachnutzung
   proxy_group: niche_crop
@@ -1092,7 +1092,7 @@ riesenweizengras:
   source_group: perennial grass proxy
   source_references:
   - Laub2022
-  notes_de: Szene-Energiepflanze (Szarvasi), robust und mit m├ñ├ƒigen Anspr├╝chen
+  notes_de: Szene-Energiepflanze (Szarvasi), robust und mit m├ñ├ƒigen Ansprüchen
     an die Einstrahlung.
   warning_text: ''
   use_type: Biomasse
@@ -1139,7 +1139,7 @@ silphie:
   source_references:
   - Laub2022
   notes_de: Mehrj├ñhrige insektenfreundliche Energiepflanze, deren Etablierung viel
-    Licht und W├ñrme ben├Âtigt.
+    Licht und W├ñrme benÖtigt.
   warning_text: Biomasse-Dauerkultur mit hoher Licht- und W├ñrmepr├ñferenz; nur bei
     hoher Rest-PAR.
   use_type: Biomasse
@@ -1236,10 +1236,10 @@ sonnenblume:
   source_group: high-light oilseed
   source_references:
   - Laub2022
-  notes_de: Sehr lichtbed├╝rftige Kultur; Heliotropismus und Bl├╝tenkorbentwicklung
+  notes_de: Sehr lichtbedürftige Kultur; Heliotropismus und Blütenkorbentwicklung
     werden durch starre Tracker oder Module beeintr├ñchtigt.
   warning_text: Hohe Lichtpr├ñferenz; nur bei hoher Rest-PAR.
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: high_light_crop
   cv_max: 0.2
   weights:
@@ -1280,10 +1280,10 @@ soja:
   source_group: grain legume proxy
   source_references:
   - Laub2022
-  notes_de: K├Ârnerleguminosen zeigen in der Meta-Analyse Laub et al. 2022 eine ausgepr├ñgte
+  notes_de: KÖrnerleguminosen zeigen in der Meta-Analyse Laub et al. 2022 eine ausgepr├ñgte
     Lichtempfindlichkeit.
   warning_text: ''
-  use_type: K├Ârnerdrusch
+  use_type: KÖrnerdrusch
   proxy_group: high_light_crop
   cv_max: 0.25
   weights:
@@ -1326,8 +1326,8 @@ salbei:
   source_group: high-light herb proxy
   source_references:
   - Laub2022
-  notes_de: Mehrj├ñhrige Gew├╝rzpflanze mit hoher Licht- und W├ñrmeanforderung.
-  warning_text: Arznei-/Gew├╝rzpflanze mit hoher Lichtpr├ñferenz; keine robuste Agri-PV-Ertragskurve.
+  notes_de: Mehrj├ñhrige Gewürzpflanze mit hoher Licht- und W├ñrmeanforderung.
+  warning_text: Arznei-/Gewürzpflanze mit hoher Lichtpr├ñferenz; keine robuste Agri-PV-Ertragskurve.
     Hauptkultur nur bei hoher Rest-PAR und Abnehmernachweis.
   use_type: Sonderkultur
   proxy_group: special_crop
@@ -1372,7 +1372,7 @@ echinacea:
   source_group: medicinal flower proxy
   source_references:
   - Laub2022
-  notes_de: Stauden-Arzneipflanze f├╝r sonnige Habitate. Sehr wertvoll f├╝r Biodiversit├ñtskonzepte
+  notes_de: Stauden-Arzneipflanze für sonnige Habitate. Sehr wertvoll für Biodiversit├ñtskonzepte
     im Agri-PV-Feld.
   warning_text: Sonnenliebende Arzneipflanze; keine belastbare Agri-PV-PAR-Kurve.
     Nur bei hoher Rest-PAR als Hauptkultur plausibel.
@@ -1418,7 +1418,7 @@ kamille:
   source_group: medicinal herb proxy
   source_references:
   - Laub2022
-  notes_de: Heilpflanze mit breiter ├Âkologischer Toleranz, die Wirkstoffakkumulation
+  notes_de: Heilpflanze mit breiter Ökologischer Toleranz, die Wirkstoffakkumulation
     braucht jedoch ausreichende Strahlung.
   warning_text: ''
   use_type: Sonderkultur
@@ -1464,7 +1464,7 @@ ringelblume:
   source_group: medicinal flower proxy
   source_references:
   - Laub2022
-  notes_de: Etablierte Sonderkultur f├╝r Heilpflanzen├Âle; m├ñ├ƒige Schattentoleranz.
+  notes_de: Etablierte Sonderkultur für HeilpflanzenÖle; m├ñ├ƒige Schattentoleranz.
   warning_text: ''
   use_type: Sonderkultur
   proxy_group: special_crop
@@ -1474,8 +1474,8 @@ ringelblume:
     wS: 0.25
     wC: 0.3
     wH: 0.1
-k├╝mmel:
-  display_name: K├╝mmel
+kümmel:
+  display_name: Kümmel
   botanical_name: Carum carvi
   crop_group: special_crop
   supported_objectives:
@@ -1507,7 +1507,7 @@ k├╝mmel:
   source_group: apiaceae herb proxy
   source_references:
   - Laub2022
-  notes_de: Zweij├ñhrige Gew├╝rzpflanze, deren Samenreife im zweiten Standjahr ausreichend
+  notes_de: Zweij├ñhrige Gewürzpflanze, deren Samenreife im zweiten Standjahr ausreichend
     PAR erfordert.
   warning_text: ''
   use_type: Sonderkultur
@@ -1551,7 +1551,7 @@ koriander:
   source_group: apiaceae herb proxy
   source_references:
   - Laub2022
-  notes_de: Einj├ñhriges Doldengew├ñchs; m├ñ├ƒiger Lichtanspruch, aber anf├ñllig f├╝r
+  notes_de: Einj├ñhriges Doldengew├ñchs; m├ñ├ƒiger Lichtanspruch, aber anf├ñllig für
     Schimmelbildung bei Staun├ñsse.
   warning_text: ''
   use_type: Sonderkultur
@@ -1597,8 +1597,8 @@ fenchel:
   source_group: apiaceae herb proxy
   source_references:
   - Laub2022
-  notes_de: Gew├╝rz- und Arzneikultur (K├Ârnernutzung); hohe Strahlungsanspr├╝che
-    f├╝r die ├ñtherischen ├ûle.
+  notes_de: Gewürz- und Arzneikultur (KÖrnernutzung); hohe Strahlungsansprüche
+    für die ├ñtherischen Öle.
   warning_text: ''
   use_type: Sonderkultur
   proxy_group: special_crop
@@ -1689,7 +1689,7 @@ borretsch:
   source_group: special crop proxy
   source_references:
   - Laub2022
-  notes_de: Exzellente Bienenweide und ├ûlpflanze, die gut unter Teilschattierung
+  notes_de: Exzellente Bienenweide und Ölpflanze, die gut unter Teilschattierung
     gedeiht.
   warning_text: ''
   use_type: Sonderkultur
@@ -1735,7 +1735,7 @@ kapuzinerkresse:
   source_group: special crop proxy
   source_references:
   - Laub2022
-  notes_de: Schnellw├╝chsige bodendeckende Sonderkultur mit hohem Zier- und N├ñhrwert;
+  notes_de: Schnellwüchsige bodendeckende Sonderkultur mit hohem Zier- und N├ñhrwert;
     sehr frostempfindlich.
   warning_text: Nicht als klassische deutsche Hauptackerfrucht validiert. Nur als
     Sonderackerfrucht mit Vermarktungs-/Feldnachweis.

@@ -465,20 +465,59 @@ class ReportGenerator:
         data = [["Crop Name", "Suitability Class", "Score", "Confidence"]]
         for r in self.crop_results[:12]:
             class_para = Paragraph(r.classification, self.styles['Normal'])
-            crop_para = Paragraph(r.crop_id.capitalize(), self.styles['Normal'])
+            crop_name = r.crop_name_de if r.crop_name_de else r.crop_id.capitalize()
+            crop_para = Paragraph(crop_name, self.styles['Normal'])
             data.append([crop_para, class_para, f"{r.score*100:.1f}%", r.confidence])
             
         t = Table(data, colWidths=[110, 200, 70, 70])
         t.setStyle(get_table_style_standard())
         self.story.append(t)
-        self.story.append(Spacer(1, 20))
-        
-        self.story.append(Paragraph("Crop Response Visualization", self.styles['Heading2']))
-        if 'crop' in self.figures:
-            img = export_plotly_to_image(self.figures['crop'], width=800, height=350)
-            if img: self.story.append(img)
-            
         self.story.append(PageBreak())
+        
+        # Top 3 Crop Detail Pages
+        top_3 = self.figures.get('top_3_crops', [])
+        for i, crop_data in enumerate(top_3[:3]):
+            cr = crop_data['result']
+            cp = crop_data['profile']
+            crop_name = cr.crop_name_de if cr.crop_name_de else cr.crop_id.capitalize()
+            
+            self.story.append(Paragraph(f"Top {i+1}: {crop_name}", self.styles['Heading1']))
+            
+            if cp.botanical_name:
+                self.story.append(Paragraph(f"<i>{cp.botanical_name}</i>", self.styles['NormalGray']))
+            self.story.append(Spacer(1, 10))
+            
+            # Profile summary table
+            crit_months_str = ", ".join(str(m) for m in cp.critical_months) if cp.critical_months else "—"
+            profile_data = [
+                ["Parameter", "Value", "Parameter", "Value"],
+                ["Classification", Paragraph(cr.classification, self.styles['Normal']), "Evidence Tier", f"Tier {cr.evidence_tier}"],
+                ["Crop Group", cp.crop_group.replace("_", " ").title(), "Confidence", cr.confidence],
+                ["Score", f"{cr.score*100:.1f} %", "Critical Months", crit_months_str],
+                ["Rel. PAR (Annual)", f"{crop_data['r_ann']:.1f} %", "Rel. PAR (Crit.)", f"{crop_data['r_crit']:.1f} %"],
+                ["Mean DLI (GS)", f"{crop_data['mean_dli']:.1f} mol/m\u00b2/d", "DLI Target", f"{cp.DLI_target:.0f} mol/m\u00b2/d"],
+                ["DLI Minimum", f"{cp.DLI_min:.0f} mol/m\u00b2/d", "Light Homogeneity (CV)", f"{crop_data['cv_par']:.1f} %"],
+            ]
+            t = Table(profile_data, colWidths=[120, 110, 120, 100])
+            t.setStyle(get_table_style_standard())
+            self.story.append(t)
+            self.story.append(Spacer(1, 10))
+            
+            # Evaluation text
+            if cr.notes_de:
+                self.story.append(Paragraph("<b>Evaluation:</b>", self.styles['Heading3']))
+                self.story.append(Paragraph(cr.notes_de, self.styles['Normal']))
+            self.story.append(Spacer(1, 10))
+            
+            # DLI Chart
+            fig_dli = crop_data.get('fig_dli')
+            if fig_dli:
+                self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
+                img = export_plotly_to_image(fig_dli, width=800, height=350)
+                if img:
+                    self.story.append(img)
+            
+            self.story.append(PageBreak())
 
     def create_page_12_combined_evaluation(self):
         self.story.append(Paragraph("Combined Agri-PV Scenario Evaluation", self.styles['Heading1']))

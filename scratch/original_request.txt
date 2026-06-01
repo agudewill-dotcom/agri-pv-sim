@@ -1,0 +1,109 @@
+<USER_REQUEST>
+You are an expert Python developer, agrivoltaics modelling engineer, and agronomic decision-support system designer.
+
+I have an existing Agri-PV web app that already calculates:
+- hourly irradiance under an Agri-PV system,
+- annual PAR sum in mol/mÂ²/a,
+- relative Agricultural Light / Remaining PAR in %,
+- monthly and hourly light heatmaps,
+- spatial shadow profiles,
+- comparison against open field and standard ground-mounted PV,
+- and optionally thermal/PV performance KPIs.
+
+I now want to extend this tool with a scientifically documented crop suitability module for German arable main crops, including niche main crops. The goal is not to recommend vegetables or ornamental plants. The goal is to determine which crops can plausibly serve as the agricultural main use under a German Agri-PV system.
+
+This extension must be conservative, transparent, source-based, and suitable for engineering/pre-feasibility use. It must not invent plant-specific PAR values. Where exact species-specific Agri-PV PAR curves are unavailable, classify the crop via a scientifically justified proxy group and clearly show the confidence level and evidence tier.
+
+============================================================
+1. CORE OBJECTIVE
+============================================================
+
+Build a crop suitability engine that evaluates whether a crop can plausibly grow as a main arable crop under the simulated Agri-PV light conditions.
+
+The engine must classify each crop as:
+
+- "geeignet als Hauptackerfrucht"
+- "grenzwertig / nur mit agronomischer PrÃ¼fung"
+- "ungeeignet"
+- "nur als Sonderkultur mit Abnehmer-/Feldnachweis"
+
+The output must include:
+- suitability class,
+- confidence level,
+- evidence tier,
+- main limiting factor,
+- explanation text in German,
+- numerical indicators used for the decision,
+- references/sources used for the crop classification.
+
+The module must work for standard German arable crops and niche crops.
+
+============================================================
+2. EXISTING INPUTS FROM THE 
+<truncated 20684 bytes>
+0. VALIDATION REQUIREMENTS
+============================================================
+
+Add unit tests for:
+
+- r_ann calculation
+- r_crit calculation
+- DLI conversion
+- peak PPFD extraction
+- homogeneity classification
+- crop suitability thresholds
+- evidence-tier warnings
+- no crop with evidence_tier C may be shown as fully secure without warning
+- maize must be downgraded under moderate shade
+- forage crops must remain more tolerant than maize at the same r_ann
+- C3 cereals must be intermediate between forage and maize
+- Waldstaudenroggen must use the rye/C3 cereal proxy and show medium/low confidence
+- Salbei and Echinacea must require high PAR and show low evidence warning
+
+============================================================
+11. IMPORTANT CONSTRAINTS
+============================================================
+
+Do not invent exact species-specific PAR requirements if no direct source exists.
+
+Do not output "sicher geeignet" for niche crops without evidence.
+
+Do not treat medicinal herbs as fully validated German Agri-PV main crops.
+
+Do not use vegetable crops.
+
+Do not recommend crops solely from annual PAR. Always use:
+- annual relative PAR,
+- critical-season relative PAR,
+- DLI,
+- peak PPFD,
+- and homogeneity.
+
+The final UI must clearly distinguish:
+- "wissenschaftlich gut belegt"
+- "Proxy-Ableitung"
+- "nur mit Feldtest / Abnehmernachweis"
+
+============================================================
+12. IMPLEMENTATION TASK
+============================================================
+
+First produce:
+1. implementation plan,
+2. file structure,
+3. crop database schema,
+4. source registry schema,
+5. decision logic as pseudocode.
+
+Then implement:
+- crop_database.yaml
+- sources.yaml
+- crop_suitability.py
+- visualization components in Streamlit
+- unit tests
+
+Do not modify the existing irradiance engine except where needed to expose monthly PAR, DLI, peak PPFD, and spatial homogeneity metrics.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-26T18:51:22+02:00.
+</ADDITIONAL_METADATA>

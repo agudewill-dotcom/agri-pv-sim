@@ -1,0 +1,394 @@
+﻿echte_kamille:
+  display_name: Echte Kamille
+  botanical_name: Matricaria chamomilla / Matricaria recutita
+  crop_group: medicinal_flowering_light_demanding
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - Apr
+  - May
+  - Jun
+  - Jul
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  DLI_min: 18
+  DLI_target: 24
+  peak_PPFD_min: 800.0
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low-medium
+  source_group: light germination + long-day plant + Landolt L=4 hell + medicinal
+    crop agronomy
+  source_references:
+  - Echte_Kamille_Licht
+  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+  notes_de: Kamille ist als Arznei-Hauptackerfrucht plausibler als viele mediterrane
+    Kr├ñuter, sollte aber bei starker Verschattung oder hoher Lichtheterogenit├ñt nur
+    mit Feldtest empfohlen werden.
+ringelblume:
+  display_name: Ringelblume
+  botanical_name: Calendula officinalis
+  crop_group: medicinal_flowering_light_demanding
+  use_type: Arznei-/Bl├╝hpflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.68
+  r_ann_target: 0.82
+  r_crit_min: 0.68
+  r_crit_target: 0.82
+  DLI_min: 17
+  DLI_target: 23
+  peak_PPFD_min: 750.0
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low
+  source_group: flowering medicinal crop proxy
+  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+borretsch:
+  display_name: Borretsch
+  botanical_name: Borago officinalis
+  crop_group: pollinator_medicinal_special_crop
+  use_type: Sonder-Hauptackerfrucht / ├ûl-/Bl├╝hpflanze
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.68
+  r_ann_target: 0.82
+  r_crit_min: 0.68
+  r_crit_target: 0.82
+  DLI_min: 17
+  DLI_target: 23
+  peak_PPFD_min: 750.0
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low
+  source_group: pollinator/medicinal crop proxy
+  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+salbei:
+  display_name: Echter Salbei
+  botanical_name: Salvia officinalis
+  crop_group: medicinal_spice_high_light
+  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.75
+  r_ann_target: 0.9
+  r_crit_min: 0.75
+  r_crit_target: 0.9
+  DLI_min: 20
+  DLI_target: 28
+  peak_PPFD_min: 950.0
+  homogeneity_sensitivity: high
+  evidence_tier: C
+  confidence_default: low
+  source_group: Landolt L=4 hell + Mediterranean dry/warm full-light ecology + medicinal
+    cultivation proxy
+  source_references:
+  - Salbei_Licht
+  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+  notes_de: Bei r_ann < 0.75 oder DLI_crit < 22 mol/m┬▓/d h├Âchstens grenzwertig ausgeben.
+echinacea_purpurea:
+  display_name: Echinacea / Purpur-Sonnenhut
+  botanical_name: Echinacea purpurea
+  crop_group: medicinal_flowering_high_light
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.75
+  r_ann_target: 0.9
+  r_crit_min: 0.75
+  r_crit_target: 0.9
+  DLI_min: 20
+  DLI_target: 28
+  peak_PPFD_min: 950.0
+  homogeneity_sensitivity: high
+  evidence_tier: C
+  confidence_default: low
+  source_group: full sun / sun to light shade ecology + medicinal crop proxy
+  source_references:
+  - Echinacea_Licht
+  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+echinacea_angustifolia:
+  display_name: Schmalbl├ñttriger Sonnenhut
+  botanical_name: Echinacea angustifolia
+  crop_group: medicinal_flowering_high_light
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.75
+  r_ann_target: 0.9
+  r_crit_min: 0.75
+  r_crit_target: 0.9
+  DLI_min: 20
+  DLI_target: 28
+  peak_PPFD_min: 950.0
+  homogeneity_sensitivity: high
+  evidence_tier: C
+  confidence_default: low
+  source_group: sun-loving Echinacea proxy
+  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
+johanniskraut:
+  display_name: Echtes Johanniskraut
+  botanical_name: Hypericum perforatum
+  crop_group: medicinal_open_habitat_light_demanding
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  DLI_min: 20
+  DLI_target: 30
+  peak_PPFD_min: 700
+  homogeneity_sensitivity: medium-high
+  evidence_tier: C
+  confidence_default: low
+  source_group: open habitat medicinal plant proxy
+  warning_text: No robust species-specific Agri-PV PAR yield curve. Only plausible
+    as a main crop with sufficient summer PAR and buyer confirmation.
+pfefferminze:
+  display_name: Pfefferminze
+  botanical_name: Mentha x piperita
+  crop_group: medicinal_leaf_crop_moderate_light
+  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  - Sep
+  r_ann_min: 0.6
+  r_ann_target: 0.78
+  r_crit_min: 0.6
+  r_crit_target: 0.78
+  DLI_min: 16
+  DLI_target: 24
+  peak_PPFD_min: 550
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low
+  source_group: leafy medicinal crop proxy
+  warning_text: Likely more plausible for biomass production than for highly light-dependent
+    floral drugs, but lacks a robust Agri-PV PAR yield curve.
+zitronenmelisse:
+  display_name: Zitronenmelisse
+  botanical_name: Melissa officinalis
+  crop_group: medicinal_leaf_crop_moderate_light
+  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  - Sep
+  r_ann_min: 0.6
+  r_ann_target: 0.78
+  r_crit_min: 0.6
+  r_crit_target: 0.78
+  DLI_min: 16
+  DLI_target: 24
+  peak_PPFD_min: 550
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low
+  source_group: leafy medicinal crop proxy
+  warning_text: No robust species-specific Agri-PV PAR yield curve. Field trial and
+    market viability should be verified.
+baldrian:
+  display_name: Baldrian
+  botanical_name: Valeriana officinalis
+  crop_group: medicinal_root_crop_moderate_light
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  - Sep
+  r_ann_min: 0.58
+  r_ann_target: 0.75
+  r_crit_min: 0.58
+  r_crit_target: 0.75
+  DLI_min: 15
+  DLI_target: 23
+  peak_PPFD_min: 500
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low
+  source_group: root medicinal crop / moderate-light proxy
+  warning_text: Do not evaluate Valerian based solely on light; water, soil, and harvesting
+    methods are critical factors.
+spitzwegerich:
+  display_name: Spitzwegerich
+  botanical_name: Plantago lanceolata
+  crop_group: medicinal_leaf_crop_moderate_light
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - Apr
+  - May
+  - Jun
+  - Jul
+  - Aug
+  - Sep
+  r_ann_min: 0.58
+  r_ann_target: 0.75
+  r_crit_min: 0.58
+  r_crit_target: 0.75
+  DLI_min: 15
+  DLI_target: 23
+  peak_PPFD_min: 500
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low
+  source_group: robust herbaceous medicinal crop proxy
+  warning_text: No robust species-specific Agri-PV PAR yield curve; should be evaluated
+    as a resilient special crop.
+schafgarbe:
+  display_name: Schafgarbe
+  botanical_name: Achillea millefolium
+  crop_group: medicinal_perennial_light_demanding
+  use_type: Arznei-/Bl├╝hpflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.65
+  r_ann_target: 0.82
+  r_crit_min: 0.65
+  r_crit_target: 0.82
+  DLI_min: 18
+  DLI_target: 27
+  peak_PPFD_min: 625
+  homogeneity_sensitivity: medium
+  evidence_tier: C
+  confidence_default: low
+  source_group: open grassland medicinal proxy
+  warning_text: No robust species-specific Agri-PV PAR yield curve. Evaluated as a
+    proxy.
+fenchel:
+  display_name: Fenchel
+  botanical_name: Foeniculum vulgare
+  crop_group: spice_seed_high_light
+  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  DLI_min: 20
+  DLI_target: 30
+  peak_PPFD_min: 700
+  homogeneity_sensitivity: high
+  evidence_tier: C
+  confidence_default: low
+  source_group: seed spice crop high-light proxy
+  warning_text: Seed/fruit drugs are highly dependent on light and heat. Buyer confirmation
+    and field trial evidence required.
+kuemmel:
+  display_name: K├╝mmel
+  botanical_name: Carum carvi
+  crop_group: spice_seed_high_light
+  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  DLI_min: 20
+  DLI_target: 30
+  peak_PPFD_min: 700
+  homogeneity_sensitivity: high
+  evidence_tier: C
+  confidence_default: low
+  source_group: seed spice crop high-light proxy
+koriander:
+  display_name: Koriander
+  botanical_name: Coriandrum sativum
+  crop_group: spice_seed_high_light
+  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  r_ann_min: 0.68
+  r_ann_target: 0.85
+  r_crit_min: 0.68
+  r_crit_target: 0.85
+  DLI_min: 20
+  DLI_target: 30
+  peak_PPFD_min: 675
+  homogeneity_sensitivity: high
+  evidence_tier: C
+  confidence_default: low
+  source_group: seed spice crop high-light proxy
+mariendistel:
+  display_name: Mariendistel
+  botanical_name: Silybum marianum
+  crop_group: medicinal_seed_high_light
+  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  r_ann_min: 0.7
+  r_ann_target: 0.85
+  r_crit_min: 0.7
+  r_crit_target: 0.85
+  DLI_min: 20
+  DLI_target: 30
+  peak_PPFD_min: 700
+  homogeneity_sensitivity: high
+  evidence_tier: C
+  confidence_default: low
+  source_group: seed medicinal high-light proxy
+kapuzinerkresse:
+  display_name: Kapuzinerkresse
+  botanical_name: Tropaeolum majus
+  crop_group: edible_medicinal_flowering_special_crop
+  use_type: Sonder-Hauptackerfrucht / essbare Bl├╝ten
+  critical_months:
+  - May
+  - Jun
+  - Jul
+  - Aug
+  - Sep
+  r_ann_min: 0.68
+  r_ann_target: 0.82
+  r_crit_min: 0.68
+  r_crit_target: 0.82
+  DLI_min: 17
+  DLI_target: 23
+  peak_PPFD_min: 750.0
+  homogeneity_sensitivity: medium
+  evidence_tier: C-D
+  confidence_default: low
+  source_group: special crop proxy
+  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.

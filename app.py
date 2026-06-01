@@ -1566,11 +1566,80 @@ with tab_din:
     st.markdown("Download the complete, comprehensive technical validation report or the hourly calculations data:")
     
     import importlib
+    import report.report_styles
     import report.report_generator
     import report.report_charts
+    importlib.reload(report.report_styles)
     importlib.reload(report.report_charts)
     importlib.reload(report.report_generator)
     from report.report_generator import ReportGenerator
+    
+    # Build DLI curve charts for top 3 crops
+    from crop_suitability import CROP_REGISTRY
+    days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    m_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    m_agri = metrics['monthly_par_agri']
+    m_open = metrics['monthly_par_open']
+    
+    top_3_crop_data = []
+    for cr in crop_results[:3]:
+        crop_profile = CROP_REGISTRY.get(cr.crop_id)
+        if not crop_profile:
+            continue
+        
+        # Compute DLI per month
+        dli_agri = [m_agri[i] / days_per_month[i] if days_per_month[i] > 0 else 0 for i in range(12)]
+        dli_open = [m_open[i] / days_per_month[i] if days_per_month[i] > 0 else 0 for i in range(12)]
+        
+        # Build DLI chart
+        fig_dli = go.Figure()
+        fig_dli.add_trace(go.Bar(x=m_names, y=dli_agri, name="Agri-PV (mol/m²/d)", marker_color="#10b981"))
+        fig_dli.add_trace(go.Scatter(x=m_names, y=dli_open, name="Open Field (mol/m²/d)", mode="lines+markers", marker_color="#475569"))
+        fig_dli.add_hline(y=crop_profile.DLI_target, line_dash="dash", line_color="#059669", annotation_text="DLI Target")
+        fig_dli.add_hline(y=crop_profile.DLI_min, line_dash="dot", line_color="#d97706", annotation_text="DLI Min")
+        
+        # Highlight critical months
+        for m in crop_profile.critical_months:
+            fig_dli.add_vrect(x0=m-1.4, x1=m-0.6, fillcolor="rgba(239,68,68,0.1)", line_width=0)
+        
+        fig_dli.update_layout(
+            height=300, margin=dict(l=50, r=10, t=30, b=30),
+            yaxis_title="DLI (mol/m²/d)",
+            title=f"{cr.crop_name_de or cr.crop_id.capitalize()} — Monthly DLI",
+            title_font_size=13,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font_size=9)
+        )
+        
+        # Compute relative PAR metrics
+        par_ref = metrics['par_open_field']
+        r_ann = metrics['pa'] / par_ref * 100 if par_ref > 0 else 0
+        monthly_ref = par_ref / 12.0
+        crit_months = crop_profile.critical_months
+        if crit_months and monthly_ref > 0:
+            sum_agri_crit = sum(m_agri[m - 1] for m in crit_months)
+            sum_ref_crit = monthly_ref * len(crit_months)
+            r_crit = sum_agri_crit / sum_ref_crit * 100
+        else:
+            r_crit = r_ann
+        
+        # Growing season DLI
+        gs_months = crop_profile.growing_months or crop_profile.growing_season_months
+        if gs_months:
+            gs_days = sum(days_per_month[m-1] for m in gs_months)
+            gs_par = sum(m_agri[m-1] for m in gs_months)
+            mean_dli = gs_par / gs_days if gs_days > 0 else 0
+        else:
+            mean_dli = sum(dli_agri) / 12
+        
+        top_3_crop_data.append({
+            'result': cr,
+            'profile': crop_profile,
+            'fig_dli': fig_dli,
+            'r_ann': r_ann,
+            'r_crit': r_crit,
+            'mean_dli': mean_dli,
+            'cv_par': metrics['cv_par'] * 100,
+        })
     
     figures = {
         'heat': fig_heat,
@@ -1579,7 +1648,8 @@ with tab_din:
         'weather': fig_irr,
         'layout': fig_sp,
         'spatial_dict': fig_spatial_dict,
-        'radar': None
+        'radar': None,
+        'top_3_crops': top_3_crop_data,
     }
         
     export_cols = ['ghi', 'dni', 'dhi', 'temp_air', 't_avg', 't_cell', 'temp_factor', 'g_g', 'par']
