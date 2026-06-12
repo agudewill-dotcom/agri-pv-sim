@@ -953,15 +953,14 @@ with tab_crops:
     crop_sel = CROP_REGISTRY[selected_crop_id]
 
     if not is_biomass:
-        monthly_ref = metrics['par_open_field'] / 12.0
         sum_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.reproductive_critical_months)
-        sum_ref = monthly_ref * len(crop_sel.reproductive_critical_months)
+        sum_ref = sum(metrics['monthly_par_open'][m - 1] for m in crop_sel.reproductive_critical_months)
         r_crit = sum_agri / sum_ref if sum_ref > 0 else 0.0
 
         days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
         growing_days = sum(days_per_month[m - 1] for m in crop_sel.growing_season_months)
         growing_par_agri = sum(metrics['monthly_par_agri'][m - 1] for m in crop_sel.growing_season_months)
-        growing_par_ref = sum((metrics['par_open_field']/12.0) for m in crop_sel.growing_season_months)
+        growing_par_ref = sum(metrics['monthly_par_open'][m - 1] for m in crop_sel.growing_season_months)
         dli_agri = growing_par_agri / growing_days if growing_days > 0 else 0.0
         dli_ref = growing_par_ref / growing_days if growing_days > 0 else 0.0
 
