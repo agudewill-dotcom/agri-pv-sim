@@ -942,6 +942,8 @@ with tab_crops:
     )
     selected_crop_id = crop_options[selected_crop_en]
 
+    r_sel_bio = None
+    r_sel = None
     if is_biomass:
         try:
             r_sel_bio = next(r for r in st.session_state.get('crop_results_bio', []) if r['crop'] == getattr(CROP_REGISTRY[selected_crop_id], 'display_name', getattr(CROP_REGISTRY[selected_crop_id], 'name_de', '')))
