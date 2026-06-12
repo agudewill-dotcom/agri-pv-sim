@@ -994,7 +994,7 @@ with tab_crops:
     det_col1, det_col2, det_col3 = st.columns([1.2, 1.2, 1.6])
 
     with det_col1:
-        st.markdown(f"""
+        st.html(f"""
         <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
             <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Physiological Light Metrics</h4>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Coordinates-adjusted simulation vs crop thresholds:</p>
@@ -1014,10 +1014,10 @@ with tab_crops:
                 '''}
             </table>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with det_col2:
-        st.markdown(f"""
+        st.html(f"""
         <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
             <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Growth Season & Microclimate</h4>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Active vegetation periods and spatial distribution:</p>
@@ -1037,10 +1037,10 @@ with tab_crops:
                 <tr><td style="padding: 6px 0; color: #475569;">Max Tolerable CV:</td><td style="text-align: right; font-weight: 700; color: #64748b;">{crop_sel.cv_max:.2f}</td></tr>
             </table>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     with det_col3:
-        st.markdown(f"""
+        st.html(f"""
         <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
             <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Agronomic Evaluation</h4>
             <div style="margin-top: 8px; margin-bottom: 8px;">
@@ -1057,7 +1057,7 @@ with tab_crops:
                 "{crop_sel.notes_de}"
             </p>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     # Render warning banners and references
     if is_biomass and r_sel_bio:
