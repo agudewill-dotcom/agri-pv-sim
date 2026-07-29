@@ -144,14 +144,16 @@ def compute_spatial_grid_2d(config, res_a, resolution=0.5, field_length=20.0):
         'mean_shadow_freq': float(np.mean(shadow_freq[mask_kpi]))
     }
     
+    max_y_grid = 2.0 * pitch
     pv_rects = []
     for row_y in row_centers_y:
-        pv_rects.append({
-            'x0': -row_length/2,
-            'x1': row_length/2,
-            'y0': row_y,
-            'y1': row_y + pw
-        })
+        if row_y < max_y_grid:
+            pv_rects.append({
+                'x0': -row_length/2,
+                'x1': row_length/2,
+                'y0': row_y,
+                'y1': min(row_y + pw, max_y_grid)
+            })
         
     layers = {
         'X': X, 'Y': Y,

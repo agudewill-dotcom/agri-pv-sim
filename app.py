@@ -671,6 +671,9 @@ with tab_spatial:
     fig_spatial_dict = {}
     
     def plot_heatmap(z_matrix, title, colorscale="Viridis", zmin=None, zmax=None):
+        x_min, x_max = float(layers['X'][0].min()), float(layers['X'][0].max())
+        y_min, y_max = float(layers['Y'][:, 0].min()), float(layers['Y'][:, 0].max())
+        
         fig = go.Figure(data=go.Heatmap(
             z=z_matrix,
             x=layers['X'][0],
@@ -681,15 +684,17 @@ with tab_spatial:
         
         for rect in layers['pv_rects']:
             fig.add_shape(type="rect",
-                x0=rect['x0'], y0=rect['y0'], x1=rect['x1'], y1=rect['y1'],
-                line=dict(color="rgba(255, 255, 255, 0.8)", width=2),
-                fillcolor="rgba(0, 0, 0, 0.5)"
+                x0=rect['x0'], y0=rect['y0'], x1=rect['x1'], y1=min(rect['y1'], y_max),
+                line=dict(color="rgba(255, 255, 255, 0.95)", width=1.5, dash="dash"),
+                fillcolor="rgba(255, 255, 255, 0.08)"
             )
             
         fig.update_layout(
             title=title,
             xaxis_title="Distance parallel to rows (m)",
             yaxis_title="Distance across rows (m)",
+            xaxis=dict(range=[x_min, x_max]),
+            yaxis=dict(range=[y_min, y_max]),
             height=450,
             margin=dict(l=70, r=20, t=65, b=65)
         )
