@@ -123,31 +123,38 @@ class ReportGenerator:
         self.story.append(PageBreak())
 
     def create_page_2_configuration(self):
-        self.story.append(Paragraph("PV System Configuration", self.styles['Heading1']))
-        self.story.append(Paragraph("The physical layout and geometry of the simulated tracking or fixed-tilt array.", self.styles['Normal']))
+        self.story.append(Paragraph("PV System Configuration (PV-Tischgeometrie nach Schnitt)", self.styles['Heading1']))
+        self.story.append(Paragraph("Physical layout, cross-section dimensions, and geometry parameters of the Agri-PV system.", self.styles['Normal']))
         self.story.append(Spacer(1, 10))
+        
+        geo_dict = self.config.get('geometry', {})
+        geo = TableGeometry.from_dict(geo_dict)
         
         data = [
             ["Parameter", "Value", "Parameter", "Value"],
-            ["Latitude", f"{self.config.get('lat')}°", "Clearance Height", f"{self.config.get('height')} m"],
-            ["Longitude", f"{self.config.get('lon')}°", "Row-to-Row Pitch", f"{self.config.get('pitch')} m"],
-            ["Azimuth", f"{self.config.get('azimuth')}°", "Module Type", "Glass-Glass Bifacial"],
-            ["Tilt Angle", f"{self.config.get('tilt')}°", "Bifaciality", "75 %"],
-            ["System Type", "Fixed / Shed", "Module Width", "1.134 m"],
-            ["Tracking Active", "False", "Module Length", "2.382 m"],
-            ["Transparency", f"{self.config.get('transparency', 5.0)} %", "", ""],
+            ["Geometry Mode", f"{geo.geometry_mode}", "Clearance Height (LH)", f"{geo.clear_height_m:.2f} m"],
+            ["Source / Reference", f"{geo.source_label}", "Top Edge Height (H_high)", f"{geo.h_high_m:.2f} m"],
+            ["Tilt Angle", f"{geo.tilt_deg:.1f}°", "Row Pitch", f"{geo.row_pitch_m:.2f} m"],
+            ["Surface Azimuth", f"{geo.surface_azimuth_deg:.1f}°", "Free Ground Gap", f"{geo.ground_gap_m:.2f} m"],
+            ["Table Inclined Length", f"{geo.table_length_m:.2f} m", "Ground Coverage (GCR)", f"{geo.ground_coverage_ratio*100:.1f} %"],
+            ["Projected Width", f"{geo.table_projected_width_m:.2f} m", "Structural Light Loss", f"{geo.structural_loss_percent:.1f} %"],
+            ["Table Vertical Rise", f"{geo.table_vertical_rise_m:.2f} m", "Module Transparency (τ)", f"{self.config.get('tau', 0.20)*100:.1f} %"],
         ]
-        t = Table(data, colWidths=[110, 100, 120, 120])
+        t = Table(data, colWidths=[120, 110, 110, 110])
         t.setStyle(get_table_style_standard())
         self.story.append(t)
-        self.story.append(Spacer(1, 20))
+        self.story.append(Spacer(1, 12))
+        
+        if geo.geometry_mode == "Predefined Table 12°":
+            self.story.append(Paragraph("<b>Reference Note (Drawing 12°):</b> Geometrie gemäß SUNfarming Schnitt Agri-PV 12°: LH 2,70 m, Tischlänge ca. 5,75 m, horizontale Projektion ca. 5,62 m, Pitch ca. 8,28 m, freier Gap ca. 2,63 m.", self.styles['NormalGray']))
+            self.story.append(Spacer(1, 10))
         
         self.story.append(Paragraph("Spatial Light Distribution (Cross-Section)", self.styles['Heading2']))
         if 'layout' in self.figures and self.figures['layout']:
-            img = export_plotly_to_image(self.figures['layout'], width=800, height=400)
+            img = export_plotly_to_image(self.figures['layout'], width=800, height=350)
             if img: self.story.append(img)
         else:
-            self.story.append(Paragraph("A 3D schematic representation of the selected row-to-row pitch and module orientation is omitted in this view.", self.styles['NormalGray']))
+            self.story.append(Paragraph("A cross-section representation of the selected row-to-row pitch and module orientation is depicted above.", self.styles['NormalGray']))
         
         self.story.append(Spacer(1, 10))
         self.story.append(Paragraph(f"Interpretation: The highest shading intensity occurs beneath the modules, while the inter-row areas receive peaks closer to open-field irradiance. The standard deviation of {self.metrics['cv_par']*100:.1f}% maps this variance across the ground.", self.styles['Normal']))

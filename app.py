@@ -705,221 +705,25 @@ with tab_spatial:
         
         fig_win = plot_heatmap(layers['par_winter'], "Winter PAR", "YlGnBu")
         st.plotly_chart(fig_win, use_container_width=True)
-        fig_spatial_dict['winter'] = fig_win
 
-
-
-# TAB 3: AGRONOMIC SUITABILITY (CROP COMPATIBILITY)
+# ==============================================================================
+# TAB 4: CROP & VEGETATION COMPATIBILITY (UNIFIED)
 # ==============================================================================
 with tab_crops:
     st.markdown("""
     <div class="header-crops">
-        <h2 style="margin:0; font-weight:800; color:white;">Agronomic Suitability Engine</h2>
-        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Literature-Backed Crop Compatibility Modeling and spatial micro-climate scoring</p>
+        <h2 style="margin:0; font-weight:800; color:white;">Crop & Vegetation Compatibility Engine</h2>
+        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Integrated Agrivoltaic Suitability Modeling across Arable Crops, Medicinal & Special Crops, and Meadow Species</p>
     </div>
     """, unsafe_allow_html=True)
 
-    m_names_crops = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-    # DIN SPEC 91434 helper functions
-    def get_din_compliance(r):
-        class_lower = r.classification.lower()
-        if "hauptkultur" in class_lower:
-            return "Plausibel"
-        elif "nicht empfohlen" in class_lower:
-            return "Nicht empfehlenswert"
-        else:
-            return "Prüfpflichtig"
-
-    yield_mode = st.radio(
-        "Select Agricultural Yield Objective:",
-        options=["Korn-/Fruchtbildung (Reproductive Yield)", "Biomasse / Ganzpflanze (Vegetative Biomass)"],
-        index=0,
-        horizontal=True
+    st.warning(
+        "**IMPORTANT NOTICE:** Agronomic suitability is evaluated based on species-specific PAR thresholds, DLI integrals, "
+        "microclimate indicators, and Ellenberg/Landolt ecological light values. Shading compatibility describes light availability "
+        "and does not replace site-specific agronomic planning or formal DIN SPEC 91434 review."
     )
-    
-    is_biomass = "Biomasse" in yield_mode
 
-    # Multi-criteria sorting logic: classification suitability, confidence level, and relative PAR margin
-    def sort_key(r):
-        class_lower = r.classification.lower()
-        if "hauptkultur" in class_lower or "sonderkultur" in class_lower or "geeignet" in class_lower:
-            class_rank = 3
-        elif "prüfung" in class_lower or "grenzwertig" in class_lower:
-            class_rank = 2
-        else:
-            class_rank = 1
-            
-        conf_lower = r.confidence.lower()
-        if conf_lower == "hoch":
-            conf_rank = 3
-        elif conf_lower == "mittel":
-            conf_rank = 2
-        else:
-            conf_rank = 1
-            
-        r_ann = metrics['pa'] / metrics['par_open_field'] if metrics['par_open_field'] > 0 else 0.0
-        margin = r_ann - CROP_REGISTRY[r.crop_id].r_ann_target
-        return (class_rank, conf_rank, margin)
 
-    crop_results_sorted = sorted(crop_results, key=sort_key, reverse=True)
-
-    # SECTION 1: DETAILED RANKING TABLE & GROUP COMPARISON
-    col_left, col_right = st.columns([1.8, 1])
-
-    with col_left:
-        st.subheader("Farm-Average Crop Suitability Ranking")
-        st.markdown("All arable crops sorted by suitability classification, confidence level, and relative PAR margins:")
-
-        if not is_biomass:
-            df_ranking = pd.DataFrame([
-                {
-                    "Crop": CROP_REGISTRY[r.crop_id].name_en,
-                    "Score": f"{r.score*100:.1f}%",
-                    "Suitability Class": translate_class(r.classification).upper(),
-                    "Confidence": f"{translate_confidence(r.confidence).upper()} ({r.confidence_value*100:.0f}%)",
-                    "Evidence Strength": f"Tier {r.evidence_tier}",
-                    "Limiting Factor": translate_limiting(r.limiting_factor).upper(),
-                    "Annual PAR (min/target)": f"{r.par_min_abs:.0f} / {r.par_target_abs:.0f} mol"
-                }
-                for r in crop_results_sorted
-            ])
-        else:
-            df_ranking = pd.DataFrame([
-                {
-                    "Crop": r['crop'],
-                    "Score": f"{r['score']:.1f}",
-                    "Suitability Class": translate_class(r['label']).upper(),
-                    "Confidence": translate_confidence(r['confidence']).upper(),
-                    "Evidence Strength": f"Tier {r['evidence_tier']}",
-                    "Biomass Target": r['biomass_target_type'],
-                    "Limiting Factor": translate_limiting(r['limiting_factor']).upper()
-                }
-                for r in st.session_state.get('crop_results_bio', [])
-            ])
-
-        def color_class(val):
-            val_upper = str(val).upper()
-            if "HIGHLY" in val_upper or "SUITABLE" in val_upper or "PLAUSIBEL" in val_upper:
-                return 'color: #065f46; font-weight: 700;'
-            elif "MARGINAL" in val_upper or "PRÜFPFLICHTIG" in val_upper or "VALIDATION" in val_upper:
-                return 'color: #b45309; font-weight: 700;'
-            else:
-                return 'color: #b91c1c; font-weight: 700;'
-
-        styler = df_ranking.style
-        if hasattr(styler, "map"):
-            styler = styler.map(color_class, subset=['Suitability Class'])
-        else:
-            styler = styler.applymap(color_class, subset=['Suitability Class'])
-
-        st.dataframe(
-            styler,
-            use_container_width=True,
-            hide_index=True
-        )
-
-        st.write("") # Spacer
-
-        # SECTION 2: PLOTLY CROP GROUP COMPARISON CHART
-        st.subheader("Remaining PAR vs. Crop Group Suitability Thresholds")
-        st.markdown("Comparison of simulated remaining PAR against the physiological ranges (minimum to target) for each crop group:")
-
-        # Crop Groups dynamically loaded from DB
-        group_names_en = {
-            "forage": "Forage & Grasses",
-            "robust_cereal": "Robust C3 Cereals",
-            "ancient_grain": "Ancient & Mod. Grains",
-            "niche_crop": "Niche & Oil Crops",
-            "high_light_crop": "High-Light & C4 Crops",
-            "special_crop": "Specialty & Medicinal"
-        }
-
-        group_data = []
-        for grp, grp_name in group_names_en.items():
-            if is_biomass:
-                group_crops = [crop for crop in CROP_REGISTRY.values() if crop.crop_group == grp and 'biomass' in crop.supported_objectives]
-                if not group_crops:
-                    continue
-                min_f_min = min(c.thresholds['biomass']['r_gs_min'] for c in group_crops) * 100.0
-                max_f_target = max(c.thresholds['biomass']['r_gs_target'] for c in group_crops) * 100.0
-            else:
-                group_crops = [crop for crop in CROP_REGISTRY.values() if crop.crop_group == grp]
-                if not group_crops:
-                    continue
-                min_f_min = min(c.r_ann_min for c in group_crops) * 100.0
-                max_f_target = max(c.r_ann_target for c in group_crops) * 100.0
-                
-            group_data.append({
-                "Group Name": grp_name,
-                "Min Threshold (%)": min_f_min,
-                "Target Threshold (%)": max_f_target,
-                "Range (%)": max_f_target - min_f_min
-            })
-        df_groups = pd.DataFrame(group_data)
-
-        fig_groups = go.Figure()
-        
-        # Add suitability bands
-        fig_groups.add_trace(go.Bar(
-            x=df_groups['Group Name'],
-            y=df_groups['Range (%)'],
-            base=df_groups['Min Threshold (%)'],
-            name="Suitability Range (Min to Target)",
-            marker_color="rgba(16, 185, 129, 0.35)",
-            marker_line=dict(color="#10b981", width=1.5),
-            hovertemplate="<b>%{x}</b><br>Minimum Threshold: %{base:.1f}%<br>Target Threshold: %{customdata:.1f}%<extra></extra>",
-            customdata=df_groups['Target Threshold (%)']
-        ))
-
-        # Add horizontal simulated remaining PAR line
-        rem_par_val = metrics['remaining_par_pct']
-        fig_groups.add_hline(
-            y=rem_par_val,
-            line=dict(color="#1e3a8a", width=3, dash="dash"),
-            annotation=dict(
-                text=f"Simulated Agri-PV Remaining PAR: {rem_par_val:.1f}%",
-                font=dict(color="#1e3a8a", size=11, family="Outfit", weight="bold"),
-                bgcolor="white",
-                bordercolor="#1e3a8a",
-                borderwidth=1,
-                borderpad=4
-            ),
-            annotation_position="top left"
-        )
-
-        fig_groups.update_layout(
-            yaxis_title="Light Availability Ratio (Remaining PAR %)",
-            xaxis_title="Arable Crop Groups",
-            yaxis=dict(range=[30, 105], ticksuffix="%"),
-            height=380,
-            margin=dict(l=40, r=0, t=10, b=0),
-            showlegend=False
-        )
-        st.plotly_chart(fig_groups, use_container_width=True)
-
-    with col_right:
-        st.subheader("Suitability Class Explanation")
-        st.markdown("""
-        <div class="din-box" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; font-size: 0.92rem; color: #334155; margin-bottom: 20px;">
-            <h4 style="margin-top: 0; color: #1e3a8a; font-family: 'Outfit';">Suitability Class</h4>
-            <p>Crops are classified based on standard agrivoltaic trial evidence, shade tolerance, and site light levels:</p>
-            <ul style="padding-left: 20px; margin-top: 5px;">
-                <li><span style="color: #065f46; font-weight: 700;">● GEEIGNET (Suitable)</span>: Field-tested crops highly suitable for robust biomass growth under modules with minimal expected reduction.</li>
-                <li><span style="color: #b45309; font-weight: 700;">● GRENZWERTIG (Marginal / Audit Req.)</span>: Crops facing moderate biomass reductions or lacking direct PV trial evidence. Agronomic validation recommended.</li>
-                <li><span style="color: #b91c1c; font-weight: 700;">● UNGEEIGNET (Unsuitable)</span>: High-light crops with severe expected growth inhibition under shaded designs.</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div style="background-color:#eff6ff; border-left:6px solid #3b82f6; padding:18px 24px; border-radius:8px; margin-bottom:20px;">
-            <strong style="color:#1e3a8a; font-family: 'Outfit';">Strategic Recommendation:</strong><br/>
-            For high-clearance fixed-tilt systems (Category II under DIN SPEC 91434) with row pitches ≥ 8m, <strong>Lucerne (Luzerne)</strong>, 
-            robust C3 cereals (such as <strong>Oats</strong> and <strong>Spelt</strong>), and shade-tolerant species from the <strong>forage & grass groups</strong> represent the most reliable agricultural choice. 
-            They maintain robust yields under partial shading and show high spatial homogeneity across the layout.
-        </div>
-        """, unsafe_allow_html=True)
     st.divider()
 
     # SECTION 4: PREMIUM CELL-LEVEL SPATIAL CROP EXPLORER
@@ -932,7 +736,7 @@ with tab_crops:
     # Run 1D spatial simulation
     x_points, spatial_par_annual, spatial_par_monthly = simulation.compute_spatial_annual_par(
         config['lat'], config['lon'], config['g_slope'], config['g_aspect'], 
-        config['tau'], config['albedo'], config['pitch'], n_points=11
+        config['tau'], config['albedo'], config['geometry'], n_points=11
     )
 
     # Compute suitability at each cell
