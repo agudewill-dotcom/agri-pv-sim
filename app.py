@@ -994,6 +994,73 @@ with tab_crops:
             })
         st.dataframe(pd.DataFrame(df_meadow), use_container_width=True)
 
+        # Interactive Meadow Species Explorer
+        st.divider()
+        st.subheader("Interactive Meadow Species Light Profile Explorer")
+        st.markdown("Select any species to view its monthly DLI profile against its light thresholds and full agronomic details:")
+
+        sel_meadow_id = st.selectbox(
+            "Select Meadow / Floodplain Species:",
+            options=[r.species_id for r in crop_results_meadow],
+            format_func=lambda sid: f"{next((r.display_name for r in crop_results_meadow if r.species_id == sid), sid)} ({next((r.botanical_name for r in crop_results_meadow if r.species_id == sid), '')})",
+            key="sel_meadow_species"
+        )
+        sel_meadow_r = next((r for r in crop_results_meadow if r.species_id == sel_meadow_id), crop_results_meadow[0])
+        sel_meadow_spec = MEADOW_REGISTRY[sel_meadow_id]
+
+        days_in_m_mw = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        m_dli_agri_mw = [metrics['monthly_par_agri'][m-1] / days_in_m_mw[m-1] for m in range(1, 13)]
+        m_dli_open_mw = [metrics['monthly_par_open'][m-1] / days_in_m_mw[m-1] for m in range(1, 13)]
+
+        fig_single_meadow = go.Figure()
+        fig_single_meadow.add_trace(go.Bar(
+            x=m_names, y=m_dli_agri_mw, name="Agri-PV DLI (mol/m²/d)", marker_color="#0891b2"
+        ))
+        fig_single_meadow.add_trace(go.Bar(
+            x=m_names, y=m_dli_open_mw, name="Open-Field DLI (mol/m²/d)", marker_color="#94a3b8"
+        ))
+        fig_single_meadow.add_hline(
+            y=sel_meadow_spec.DLI_target, line_dash="dash", line_color="#10b981",
+            annotation_text=f"Target DLI ({sel_meadow_spec.DLI_target:.1f} mol/m²/d)"
+        )
+        fig_single_meadow.add_hline(
+            y=sel_meadow_spec.DLI_min, line_dash="dot", line_color="#f59e0b",
+            annotation_text=f"Min DLI ({sel_meadow_spec.DLI_min:.1f} mol/m²/d)"
+        )
+        fig_single_meadow.update_layout(
+            title=f"Monthly Daily Light Integral (DLI) Profile for {sel_meadow_spec.display_name}",
+            xaxis_title="Month", yaxis_title="Daily Light Integral (mol/m²/d)",
+            barmode="group", height=380, margin=dict(l=0, r=0, t=40, b=0)
+        )
+        st.plotly_chart(fig_single_meadow, use_container_width=True)
+
+        with st.expander(f"View Agronomic Details for {sel_meadow_spec.display_name}", expanded=True):
+            col_w1, col_w2 = st.columns(2)
+            with col_w1:
+                st.markdown(f"**Suitability Score:** {sel_meadow_r.score:.1f} / 100")
+                st.markdown(f"**Light Suitability:** {sel_meadow_r.light_class}")
+                st.markdown(f"**Hydrology Suitability:** {sel_meadow_r.hydro_class}")
+                st.markdown(f"**Recommended Zone:** {sel_meadow_r.zone_hint}")
+                st.markdown(f"**Botanical Name:** *{sel_meadow_spec.botanical_name}*")
+                st.markdown(f"**Species Group:** {sel_meadow_r.species_group.title()}")
+                st.markdown(f"**Use Type:** {sel_meadow_spec.use_type.title()}")
+                st.markdown(f"**Mowing Tolerance:** {sel_meadow_spec.mowing_tolerance.title()}")
+            with col_w2:
+                st.markdown(f"**Ellenberg Light Value (L):** {sel_meadow_r.ellenberg_L}")
+                st.markdown(f"**Ellenberg Moisture Value (F):** {sel_meadow_r.ellenberg_F}")
+                st.markdown(f"**Ellenberg Nitrogen Value (N):** {sel_meadow_r.ellenberg_N}")
+                st.markdown(f"**Actual rPAR:** {sel_meadow_r.rPAR_actual*100:.1f}% (min: {sel_meadow_r.rPAR_min*100:.1f}%, target: {sel_meadow_r.rPAR_target*100:.1f}%)")
+                st.markdown(f"**Growing Season DLI:** {sel_meadow_r.DLI_gs:.1f} mol/m²/d")
+                st.markdown(f"**Limiting Factor:** {sel_meadow_r.limiting_factor}")
+                st.markdown(f"**Evidence Tier:** {sel_meadow_r.evidence_tier} ({sel_meadow_r.confidence.upper()} confidence)")
+            if sel_meadow_spec.notes_de:
+                st.markdown(f"**Notes:** {sel_meadow_spec.notes_de}")
+            if sel_meadow_spec.source_references:
+                st.markdown("**Evidence Literature Sources:**")
+                for src in sel_meadow_spec.source_references:
+                    st.markdown(f"- *{src}*")
+
+
 # ==============================================================================
 # TAB 5: ELECTRICAL & THERMAL RESULTS
 # ==============================================================================
