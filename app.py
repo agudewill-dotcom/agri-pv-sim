@@ -365,12 +365,13 @@ ta_cell, ts_cell, delta_t, temp_bonus_pct = metrics['ta_cell'], metrics['ts_cell
 
 
 # --- NAVIGATION TABS ---
-tab_overview, tab_light, tab_spatial, tab_crops, tab_med, tab_elec, tab_din = st.tabs([
+tab_overview, tab_light, tab_spatial, tab_crops, tab_med, tab_meadow, tab_elec, tab_din = st.tabs([
     "Executive Summary", 
     "Light Results", 
     "Spatial Heatmaps",
     "Arable Crops",
     "Medicinal & Special Crops",
+    "Feuchtwiesen & Auen",
     "Electrical & Thermal", 
     "DIN Spec & AwSV"
 ])
@@ -1499,8 +1500,177 @@ with tab_elec:
     """)
 
 
+
 # ==============================================================================
-# TAB 5: DIN EVIDENCE & AwSV REGULATORY PERMITS
+# TAB 6: FEUCHTWIESEN & AUENWIESENARTEN
+# ==============================================================================
+with tab_meadow:
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #065f46 0%, #047857 50%, #10b981 100%); padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+        <h2 style="margin:0; font-weight:800; color:white;">🌿 Feuchtwiesen- & Auenwiesenarten</h2>
+        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">
+            Eignungsbewertung für Wiesen-, Kräuter- und Auenarten unter Agri-PV — basierend auf Ellenberg/Landolt-Zeigerwerten
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.info(
+        "⚠️ **Abgeleiteter Lichtbedarf aus Ellenberg/Landolt-Zeigerwerten, kein experimenteller PAR-Normwert.** "
+        "Die Zeigerwerte beschreiben das Verhalten unter natürlichen Standort- und Konkurrenzbedingungen, "
+        "nicht fixe Kultur-Optima. Quellen: FloraWeb (Ellenberg), InfoFlora/BAFU (Landolt)."
+    )
+
+    from meadow_suitability import evaluate_all_meadow_species, MEADOW_REGISTRY
+
+    meadow_results = evaluate_all_meadow_species(
+        annual_PAR_agri=metrics['pa'],
+        annual_PAR_openfield=metrics['par_open_field'],
+        monthly_PAR_agri=metrics['monthly_par_agri'],
+        monthly_PAR_openfield=metrics['monthly_par_open'],
+        cv_PAR=metrics['cv_par'],
+    )
+
+    # --- Summary metrics ---
+    n_suitable = sum(1 for r in meadow_results if r.light_class == "lichtseitig geeignet")
+    n_marginal = sum(1 for r in meadow_results if r.light_class == "grenzwertig")
+    n_gaps_only = sum(1 for r in meadow_results if r.light_class == "nur in hellen Reihenabständen")
+    n_hydro_flag = sum(1 for r in meadow_results if r.ellenberg_F >= 7)
+
+    mc1, mc2, mc3, mc4 = st.columns(4)
+    mc1.metric("Lichtseitig geeignet", f"{n_suitable}", help="Arten mit ausreichend Restlicht für die gesamte Fläche")
+    mc2.metric("Grenzwertig", f"{n_marginal}", help="Arten an der Lichtgrenze")
+    mc3.metric("Nur in Gaps/Reihen", f"{n_gaps_only}", help="Lichtpflanzen, nur in hellen Streifen")
+    mc4.metric("Hydro-prüfpflichtig", f"{n_hydro_flag}", help="Arten mit Ellenberg F≥7 (Feuchtezeiger)")
+
+    st.markdown("---")
+
+    # --- Group filter ---
+    group_filter = st.multiselect(
+        "Artengruppen filtern:",
+        options=["Gräser", "Kräuter & Stauden", "Auenarten"],
+        default=["Gräser", "Kräuter & Stauden", "Auenarten"],
+        key="meadow_group_filter"
+    )
+    group_map = {"Gräser": "grass", "Kräuter & Stauden": "herb", "Auenarten": "floodplain"}
+    active_groups = [group_map[g] for g in group_filter]
+    filtered_results = [r for r in meadow_results if r.species_group in active_groups]
+
+    # --- Light class colors ---
+    def _light_badge(lc):
+        colors = {
+            "lichtseitig geeignet": ("#065f46", "#d1fae5"),
+            "grenzwertig": ("#b45309", "#fef3c7"),
+            "nur in hellen Reihenabständen": ("#b91c1c", "#fee2e2"),
+            "nicht für stark beschattete Modulbereiche": ("#7f1d1d", "#fecaca"),
+        }
+        c, bg = colors.get(lc, ("#475569", "#f1f5f9"))
+        return f'<span style="background:{bg};color:{c};padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">{lc}</span>'
+
+    def _hydro_badge(hc):
+        colors = {
+            "hydrologisch geeignet": ("#065f46", "#d1fae5"),
+            "hydrologisch prüfpflichtig": ("#b45309", "#fef3c7"),
+            "nur in feuchten Senken": ("#1e40af", "#dbeafe"),
+        }
+        c, bg = colors.get(hc, ("#475569", "#f1f5f9"))
+        return f'<span style="background:{bg};color:{c};padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">{hc}</span>'
+
+    def _zone_badge(zh):
+        colors = {
+            "gesamte Fläche": ("#065f46", "#d1fae5"),
+            "zonenabhängig": ("#b45309", "#fef3c7"),
+            "nur in hellen Reihenabständen / Gaps": ("#b91c1c", "#fee2e2"),
+            "nur in feuchten Senken": ("#1e40af", "#dbeafe"),
+            "nicht empfohlen": ("#7f1d1d", "#fecaca"),
+        }
+        c, bg = colors.get(zh, ("#475569", "#f1f5f9"))
+        return f'<span style="background:{bg};color:{c};padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">{zh}</span>'
+
+    # --- Results table ---
+    st.subheader("Eignungstabelle")
+
+    table_rows = ""
+    for r in filtered_results:
+        score_color = "#065f46" if r.score >= 80 else "#b45309" if r.score >= 60 else "#b91c1c"
+        group_icon = "🌾" if r.species_group == "grass" else "🌿" if r.species_group == "herb" else "💧"
+        table_rows += f"""
+        <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:8px 6px;font-weight:600;">{group_icon} {r.display_name}<br>
+                <span style="font-size:0.78rem;color:#64748b;font-style:italic;">{r.botanical_name}</span></td>
+            <td style="padding:8px 6px;text-align:center;font-weight:700;color:{score_color};">{r.score:.0f}</td>
+            <td style="padding:8px 6px;text-align:center;">{_light_badge(r.light_class)}</td>
+            <td style="padding:8px 6px;text-align:center;">{_hydro_badge(r.hydro_class)}</td>
+            <td style="padding:8px 6px;text-align:center;">{_zone_badge(r.zone_hint)}</td>
+            <td style="padding:8px 6px;text-align:center;font-size:0.85rem;">L{r.ellenberg_L} / F{r.ellenberg_F}</td>
+            <td style="padding:8px 6px;text-align:center;font-size:0.85rem;">{r.rPAR_actual*100:.0f}%<br>
+                <span style="color:#64748b;font-size:0.75rem;">(Min {r.rPAR_min*100:.0f}%)</span></td>
+            <td style="padding:8px 6px;text-align:center;font-size:0.85rem;">{r.evidence_basis}</td>
+        </tr>"""
+
+    st.html(f"""
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+        <thead>
+            <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;">
+                <th style="padding:10px 6px;text-align:left;font-weight:700;color:#1e293b;">Pflanze</th>
+                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Score</th>
+                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Licht-Klasse</th>
+                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Hydro-Klasse</th>
+                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Zonierung</th>
+                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">L / F</th>
+                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">rPAR</th>
+                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Evidenz</th>
+            </tr>
+        </thead>
+        <tbody>
+            {table_rows}
+        </tbody>
+    </table>
+    </div>
+    """)
+
+    st.markdown("---")
+
+    # --- Per-species detail expanders ---
+    st.subheader("Artensteckbriefe")
+
+    for r in filtered_results:
+        score_emoji = "✅" if r.score >= 80 else "⚠️" if r.score >= 60 else "❌"
+        with st.expander(f"{score_emoji} {r.display_name} (*{r.botanical_name}*) — Score: {r.score:.0f}"):
+            dc1, dc2 = st.columns(2)
+
+            with dc1:
+                st.markdown("**Lichtbewertung**")
+                st.markdown(f"- Restlicht (rPAR): **{r.rPAR_actual*100:.1f}%**")
+                st.markdown(f"- Minimum: {r.rPAR_min*100:.0f}% | Zielwert: {r.rPAR_target*100:.0f}%")
+                st.markdown(f"- Kritische Phase rPAR: **{r.r_crit*100:.1f}%**")
+                st.markdown(f"- Growing Season DLI: **{r.DLI_gs:.1f}** mol/m²/d (Min: {r.DLI_min}, Ziel: {r.DLI_target})")
+                st.markdown(f"- Licht-Score: **{r.light_score:.0f}**/100")
+                st.markdown(f"- CV PAR: {r.cv_PAR*100:.1f}%")
+
+            with dc2:
+                st.markdown("**Ökologische Kennwerte**")
+                st.markdown(f"- Ellenberg L (Licht): **{r.ellenberg_L}** | F (Feuchte): **{r.ellenberg_F}** | N (Nährstoff): **{r.ellenberg_N}**")
+                st.markdown(f"- Schnittverträglichkeit: **{r.mowing_tolerance}**")
+                st.markdown(f"- Artengruppe: {r.use_type}")
+                st.markdown(f"- Evidenzbasis: {r.evidence_basis} (Tier {r.evidence_tier})")
+                st.markdown(f"- Hydro-Score: **{r.hydro_score:.0f}**/100")
+                if r.limiting_factor != "—":
+                    st.markdown(f"- ⚠️ Limitierender Faktor: **{r.limiting_factor}**")
+
+            st.markdown(f"**Bewertung:** {r.explanation_de}")
+
+            if r.warning_text:
+                st.warning(r.warning_text)
+
+            # Ecological note
+            profile = MEADOW_REGISTRY.get(r.species_id)
+            if profile and profile.notes_de:
+                st.markdown(f"*{profile.notes_de}*")
+
+
+# ==============================================================================
+# TAB 7: DIN EVIDENCE & AwSV REGULATORY PERMITS
 # ==============================================================================
 with tab_din:
     st.markdown("""
@@ -1652,6 +1822,16 @@ with tab_din:
                         'cv_par': metrics['cv_par'] * 100,
                     })
                 
+                # Evaluate meadow species for PDF
+                from meadow_suitability import evaluate_all_meadow_species as _eval_meadow
+                _meadow_pdf = _eval_meadow(
+                    annual_PAR_agri=metrics['pa'],
+                    annual_PAR_openfield=metrics['par_open_field'],
+                    monthly_PAR_agri=metrics['monthly_par_agri'],
+                    monthly_PAR_openfield=metrics['monthly_par_open'],
+                    cv_PAR=metrics['cv_par'],
+                )
+
                 figures = {
                     'heat': fig_heat,
                     'crop': fig_groups,
@@ -1661,6 +1841,7 @@ with tab_din:
                     'spatial_dict': fig_spatial_dict,
                     'radar': None,
                     'top_3_crops': top_3_crop_data,
+                    'meadow_results': _meadow_pdf,
                 }
                 
                 metrics['spatial_kpis'] = kpis

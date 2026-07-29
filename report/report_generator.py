@@ -68,6 +68,7 @@ class ReportGenerator:
         self.create_page_9_electrical_results()
         self.create_page_10_method_crop()
         self.create_page_11_crop_results()
+        self.create_page_meadow_species()
         self.create_page_14_assumptions()
         self.create_page_15_appendix()
         
@@ -518,6 +519,49 @@ class ReportGenerator:
                     self.story.append(img)
             
             self.story.append(PageBreak())
+
+    def create_page_meadow_species(self):
+        """Page: Feuchtwiesen- & Auenwiesenarten suitability."""
+        meadow_results = self.figures.get('meadow_results', [])
+        if not meadow_results:
+            return  # No meadow data, skip page
+
+        self.story.append(Paragraph("Feuchtwiesen- & Auenwiesenarten", self.styles['Heading1']))
+        self.story.append(Paragraph(
+            "Eignungsbewertung für Wiesen-, Kräuter- und Auenarten unter Agri-PV. "
+            "Abgeleiteter Lichtbedarf aus Ellenberg/Landolt-Zeigerwerten (kein experimenteller PAR-Normwert). "
+            "Hydrologische Standortfaktoren (Ellenberg F) fließen in den Score ein.",
+            self.styles['Normal']
+        ))
+        self.story.append(Spacer(1, 10))
+
+        # Results table
+        data = [["Pflanze", "Score", "Licht", "Hydro", "Zonierung", "L/F", "rPAR"]]
+        for r in meadow_results:
+            name_para = Paragraph(f"<b>{r.display_name}</b><br/><i>{r.botanical_name}</i>", self.styles['Normal'])
+            data.append([
+                name_para,
+                f"{r.score:.0f}",
+                Paragraph(r.light_class, self.styles['Normal']),
+                Paragraph(r.hydro_class, self.styles['Normal']),
+                Paragraph(r.zone_hint, self.styles['Normal']),
+                f"L{r.ellenberg_L}/F{r.ellenberg_F}",
+                f"{r.rPAR_actual*100:.0f}%",
+            ])
+
+        t = Table(data, colWidths=[105, 38, 90, 80, 80, 35, 35])
+        t.setStyle(get_table_style_standard())
+        self.story.append(t)
+        self.story.append(Spacer(1, 10))
+
+        # Legend
+        self.story.append(Paragraph(
+            "<b>Legende:</b> L = Ellenberg Lichtzahl, F = Ellenberg Feuchtezahl. "
+            "rPAR = Relative PAR (Agri-PV / Open Field). "
+            "Score = Gewichtete Kombination aus Licht (70%), Hydrologie (20%) und Homogenität (10%).",
+            self.styles['Normal']
+        ))
+        self.story.append(PageBreak())
 
     def create_page_12_combined_evaluation(self):
         self.story.append(Paragraph("Combined Agri-PV Scenario Evaluation", self.styles['Heading1']))
