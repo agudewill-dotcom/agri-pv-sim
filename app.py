@@ -774,11 +774,12 @@ with tab_crops:
             })
         st.dataframe(pd.DataFrame(df_arable), use_container_width=True)
 
+        days_in_m = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
         st.subheader("Monthly DLI Light Integrals (Arable Crops)")
         m_df_arable = pd.DataFrame({
             "Month": m_names,
-            "Agri-PV DLI (mol/m²/d)": [metrics['monthly_dli_agri'][m-1] for m in range(1, 13)],
-            "Open-Field DLI (mol/m²/d)": [metrics['monthly_dli_open'][m-1] for m in range(1, 13)]
+            "Agri-PV DLI (mol/m²/d)": [metrics['monthly_par_agri'][m-1] / days_in_m[m-1] for m in range(1, 13)],
+            "Open-Field DLI (mol/m²/d)": [metrics['monthly_par_open'][m-1] / days_in_m[m-1] for m in range(1, 13)]
         })
         fig_dli = px.bar(m_df_arable, x="Month", y=["Agri-PV DLI (mol/m²/d)", "Open-Field DLI (mol/m²/d)"],
                          barmode="group", title="Monthly Daily Light Integral (DLI) Comparison")
