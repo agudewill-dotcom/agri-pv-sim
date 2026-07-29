@@ -759,7 +759,7 @@ with tab_crops:
     # --- SUBTAB 1: ARABLE CROPS ---
     with sub_arable:
         st.subheader("Arable Crops Suitability Ranking (Balkendiagramm)")
-        st.markdown("Comparison of suitability scores (0–100%) across all 11 arable crops:")
+        st.markdown("Comparison of suitability scores (0–100%) across all arable & agricultural crops in database:")
         
         arable_chart_data = []
         for r in crop_results:
@@ -774,14 +774,15 @@ with tab_crops:
             })
         df_arable_chart = pd.DataFrame(arable_chart_data).sort_values("Score (%)", ascending=True)
 
+        chart_h = max(450, len(df_arable_chart) * 24)
         fig_arable_bar = px.bar(
             df_arable_chart, y="Crop", x="Score (%)", color="Class", orientation="h",
-            title="Arable Crops Suitability Scores (%)", text_auto=".1f",
+            title=f"All Arable Crops Suitability Scores ({len(df_arable_chart)} Species)", text_auto=".1f",
             color_discrete_map={"Suitable": "#059669", "Highly Suitable": "#047857", "Marginal": "#d97706", "Not Recommended": "#dc2626"}
         )
         fig_arable_bar.add_vline(x=80, line_dash="dash", line_color="#047857", annotation_text="Target Threshold (80%)")
         fig_arable_bar.add_vline(x=65, line_dash="dot", line_color="#d97706", annotation_text="Minimum Threshold (65%)")
-        fig_arable_bar.update_layout(height=420, margin=dict(l=0, r=20, t=40, b=0), xaxis=dict(range=[0, 105]))
+        fig_arable_bar.update_layout(height=chart_h, margin=dict(l=0, r=20, t=40, b=0), xaxis=dict(range=[0, 105]))
         st.plotly_chart(fig_arable_bar, use_container_width=True)
 
         st.subheader("Arable Crops Suitability Matrix")
@@ -800,21 +801,68 @@ with tab_crops:
             })
         st.dataframe(pd.DataFrame(df_arable), use_container_width=True)
 
+        # Interactive Plant Explorer
+        st.divider()
+        st.subheader("Interactive Plant Light Profile Explorer")
+        st.markdown("Select any plant from the database to view its specific monthly light (DLI) diagram & agronomic details:")
+
+        sel_cid = st.selectbox(
+            "Select Plant / Crop:",
+            options=[r.crop_id for r in crop_results],
+            format_func=lambda cid: f"{CROP_REGISTRY[cid].name_en} ({CROP_REGISTRY[cid].name_de})",
+            key="sel_arable_crop"
+        )
+
+        sel_r = next((r for r in crop_results if r.crop_id == sel_cid), crop_results[0])
+        sel_crop = CROP_REGISTRY[sel_cid]
+
         days_in_m = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-        st.subheader("Monthly DLI Light Integrals (Arable Crops)")
-        m_df_arable = pd.DataFrame({
-            "Month": m_names,
-            "Agri-PV DLI (mol/m²/d)": [metrics['monthly_par_agri'][m-1] / days_in_m[m-1] for m in range(1, 13)],
-            "Open-Field DLI (mol/m²/d)": [metrics['monthly_par_open'][m-1] / days_in_m[m-1] for m in range(1, 13)]
-        })
-        fig_dli = px.bar(m_df_arable, x="Month", y=["Agri-PV DLI (mol/m²/d)", "Open-Field DLI (mol/m²/d)"],
-                         barmode="group", title="Monthly Daily Light Integral (DLI) Comparison")
-        st.plotly_chart(fig_dli, use_container_width=True)
+        m_dli_agri = [metrics['monthly_par_agri'][m-1] / days_in_m[m-1] for m in range(1, 13)]
+        m_dli_open = [metrics['monthly_par_open'][m-1] / days_in_m[m-1] for m in range(1, 13)]
+
+        dli_min_val = getattr(sel_crop, 'DLI_min', 18.0)
+        dli_target_val = getattr(sel_crop, 'DLI_target', 24.0)
+
+        fig_single_plant = go.Figure()
+        fig_single_plant.add_trace(go.Bar(
+            x=m_names, y=m_dli_agri, name="Agri-PV DLI (mol/m²/d)",
+            marker_color="#0284c7"
+        ))
+        fig_single_plant.add_trace(go.Bar(
+            x=m_names, y=m_dli_open, name="Open-Field DLI (mol/m²/d)",
+            marker_color="#94a3b8"
+        ))
+        fig_single_plant.add_hline(
+            y=dli_target_val, line_dash="dash", line_color="#10b981",
+            annotation_text=f"Target DLI ({dli_target_val:.1f} mol/m²/d)"
+        )
+        fig_single_plant.add_hline(
+            y=dli_min_val, line_dash="dot", line_color="#f59e0b",
+            annotation_text=f"Min DLI ({dli_min_val:.1f} mol/m²/d)"
+        )
+        fig_single_plant.update_layout(
+            title=f"Monthly Daily Light Integral (DLI) Profile for {sel_crop.name_en} ({sel_crop.name_de})",
+            xaxis_title="Month", yaxis_title="Daily Light Integral (mol/m²/d)",
+            barmode="group", height=380, margin=dict(l=0, r=0, t=40, b=0)
+        )
+        st.plotly_chart(fig_single_plant, use_container_width=True)
+
+        st.markdown(f"""
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:6px solid #0284c7; border-radius:10px; padding:20px; margin-top:15px;">
+            <h3 style="margin:0; color:#0f172a;">{sel_crop.name_en} <span style="font-size:1rem; color:#64748b; font-weight:normal;">({sel_crop.name_de})</span></h3>
+            <div style="font-weight:700; color:#0284c7; margin-top:4px;">Suitability Score: {sel_r.score*100:.1f}% ({translate_class(sel_r.classification)})</div>
+            <p style="margin-top:8px; color:#334155;">{ENGLISH_CROP_NOTES.get(sel_cid, sel_crop.notes_de)}</p>
+            <div style="font-size:0.88rem; color:#475569;">
+                <strong>Limiting Factor:</strong> {sel_r.limiting_factor.replace("_", " ").upper()} | 
+                <strong>Evidence Tier:</strong> {sel_r.evidence_tier} ({translate_confidence(sel_r.confidence).upper()} CONFIDENCE)
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     # --- SUBTAB 2: MEDICINAL CROPS ---
     with sub_medicinal:
         st.subheader("Medicinal & Special Crops Light Availability (Balkendiagramm)")
-        st.markdown("Comparison of annual relative PAR (%) and critical phase PAR (%) across all 15 medicinal species:")
+        st.markdown(f"Comparison of annual relative PAR (%) and critical phase PAR (%) across all {len(crop_results_med)} medicinal species:")
 
         med_chart_data = []
         for r in crop_results_med:
@@ -828,9 +876,9 @@ with tab_crops:
 
         fig_med_bar = px.bar(
             df_med_chart, x="Species", y=["Annual rPAR (%)", "Critical Phase rPAR (%)"],
-            barmode="group", title="Medicinal & Special Crops PAR Availability (%)", text_auto=".1f"
+            barmode="group", title=f"Medicinal & Special Crops PAR Availability ({len(crop_results_med)} Species)", text_auto=".1f"
         )
-        fig_med_bar.update_layout(height=450, margin=dict(l=0, r=0, t=40, b=0), yaxis=dict(range=[0, 110]))
+        fig_med_bar.update_layout(height=480, margin=dict(l=0, r=0, t=40, b=0), yaxis=dict(range=[0, 110]))
         st.plotly_chart(fig_med_bar, use_container_width=True)
 
         st.subheader("Medicinal & Special Crops Suitability Matrix")
@@ -848,10 +896,42 @@ with tab_crops:
             })
         st.dataframe(pd.DataFrame(df_med), use_container_width=True)
 
+        # Interactive Medicinal Selector
+        st.divider()
+        st.subheader("Interactive Medicinal Species Light Profile Explorer")
+        sel_med_id = st.selectbox(
+            "Select Medicinal / Special Crop:",
+            options=[r.crop_id for r in crop_results_med],
+            format_func=lambda cid: f"{MED_CROP_REGISTRY[cid].display_name} ({MED_CROP_REGISTRY[cid].botanical_name})",
+            key="sel_med_crop"
+        )
+        sel_med_r = next((r for r in crop_results_med if r.crop_id == sel_med_id), crop_results_med[0])
+        sel_med_crop = MED_CROP_REGISTRY[sel_med_id]
+
+        fig_single_med = go.Figure()
+        fig_single_med.add_trace(go.Bar(
+            x=m_names, y=[metrics['monthly_par_agri'][m-1] / days_in_m[m-1] for m in range(1, 13)],
+            name="Agri-PV DLI (mol/m²/d)", marker_color="#059669"
+        ))
+        fig_single_med.add_trace(go.Bar(
+            x=m_names, y=[metrics['monthly_par_open'][m-1] / days_in_m[m-1] for m in range(1, 13)],
+            name="Open-Field DLI (mol/m²/d)", marker_color="#94a3b8"
+        ))
+        fig_single_med.add_hline(
+            y=sel_med_crop.DLI_min, line_dash="dash", line_color="#10b981",
+            annotation_text=f"Min DLI Threshold ({sel_med_crop.DLI_min:.1f} mol/m²/d)"
+        )
+        fig_single_med.update_layout(
+            title=f"Monthly Daily Light Integral (DLI) Profile for {sel_med_crop.display_name}",
+            xaxis_title="Month", yaxis_title="Daily Light Integral (mol/m²/d)",
+            barmode="group", height=380, margin=dict(l=0, r=0, t=40, b=0)
+        )
+        st.plotly_chart(fig_single_med, use_container_width=True)
+
     # --- SUBTAB 3: WET MEADOW & FLOODPLAIN SPECIES ---
     with sub_meadow:
         st.subheader("Wet Meadow & Floodplain Species Suitability Scores (Balkendiagramm)")
-        st.markdown("Comparison of overall suitability scores (0–100) across all 20 meadow species:")
+        st.markdown(f"Comparison of overall suitability scores (0–100) across all {len(crop_results_meadow)} meadow species:")
 
         meadow_chart_data = []
         for r in crop_results_meadow:
@@ -863,11 +943,12 @@ with tab_crops:
             })
         df_meadow_chart = pd.DataFrame(meadow_chart_data).sort_values("Score", ascending=True)
 
+        chart_m_h = max(450, len(df_meadow_chart) * 24)
         fig_meadow_bar = px.bar(
             df_meadow_chart, y="Species", x="Score", color="Light Suitability", orientation="h",
-            title="Wet Meadow Species Suitability Scores (0-100)", text_auto=".1f"
+            title=f"Wet Meadow Species Suitability Scores ({len(df_meadow_chart)} Species)", text_auto=".1f"
         )
-        fig_meadow_bar.update_layout(height=520, margin=dict(l=0, r=0, t=40, b=0), xaxis=dict(range=[0, 105]))
+        fig_meadow_bar.update_layout(height=chart_m_h, margin=dict(l=0, r=0, t=40, b=0), xaxis=dict(range=[0, 105]))
         st.plotly_chart(fig_meadow_bar, use_container_width=True)
 
         st.subheader("Wet Meadow & Floodplain Species Suitability Matrix")
@@ -1267,7 +1348,7 @@ with tab_report:
 
                 figures = {
                     'heat': fig_heat,
-                    'crop': fig_groups,
+                    'crop': fig_arable_bar if 'fig_arable_bar' in locals() else None,
                     'elec': None,
                     'weather': fig_irr,
                     'layout': fig_sp,
