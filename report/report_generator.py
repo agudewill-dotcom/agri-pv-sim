@@ -466,6 +466,20 @@ class ReportGenerator:
         self.story.append(Paragraph("The crop yield result is an agronomic approximation based on light availability. It is not a substitute for a site-specific agronomic assessment.", self.styles['Disclaimer']))
         self.story.append(PageBreak())
 
+def get_clean_crop_name(cp):
+    import re
+    n1 = getattr(cp, 'name_en', getattr(cp, 'display_name', ''))
+    n2 = getattr(cp, 'name_de', '')
+    
+    n1 = re.sub(r'\s*\([^)]*\)', '', str(n1)).strip()
+    n2 = re.sub(r'\s*\([^)]*\)', '', str(n2)).strip()
+    
+    if not n1:
+        return n2
+    if not n2 or n1.lower() == n2.lower():
+        return n1
+    return f"{n1} / {n2}"
+
     def create_page_11_crop_results(self):
         """Arable Crop Results: Balkendiagramm overview + individual DLI profile pages."""
         self.story.append(Paragraph("Arable & Agricultural Crops — Suitability Results", self.styles['Heading1']))
@@ -487,7 +501,7 @@ class ReportGenerator:
         # --- Overview Balkendiagramm ---
         if selected_arable:
             self.story.append(Paragraph("Suitability Score Overview (Balkendiagramm)", self.styles['Heading2']))
-            labels = [f"{cd['profile'].name_en} ({cd['profile'].name_de})" for cd in selected_arable]
+            labels = [get_clean_crop_name(cd['profile']) for cd in selected_arable]
             scores = [cd['result'].score * 100.0 for cd in selected_arable]
             img_bar = create_horizontal_bar_chart_img(labels, scores, title=f"Arable Crops Suitability Scores ({len(labels)} selected)")
             if img_bar:
@@ -496,12 +510,12 @@ class ReportGenerator:
 
         # --- Summary Table ---
         self.story.append(Paragraph("Summary Table", self.styles['Heading2']))
-        data = [["Crop (EN / DE)", "Class", "Score", "Limiting Factor", "Evidence"]]
+        data = [["Crop Name", "Class", "Score", "Limiting Factor", "Evidence"]]
         for cd in selected_arable:
             cr = cd['result']
             cp = cd['profile']
             data.append([
-                Paragraph(f"{cp.name_en}<br/><i>{cp.name_de}</i>", self.styles['Normal']),
+                Paragraph(get_clean_crop_name(cp), self.styles['Normal']),
                 Paragraph(cr.classification, self.styles['Normal']),
                 f"{cr.score*100:.1f}%",
                 cr.limiting_factor.replace('_', ' ').title(),
@@ -517,7 +531,7 @@ class ReportGenerator:
             cr = crop_data['result']
             cp = crop_data['profile']
 
-            self.story.append(Paragraph(f"{cp.name_en} ({cp.name_de})", self.styles['Heading1']))
+            self.story.append(Paragraph(get_clean_crop_name(cp), self.styles['Heading1']))
             if cp.botanical_name:
                 self.story.append(Paragraph(f"<i>{cp.botanical_name}</i>", self.styles['NormalGray']))
             self.story.append(Spacer(1, 8))
@@ -546,7 +560,7 @@ class ReportGenerator:
             img = create_dli_chart_img(
                 _mnames, dli_agri_base, dli_open_base,
                 target_dli=cp.DLI_target, min_dli=cp.DLI_min,
-                title=f"{cp.name_en} ({cp.name_de}) — Monthly DLI",
+                title=f"{get_clean_crop_name(cp)} — Monthly DLI",
                 crit_months=cp.critical_months
             )
             if img:
@@ -565,7 +579,7 @@ class ReportGenerator:
             ))
             self.story.append(Spacer(1, 10))
 
-            labels_med = [mr['result'].crop_name for mr in selected_med]
+            labels_med = [get_clean_crop_name(mr['profile']) for mr in selected_med]
             scores_med = [mr['result'].r_ann * 100.0 for mr in selected_med]
             self.story.append(Paragraph("PAR Availability Overview (Balkendiagramm)", self.styles['Heading2']))
             img_med_ov = create_horizontal_bar_chart_img(labels_med, scores_med, title=f"Medicinal Crops Annual rPAR ({len(labels_med)} selected)")
@@ -578,7 +592,7 @@ class ReportGenerator:
                 mr = md['result']
                 mp = md['profile']
                 data_med.append([
-                    Paragraph(mr.crop_name, self.styles['Normal']),
+                    Paragraph(get_clean_crop_name(mp), self.styles['Normal']),
                     Paragraph(f"<i>{mp.botanical_name}</i>", self.styles['Normal']),
                     f"{mr.r_ann*100:.1f}%",
                     f"{mr.r_crit*100:.1f}%",
@@ -593,7 +607,7 @@ class ReportGenerator:
             for md in selected_med:
                 mr = md['result']
                 mp = md['profile']
-                self.story.append(Paragraph(f"{mr.crop_name}", self.styles['Heading1']))
+                self.story.append(Paragraph(get_clean_crop_name(mp), self.styles['Heading1']))
                 self.story.append(Paragraph(f"<i>{mp.botanical_name}</i> — {mp.use_type.title()}", self.styles['NormalGray']))
                 self.story.append(Spacer(1, 6))
 
@@ -612,7 +626,7 @@ class ReportGenerator:
                 img_md = create_dli_chart_img(
                     _mnames, dli_agri_base, dli_open_base,
                     min_dli=mp.DLI_min,
-                    title=f"{mp.display_name} — Monthly DLI"
+                    title=f"{get_clean_crop_name(mp)} — Monthly DLI"
                 )
                 if img_md:
                     self.story.append(img_md)

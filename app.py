@@ -32,7 +32,23 @@ from medicinal_crop_suitability import evaluate_all_medicinal_crops, MED_CROP_RE
 from meadow_suitability import evaluate_all_meadow_species, MEADOW_REGISTRY
 from crop_suitability import SOURCES_REGISTRY
 
+import re
+
+def get_clean_crop_name(cp):
+    n1 = getattr(cp, 'name_en', getattr(cp, 'display_name', getattr(cp, 'crop_name', '')))
+    n2 = getattr(cp, 'name_de', '')
+    
+    n1 = re.sub(r'\s*\([^)]*\)', '', str(n1)).strip()
+    n2 = re.sub(r'\s*\([^)]*\)', '', str(n2)).strip()
+    
+    if not n1:
+        return n2
+    if not n2 or n1.lower() == n2.lower():
+        return n1
+    return f"{n1} / {n2}"
+
 st.set_page_config(page_title="Agri-PV Strategic Analytics", layout="wide")
+
 
 # --- EXECUTIVE DESIGN SYSTEM (CSS) ---
 st.markdown("""
@@ -772,7 +788,7 @@ with tab_crops:
             lbl = translate_class(r.classification)
             color = "#059669" if "suitable" in lbl.lower() else ("#d97706" if "marginal" in lbl.lower() else "#dc2626")
             arable_chart_data.append({
-                "Crop": f"{crop.name_en} ({crop.name_de})",
+                "Crop": get_clean_crop_name(crop),
                 "Score (%)": r.score * 100.0,
                 "Class": lbl,
                 "Color": color
@@ -814,7 +830,7 @@ with tab_crops:
         sel_cid = st.selectbox(
             "Select Plant / Crop:",
             options=[r.crop_id for r in crop_results],
-            format_func=lambda cid: f"{CROP_REGISTRY[cid].name_en} ({CROP_REGISTRY[cid].name_de})",
+            format_func=lambda cid: get_clean_crop_name(CROP_REGISTRY[cid]),
             key="sel_arable_crop"
         )
 
@@ -846,13 +862,13 @@ with tab_crops:
             annotation_text=f"Min DLI ({dli_min_val:.1f} mol/m²/d)"
         )
         fig_single_plant.update_layout(
-            title=f"Monthly Daily Light Integral (DLI) Profile for {sel_crop.name_en} ({sel_crop.name_de})",
+            title=f"Monthly Daily Light Integral (DLI) Profile for {get_clean_crop_name(sel_crop)}",
             xaxis_title="Month", yaxis_title="Daily Light Integral (mol/m²/d)",
             barmode="group", height=380, margin=dict(l=0, r=0, t=40, b=0)
         )
         st.plotly_chart(fig_single_plant, use_container_width=True)
 
-        with st.expander(f"View Agronomic Details for {sel_crop.name_en} ({sel_crop.name_de})", expanded=True):
+        with st.expander(f"View Agronomic Details for {get_clean_crop_name(sel_crop)}", expanded=True):
             col_a, col_b = st.columns(2)
             with col_a:
                 st.markdown(f"**Suitability Score:** {sel_r.score*100:.1f}% — **{translate_class(sel_r.classification)}**")
@@ -1205,7 +1221,7 @@ with tab_report:
 
     with rp_c1:
         st.markdown("**Arable & Agricultural Crops**")
-        all_arable_opts = [(r.crop_id, f"{CROP_REGISTRY[r.crop_id].name_en} ({CROP_REGISTRY[r.crop_id].name_de})") for r in crop_results]
+        all_arable_opts = [(r.crop_id, get_clean_crop_name(CROP_REGISTRY[r.crop_id])) for r in crop_results]
         rep_arable_sel = st.multiselect(
             "Select arable crops:",
             options=[o[0] for o in all_arable_opts],
