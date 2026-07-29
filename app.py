@@ -874,11 +874,11 @@ with tab_crops:
                 
                 # Show growing calendar months
                 st.markdown(f"**Growing Season Calendar:**")
-                calendar_str = " | ".join([f"**{m_names_crops[m-1]}**" if m in crop.growing_months else f"{m_names_crops[m-1]}" for m in range(1, 13)])
+                calendar_str = " | ".join([f"**{m_names[m-1]}**" if m in crop.growing_months else f"{m_names[m-1]}" for m in range(1, 13)])
                 st.markdown(f"Months (active in bold): {calendar_str}")
                 
                 st.markdown(f"**Critical Light Sensitivity Window:**")
-                crit_str = " | ".join([f"**{m_names_crops[m-1]}**" if m in crop.critical_months else f"{m_names_crops[m-1]}" for m in range(1, 13)])
+                crit_str = " | ".join([f"**{m_names[m-1]}**" if m in crop.critical_months else f"{m_names[m-1]}" for m in range(1, 13)])
                 st.markdown(f"Months (critical in bold): {crit_str}")
                 
     st.markdown("""
