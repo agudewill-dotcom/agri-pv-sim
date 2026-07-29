@@ -758,6 +758,32 @@ with tab_crops:
 
     # --- SUBTAB 1: ARABLE CROPS ---
     with sub_arable:
+        st.subheader("Arable Crops Suitability Ranking (Balkendiagramm)")
+        st.markdown("Comparison of suitability scores (0–100%) across all 11 arable crops:")
+        
+        arable_chart_data = []
+        for r in crop_results:
+            crop = CROP_REGISTRY[r.crop_id]
+            lbl = translate_class(r.classification)
+            color = "#059669" if "suitable" in lbl.lower() else ("#d97706" if "marginal" in lbl.lower() else "#dc2626")
+            arable_chart_data.append({
+                "Crop": f"{crop.name_en} ({crop.name_de})",
+                "Score (%)": r.score * 100.0,
+                "Class": lbl,
+                "Color": color
+            })
+        df_arable_chart = pd.DataFrame(arable_chart_data).sort_values("Score (%)", ascending=True)
+
+        fig_arable_bar = px.bar(
+            df_arable_chart, y="Crop", x="Score (%)", color="Class", orientation="h",
+            title="Arable Crops Suitability Scores (%)", text_auto=".1f",
+            color_discrete_map={"Suitable": "#059669", "Highly Suitable": "#047857", "Marginal": "#d97706", "Not Recommended": "#dc2626"}
+        )
+        fig_arable_bar.add_vline(x=80, line_dash="dash", line_color="#047857", annotation_text="Target Threshold (80%)")
+        fig_arable_bar.add_vline(x=65, line_dash="dot", line_color="#d97706", annotation_text="Minimum Threshold (65%)")
+        fig_arable_bar.update_layout(height=420, margin=dict(l=0, r=20, t=40, b=0), xaxis=dict(range=[0, 105]))
+        st.plotly_chart(fig_arable_bar, use_container_width=True)
+
         st.subheader("Arable Crops Suitability Matrix")
         df_arable = []
         for r in crop_results:
@@ -787,6 +813,26 @@ with tab_crops:
 
     # --- SUBTAB 2: MEDICINAL CROPS ---
     with sub_medicinal:
+        st.subheader("Medicinal & Special Crops Light Availability (Balkendiagramm)")
+        st.markdown("Comparison of annual relative PAR (%) and critical phase PAR (%) across all 15 medicinal species:")
+
+        med_chart_data = []
+        for r in crop_results_med:
+            med_chart_data.append({
+                "Species": r.crop_name,
+                "Annual rPAR (%)": r.r_ann * 100.0,
+                "Critical Phase rPAR (%)": r.r_crit * 100.0,
+                "Class": translate_class(r.suitability_class)
+            })
+        df_med_chart = pd.DataFrame(med_chart_data)
+
+        fig_med_bar = px.bar(
+            df_med_chart, x="Species", y=["Annual rPAR (%)", "Critical Phase rPAR (%)"],
+            barmode="group", title="Medicinal & Special Crops PAR Availability (%)", text_auto=".1f"
+        )
+        fig_med_bar.update_layout(height=450, margin=dict(l=0, r=0, t=40, b=0), yaxis=dict(range=[0, 110]))
+        st.plotly_chart(fig_med_bar, use_container_width=True)
+
         st.subheader("Medicinal & Special Crops Suitability Matrix")
         df_med = []
         for r in crop_results_med:
@@ -804,6 +850,26 @@ with tab_crops:
 
     # --- SUBTAB 3: WET MEADOW & FLOODPLAIN SPECIES ---
     with sub_meadow:
+        st.subheader("Wet Meadow & Floodplain Species Suitability Scores (Balkendiagramm)")
+        st.markdown("Comparison of overall suitability scores (0–100) across all 20 meadow species:")
+
+        meadow_chart_data = []
+        for r in crop_results_meadow:
+            meadow_chart_data.append({
+                "Species": f"{r.display_name} (L={r.ellenberg_L})",
+                "Score": r.score,
+                "Light Suitability": r.light_class,
+                "Zone": r.zone_hint
+            })
+        df_meadow_chart = pd.DataFrame(meadow_chart_data).sort_values("Score", ascending=True)
+
+        fig_meadow_bar = px.bar(
+            df_meadow_chart, y="Species", x="Score", color="Light Suitability", orientation="h",
+            title="Wet Meadow Species Suitability Scores (0-100)", text_auto=".1f"
+        )
+        fig_meadow_bar.update_layout(height=520, margin=dict(l=0, r=0, t=40, b=0), xaxis=dict(range=[0, 105]))
+        st.plotly_chart(fig_meadow_bar, use_container_width=True)
+
         st.subheader("Wet Meadow & Floodplain Species Suitability Matrix")
         df_meadow = []
         for r in crop_results_meadow:
