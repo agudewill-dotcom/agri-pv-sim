@@ -12,7 +12,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Page
 from reportlab.lib.units import mm
 
 from .report_styles import get_report_styles, get_table_style_standard, get_table_style_kpi
-from .report_charts import export_plotly_to_image, render_latex_to_image
+from .report_charts import export_plotly_to_image, render_latex_to_image, create_dli_chart_img, create_horizontal_bar_chart_img
 
 # Attempt to load a logo, or we will use a text placeholder
 LOGO_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logo.png")
@@ -477,13 +477,19 @@ class ReportGenerator:
         self.story.append(Spacer(1, 10))
 
         selected_arable = self.figures.get('selected_arable', [])
+        _days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        _mnames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        _m_agri = self.metrics['monthly_par_agri']
+        _m_open = self.metrics['monthly_par_open']
+        dli_agri_base = [_m_agri[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
+        dli_open_base = [_m_open[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
 
         # --- Overview Balkendiagramm ---
-        fig_overview = self.figures.get('fig_arable_overview')
-        if fig_overview:
+        if selected_arable:
             self.story.append(Paragraph("Suitability Score Overview (Balkendiagramm)", self.styles['Heading2']))
-            bar_h = max(250, len(selected_arable) * 22)
-            img_bar = export_plotly_to_image(fig_overview, width=900, height=bar_h)
+            labels = [f"{cd['profile'].name_en} ({cd['profile'].name_de})" for cd in selected_arable]
+            scores = [cd['result'].score * 100.0 for cd in selected_arable]
+            img_bar = create_horizontal_bar_chart_img(labels, scores, title=f"Arable Crops Suitability Scores ({len(labels)} selected)")
             if img_bar:
                 self.story.append(img_bar)
             self.story.append(Spacer(1, 10))
@@ -536,12 +542,15 @@ class ReportGenerator:
                 self.story.append(Paragraph(cr.notes_de, self.styles['Normal']))
             self.story.append(Spacer(1, 8))
 
-            fig_dli = crop_data.get('fig_dli')
-            if fig_dli:
-                self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
-                img = export_plotly_to_image(fig_dli, width=800, height=320)
-                if img:
-                    self.story.append(img)
+            self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
+            img = create_dli_chart_img(
+                _mnames, dli_agri_base, dli_open_base,
+                target_dli=cp.DLI_target, min_dli=cp.DLI_min,
+                title=f"{cp.name_en} ({cp.name_de}) — Monthly DLI",
+                crit_months=cp.critical_months
+            )
+            if img:
+                self.story.append(img)
 
             self.story.append(PageBreak())
 
@@ -556,13 +565,13 @@ class ReportGenerator:
             ))
             self.story.append(Spacer(1, 10))
 
-            fig_med_ov = self.figures.get('fig_med_overview')
-            if fig_med_ov:
-                self.story.append(Paragraph("PAR Availability Overview (Balkendiagramm)", self.styles['Heading2']))
-                img_med_ov = export_plotly_to_image(fig_med_ov, width=900, height=400)
-                if img_med_ov:
-                    self.story.append(img_med_ov)
-                self.story.append(Spacer(1, 10))
+            labels_med = [mr['result'].crop_name for mr in selected_med]
+            scores_med = [mr['result'].r_ann * 100.0 for mr in selected_med]
+            self.story.append(Paragraph("PAR Availability Overview (Balkendiagramm)", self.styles['Heading2']))
+            img_med_ov = create_horizontal_bar_chart_img(labels_med, scores_med, title=f"Medicinal Crops Annual rPAR ({len(labels_med)} selected)")
+            if img_med_ov:
+                self.story.append(img_med_ov)
+            self.story.append(Spacer(1, 10))
 
             data_med = [["Crop", "Botanical Name", "Annual rPAR", "Crit. rPAR", "Class", "Limiting Factor"]]
             for md in selected_med:
@@ -599,12 +608,14 @@ class ReportGenerator:
                 self.story.append(t_mp)
                 self.story.append(Spacer(1, 8))
 
-                fig_dli_med = md.get('fig_dli')
-                if fig_dli_med:
-                    self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
-                    img_md = export_plotly_to_image(fig_dli_med, width=800, height=300)
-                    if img_md:
-                        self.story.append(img_md)
+                self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
+                img_md = create_dli_chart_img(
+                    _mnames, dli_agri_base, dli_open_base,
+                    min_dli=mp.DLI_min,
+                    title=f"{mp.display_name} — Monthly DLI"
+                )
+                if img_md:
+                    self.story.append(img_md)
                 self.story.append(PageBreak())
 
     def create_page_meadow_species(self):
@@ -667,12 +678,14 @@ class ReportGenerator:
             self.story.append(t_mw)
             self.story.append(Spacer(1, 8))
 
-            fig_dli_mw = md.get('fig_dli')
-            if fig_dli_mw:
-                self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
-                img_mw = export_plotly_to_image(fig_dli_mw, width=800, height=300)
-                if img_mw:
-                    self.story.append(img_mw)
+            self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
+            img_mw = create_dli_chart_img(
+                _mnames, dli_agri_base, dli_open_base,
+                target_dli=mwp.DLI_target, min_dli=mwp.DLI_min,
+                title=f"{mwp.display_name} — Monthly DLI"
+            )
+            if img_mw:
+                self.story.append(img_mw)
             self.story.append(PageBreak())
 
 
