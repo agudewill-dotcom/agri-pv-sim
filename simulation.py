@@ -39,7 +39,8 @@ def get_topo(lat, lon):
 # --- DYNAMIC CROSS-SECTION PREVIEW GRAPHIC ---
 def create_cross_section_preview(geo: TableGeometry) -> go.Figure:
     """
-    Renders a dynamic cross-section preview based strictly on physical TableGeometry.
+    Renders an architectural CAD cross-section drawing matching the SUNfarming 
+    technical drawing specification (Maßstab 1:60).
     """
     fig = go.Figure()
     
@@ -48,95 +49,170 @@ def create_cross_section_preview(geo: TableGeometry) -> go.Figure:
     lh = geo.clear_height_m
     h_high = geo.h_high_m
     gap = geo.ground_gap_m
+    tilt = geo.tilt_deg
+    length = geo.table_length_m
+    sin_t = np.sin(geo.tilt_rad)
+    cos_t = np.cos(geo.tilt_rad)
     
-    x_max = pitch + pw * 0.35
+    x_max = pitch + pw + 1.2
+    x_min = -1.2
     
-    # Ground line (y = 0)
+    # 1. Continuous Ground Line & Sub-Surface Baseline
     fig.add_trace(go.Scatter(
-        x=[-0.5, x_max], y=[0, 0],
-        mode='lines', line=dict(color='#64748b', width=3),
-        name='Ground Level', showlegend=False
+        x=[x_min, x_max], y=[0, 0],
+        mode='lines', line=dict(color='#334155', width=1.8),
+        hoverinfo='skip', showlegend=False
     ))
-    
-    # Table 1 (Active)
+    # Light underground shading line
     fig.add_trace(go.Scatter(
-        x=[0, pw], y=[lh, h_high],
-        mode='lines+markers',
-        line=dict(color='#0284c7', width=5),
-        marker=dict(size=6, color='#0369a1'),
-        name='PV Table 1 (Active)', showlegend=False
+        x=[x_min, x_max], y=[-0.8, -0.8],
+        mode='lines', line=dict(color='#cbd5e1', width=1, dash='dot'),
+        hoverinfo='skip', showlegend=False
     ))
-    # Posts for Table 1
+
+    # Helper function for CAD steel post pairs (0.14m width)
+    def draw_post(x_center, y_top):
+        pw_half = 0.07
+        fig.add_trace(go.Scatter(
+            x=[x_center - pw_half, x_center - pw_half, x_center + pw_half, x_center + pw_half],
+            y=[-0.8, y_top, y_top, -0.8],
+            fill="toself", fillcolor="#e2e8f0",
+            line=dict(color="#1e293b", width=1.2),
+            hoverinfo='skip', showlegend=False
+        ))
+
+    # Helper function for PV Table module plane
+    def draw_table(x_start, y_start, is_primary=True):
+        x_end = x_start + pw
+        y_end = y_start + geo.table_vertical_rise_m
+        
+        # Posts at 0.5m offset from ends
+        draw_post(x_start + 0.50 * cos_t, y_start + 0.50 * sin_t)
+        draw_post(x_end - 0.50 * cos_t, y_end - 0.50 * sin_t)
+        
+        # Module plane double-bar frame
+        line_color = "#0f172a" if is_primary else "#334155"
+        fill_color = "#38bdf8" if is_primary else "#94a3b8"
+        
+        # Module thickness offset
+        t_off = 0.06
+        fig.add_trace(go.Scatter(
+            x=[x_start, x_end, x_end, x_start],
+            y=[y_start, y_end, y_end + t_off, y_start + t_off],
+            fill="toself", fillcolor=fill_color,
+            line=dict(color=line_color, width=1.5),
+            name=f"PV Table ({'Row 1' if is_primary else 'Row 2'})",
+            showlegend=False
+        ))
+
+    # Draw Table 1 (Row 1) & Table 2 (Row 2)
+    draw_table(0.0, lh, is_primary=True)
+    draw_table(pitch, lh, is_primary=False)
+
+    # 2. CAD DIMENSION LINES & ANNOTATIONS (matching exact drawing layout)
+    dim_color = "#475569"
+    y_top_dim = max(4.2, h_high + 0.7)
+
+    # A) Pitch Dimension (Top: 0 to Pitch)
     fig.add_trace(go.Scatter(
-        x=[0, 0], y=[0, lh],
-        mode='lines', line=dict(color='#94a3b8', width=2, dash='dot'),
-        showlegend=False
+        x=[0, 0, pitch, pitch], y=[h_high + 0.2, y_top_dim, y_top_dim, h_high + 0.2],
+        mode='lines', line=dict(color=dim_color, width=1), hoverinfo='skip', showlegend=False
     ))
-    fig.add_trace(go.Scatter(
-        x=[pw, pw], y=[0, h_high],
-        mode='lines', line=dict(color='#94a3b8', width=2, dash='dot'),
-        showlegend=False
-    ))
-    
-    # Table 2 (Ghost Row)
-    fig.add_trace(go.Scatter(
-        x=[pitch, pitch + pw], y=[lh, h_high],
-        mode='lines+markers',
-        line=dict(color='#94a3b8', width=4, dash='dash'),
-        marker=dict(size=5, color='#64748b'),
-        name='PV Table 2 (Ghost)', showlegend=False
-    ))
-    fig.add_trace(go.Scatter(
-        x=[pitch, pitch], y=[0, lh],
-        mode='lines', line=dict(color='#cbd5e1', width=1.5, dash='dot'),
-        showlegend=False
-    ))
-    fig.add_trace(go.Scatter(
-        x=[pitch + pw, pitch + pw], y=[0, h_high],
-        mode='lines', line=dict(color='#cbd5e1', width=1.5, dash='dot'),
-        showlegend=False
-    ))
-    
-    # Dimension Annotations
     fig.add_annotation(
-        x=0, y=lh / 2,
-        text=f"LH: {lh:.2f}m",
-        showarrow=True, arrowhead=2, ax=-35, ay=0,
-        font=dict(size=10, color="#0369a1")
+        x=pitch / 2, y=y_top_dim + 0.15,
+        text=f"ca. {pitch:.2f} m",
+        showarrow=False, font=dict(size=11, color="#0f172a", family="Courier New, monospace")
     )
+
+    # B) Horizontal Projection Dimension (Top: Pitch to Pitch + Proj_W)
+    fig.add_trace(go.Scatter(
+        x=[pitch, pitch, pitch + pw, pitch + pw], y=[h_high + 0.2, y_top_dim, y_top_dim, h_high + 0.2],
+        mode='lines', line=dict(color=dim_color, width=1), hoverinfo='skip', showlegend=False
+    ))
     fig.add_annotation(
-        x=pw, y=h_high / 2,
-        text=f"H_high: {h_high:.2f}m",
-        showarrow=True, arrowhead=2, ax=40, ay=0,
-        font=dict(size=10, color="#0369a1")
+        x=pitch + pw / 2, y=y_top_dim + 0.15,
+        text=f"ca. {pw:.2f} m",
+        showarrow=False, font=dict(size=11, color="#0f172a", family="Courier New, monospace")
     )
+
+    # C) Inclined Table Length Dimension (Parallel to Table 1)
+    off_inc = 0.35
+    x_inc1 = -off_inc * sin_t
+    y_inc1 = lh + off_inc * cos_t
+    x_inc2 = pw - off_inc * sin_t
+    y_inc2 = h_high + off_inc * cos_t
+    fig.add_trace(go.Scatter(
+        x=[x_inc1, x_inc2], y=[y_inc1, y_inc2],
+        mode='lines', line=dict(color=dim_color, width=1), hoverinfo='skip', showlegend=False
+    ))
     fig.add_annotation(
-        x=pw / 2, y=(lh + h_high) / 2 + 0.35,
-        text=f"L={geo.table_length_m:.2f}m @ {geo.tilt_deg:.1f}°",
-        showarrow=False,
-        font=dict(size=11, color="#0f172a", weight="bold")
+        x=(x_inc1 + x_inc2) / 2, y=(y_inc1 + y_inc2) / 2 + 0.18,
+        text=f"ca. {length:.2f} m",
+        showarrow=False, font=dict(size=11, color="#0f172a", family="Courier New, monospace")
     )
-    if gap > 0:
-        fig.add_annotation(
-            x=pw + gap / 2, y=lh / 2,
-            text=f"Gap: {gap:.2f}m",
-            showarrow=False,
-            font=dict(size=10, color="#16a34a", weight="bold"),
-            bgcolor="rgba(220, 252, 231, 0.8)", bordercolor="#16a34a", borderwidth=1, borderpad=2
-        )
+
+    # D) Free Gap Dimension (between Table 1 and Table 2)
+    y_gap = lh + (h_high - lh) * 0.45
+    fig.add_trace(go.Scatter(
+        x=[pw, pitch], y=[y_gap, y_gap],
+        mode='lines', line=dict(color=dim_color, width=1), hoverinfo='skip', showlegend=False
+    ))
     fig.add_annotation(
-        x=pitch / 2, y=-0.4,
-        text=f"Pitch: {pitch:.2f}m",
-        showarrow=False,
-        font=dict(size=10, color="#1e293b", weight="bold")
+        x=pw + gap / 2, y=y_gap + 0.15,
+        text=f"ca. {gap:.2f} m",
+        showarrow=False, font=dict(size=11, color="#065f46", family="Courier New, monospace", weight="bold"),
+        bgcolor="#d1fae5", bordercolor="#059669", borderwidth=1, borderpad=2
+    )
+
+    # E) Lichte Höhe LH Dimension (Left Vertical)
+    x_lh = -0.7
+    fig.add_trace(go.Scatter(
+        x=[x_lh, x_lh, 0], y=[0, lh, lh],
+        mode='lines', line=dict(color=dim_color, width=1), hoverinfo='skip', showlegend=False
+    ))
+    fig.add_annotation(
+        x=x_lh - 0.15, y=lh / 2,
+        text=f"LH = {lh:.2f} m",
+        showarrow=False, textangle=-90,
+        font=dict(size=11, color="#0f172a", family="Courier New, monospace")
+    )
+
+    # F) High Edge Height Dimension (Right Vertical)
+    x_high_dim = pitch + pw + 0.7
+    fig.add_trace(go.Scatter(
+        x=[pitch + pw, x_high_dim, x_high_dim], y=[h_high, h_high, 0],
+        mode='lines', line=dict(color=dim_color, width=1), hoverinfo='skip', showlegend=False
+    ))
+    fig.add_annotation(
+        x=x_high_dim + 0.15, y=h_high / 2,
+        text=f"ca. {h_high:.2f} m",
+        showarrow=False, textangle=90,
+        font=dict(size=11, color="#0f172a", family="Courier New, monospace")
+    )
+
+    # G) Tilt Angle Arc/Indicator on Table 2
+    x_arc_center = pitch + 1.2
+    y_arc_ground = lh + 1.2 * sin_t
+    fig.add_annotation(
+        x=x_arc_center + 0.2, y=y_arc_ground - 0.4,
+        text=f"ca. {tilt:.0f}°",
+        showarrow=False, font=dict(size=10, color="#1e293b", family="Courier New, monospace")
+    )
+
+    # H) Scale Badge (Bottom Right)
+    fig.add_annotation(
+        x=x_max - 0.2, y=-0.55,
+        text="<b>Maßstab 1:60</b> (Technical Cross-Section)",
+        showarrow=False, font=dict(size=10, color="#64748b")
     )
 
     fig.update_layout(
-        height=260,
-        margin=dict(l=10, r=10, t=10, b=30),
-        xaxis=dict(range=[-0.8, x_max + 0.2], showgrid=True, title="Cross-Section Width x [m]", zeroline=False),
-        yaxis=dict(range=[-0.6, max(4.5, h_high + 0.6)], showgrid=True, title="Height y [m]", zeroline=False),
-        plot_bgcolor="#f8fafc"
+        height=320,
+        margin=dict(l=10, r=10, t=10, b=10),
+        xaxis=dict(range=[x_min - 0.2, x_max + 0.5], showgrid=False, zeroline=False, visible=False),
+        yaxis=dict(range=[-0.95, y_top_dim + 0.5], showgrid=False, zeroline=False, visible=False),
+        plot_bgcolor="#ffffff",
+        paper_bgcolor="#ffffff"
     )
     return fig
 
