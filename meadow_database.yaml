@@ -1,17 +1,9 @@
-# Feuchtwiesen- & Auenwiesenarten Database
-# ==========================================
-# Derived from Ellenberg & Landolt ecological indicator values.
-# IMPORTANT: These are derived screening thresholds, NOT experimental PAR norms.
-# Sources: FloraWeb (Ellenberg), InfoFlora/BAFU (Landolt)
-
-# --- Grasses ---
-
 wiesen_rispengras:
-  display_name: "Wiesen-Rispengras"
-  botanical_name: "Poa pratensis"
-  species_group: "grass"
-  use_type: "Grünland / Futtergras"
-  evidence_basis: "Ellenberg L6"
+  display_name: Kentucky Bluegrass
+  botanical_name: Poa pratensis
+  species_group: grass
+  use_type: Grassland / Forage Grass
+  evidence_basis: Ellenberg L6
   ellenberg_L: 6
   ellenberg_F: 5
   ellenberg_N: 6
@@ -20,48 +12,64 @@ wiesen_rispengras:
   DLI_min: 15
   DLI_target: 22
   peak_PPFD_min: 600
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L6"]
-  notes_de: >
-    Wiesen-Rispengras (Ellenberg L6, Halbschattenpflanze) toleriert moderate
-    Verschattung gut. Bei ca. 63% Rest-PAR lichtseitig gut geeignet.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L6
+  notes_de: Kentucky Bluegrass (Ellenberg L6, partial shade) tolerates moderate shading
+    well. Highly suitable at ~63% relative PAR.
+  warning_text: ''
 poa_trivialis:
-  display_name: "Gewöhnliches Rispengras"
-  botanical_name: "Poa trivialis"
-  species_group: "grass"
-  use_type: "Grünland / Feuchtwiese"
-  evidence_basis: "Landolt L3"
+  display_name: Rough Bluegrass
+  botanical_name: Poa trivialis
+  species_group: grass
+  use_type: Grassland / Wet Meadow
+  evidence_basis: Landolt L3
   ellenberg_L: 6
   ellenberg_F: 7
   ellenberg_N: 7
-  rPAR_min: 0.40
-  rPAR_target: 0.60
+  rPAR_min: 0.4
+  rPAR_target: 0.6
   DLI_min: 13
   DLI_target: 20
   peak_PPFD_min: 500
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["InfoFlora_L3"]
-  notes_de: >
-    Poa trivialis (Landolt L3) ist sehr interessant für feuchtere, lichte
-    Halbschattenbereiche unter Agri-PV. Hohe Feuchtetoleranz (F7).
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - InfoFlora_L3
+  notes_de: Rough Bluegrass (Landolt L3) performs exceptionally well in moist, light-shaded
+    areas under Agri-PV. High moisture tolerance (F7).
+  warning_text: ''
 rotes_straussgras:
-  display_name: "Rotes Straußgras"
-  botanical_name: "Agrostis capillaris"
-  species_group: "grass"
-  use_type: "Grünland / Magerwiese"
-  evidence_basis: "Ellenberg L7"
+  display_name: Common Bent
+  botanical_name: Agrostis capillaris
+  species_group: grass
+  use_type: Grassland / Poor Meadow
+  evidence_basis: Ellenberg L7
   ellenberg_L: 7
   ellenberg_F: 5
   ellenberg_N: 4
@@ -70,23 +78,31 @@ rotes_straussgras:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7"]
-  notes_de: >
-    Rotes Straußgras (Ellenberg L7, Halblichtpflanze) geeignet bei ausreichendem
-    Licht. Toleriert nährstoffarme Böden.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7
+  notes_de: Common Bent (Ellenberg L7, half-light plant) suitable under sufficient
+    light. Tolerates nutrient-poor soils.
+  warning_text: ''
 wiesen_lieschgras:
-  display_name: "Wiesen-Lieschgras"
-  botanical_name: "Phleum pratense"
-  species_group: "grass"
-  use_type: "Grünland / Futtergras"
-  evidence_basis: "Landolt L4 (hell)"
+  display_name: Timothy Grass
+  botanical_name: Phleum pratense
+  species_group: grass
+  use_type: Grassland / Forage Grass
+  evidence_basis: Landolt L4 (hell)
   ellenberg_L: 7
   ellenberg_F: 5
   ellenberg_N: 6
@@ -95,23 +111,31 @@ wiesen_lieschgras:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["InfoFlora_L4"]
-  notes_de: >
-    Wiesen-Lieschgras (Landolt L4, hell) eher helles Grünland.
-    Robust und gut als Futtergras einsetzbar.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - InfoFlora_L4
+  notes_de: Timothy Grass (Landolt L4, bright) prefers bright grassland. Robust and
+    good as forage grass.
+  warning_text: ''
 rohrschwingel:
-  display_name: "Rohrschwingel"
-  botanical_name: "Festuca arundinacea"
-  species_group: "grass"
-  use_type: "Grünland / Futtergras"
-  evidence_basis: "Landolt L4 (hell)"
+  display_name: Tall Fescue
+  botanical_name: Festuca arundinacea
+  species_group: grass
+  use_type: Grassland / Forage Grass
+  evidence_basis: Landolt L4 (hell)
   ellenberg_L: 7
   ellenberg_F: 6
   ellenberg_N: 5
@@ -120,23 +144,31 @@ rohrschwingel:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["InfoFlora_L4"]
-  notes_de: >
-    Rohrschwingel (Landolt L4, hell) robust, aber eher lichtorientiert.
-    Gut als Bestandteil von extensivem Grünland.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - InfoFlora_L4
+  notes_de: Tall Fescue (Landolt L4, bright) is robust but light-oriented. Excellent
+    for extensive grassland.
+  warning_text: ''
 wiesen_schwingel:
-  display_name: "Wiesen-Schwingel"
-  botanical_name: "Festuca pratensis"
-  species_group: "grass"
-  use_type: "Grünland / Futtergras"
-  evidence_basis: "Ellenberg L8"
+  display_name: Meadow Fescue
+  botanical_name: Festuca pratensis
+  species_group: grass
+  use_type: Grassland / Forage Grass
+  evidence_basis: Ellenberg L8
   ellenberg_L: 8
   ellenberg_F: 6
   ellenberg_N: 6
@@ -145,23 +177,31 @@ wiesen_schwingel:
   DLI_min: 22
   DLI_target: 28
   peak_PPFD_min: 800
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L8"]
-  notes_de: >
-    Wiesen-Schwingel (Ellenberg L8, Lichtpflanze) benötigt viel Licht.
-    Nur in den hellsten Streifen / Gaps geeignet.
-  warning_text: "Lichtpflanze — nur in hellen Reihenabständen empfohlen."
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L8
+  notes_de: Meadow Fescue (Ellenberg L8, light plant) requires high light levels.
+    Suitable mainly in inter-row gaps.
+  warning_text: Light plant - recommended primarily for inter-row gaps.
 wiesen_goldhafer:
-  display_name: "Wiesen-Goldhafer"
-  botanical_name: "Trisetum flavescens"
-  species_group: "grass"
-  use_type: "Grünland / Heuwiese"
-  evidence_basis: "Ellenberg L7 / Landolt L4"
+  display_name: Yellow Oat-grass
+  botanical_name: Trisetum flavescens
+  species_group: grass
+  use_type: Grassland / Hay Meadow
+  evidence_basis: Ellenberg L7 / Landolt L4
   ellenberg_L: 7
   ellenberg_F: 5
   ellenberg_N: 5
@@ -170,25 +210,32 @@ wiesen_goldhafer:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "mittel"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7", "InfoFlora_L4"]
-  notes_de: >
-    Wiesen-Goldhafer (Ellenberg L7 / Landolt L4) für helles Grünland.
-    Typisch für extensiv bewirtschaftete Heuwiesen.
-  warning_text: ""
-
-# --- Herbs / Forbs ---
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: medium
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7
+  - InfoFlora_L4
+  notes_de: Yellow Oat-grass (Ellenberg L7 / Landolt L4) for bright grassland. Typical
+    for extensively managed hay meadows.
+  warning_text: ''
 spitzwegerich:
-  display_name: "Spitzwegerich"
-  botanical_name: "Plantago lanceolata"
-  species_group: "herb"
-  use_type: "Wiesenstaude / Arzneipflanze"
-  evidence_basis: "Ellenberg L6"
+  display_name: Ribwort Plantain
+  botanical_name: Plantago lanceolata
+  species_group: herb
+  use_type: Meadow Herb / Medicinal Plant
+  evidence_basis: Ellenberg L6
   ellenberg_L: 6
   ellenberg_F: 5
   ellenberg_N: 5
@@ -197,23 +244,31 @@ spitzwegerich:
   DLI_min: 15
   DLI_target: 22
   peak_PPFD_min: 600
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "A"
-  confidence_default: "hoch"
-  source_references: ["FloraWeb_L6"]
-  notes_de: >
-    Spitzwegerich (Ellenberg L6) ist gut geeignet bis moderat verschattet.
-    Hohe Schnittverträglichkeit und weit verbreitet.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: A
+  confidence_default: hoch
+  source_references:
+  - FloraWeb_L6
+  notes_de: Ribwort Plantain (Ellenberg L6) is well-suited to moderate shading. High
+    mowing tolerance and widely distributed.
+  warning_text: ''
 wiesenkerbel:
-  display_name: "Wiesenkerbel"
-  botanical_name: "Anthriscus sylvestris"
-  species_group: "herb"
-  use_type: "Wiesenstaude"
-  evidence_basis: "Ellenberg L7"
+  display_name: Cow Parsley
+  botanical_name: Anthriscus sylvestris
+  species_group: herb
+  use_type: Meadow Perennial
+  evidence_basis: Ellenberg L7
   ellenberg_L: 7
   ellenberg_F: 5
   ellenberg_N: 8
@@ -222,23 +277,29 @@ wiesenkerbel:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8]
-  critical_months: [5, 6]
-  mowing_tolerance: "mittel"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7"]
-  notes_de: >
-    Wiesenkerbel (Ellenberg L7) geeignet, aber nicht für starke Verschattung.
-    Nährstoffliebend (N8).
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  critical_months:
+  - 5
+  - 6
+  mowing_tolerance: medium
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7
+  notes_de: Cow Parsley (Ellenberg L7) suitable, but not for heavy shade. Nutrient-demanding
+    (N8).
+  warning_text: ''
 wegwarte:
-  display_name: "Wegwarte"
-  botanical_name: "Cichorium intybus"
-  species_group: "herb"
-  use_type: "Ruderalpflanze / Arzneipflanze"
-  evidence_basis: "Ellenberg L9"
+  display_name: Chicory
+  botanical_name: Cichorium intybus
+  species_group: herb
+  use_type: Ruderal / Medicinal Plant
+  evidence_basis: Ellenberg L9
   ellenberg_L: 9
   ellenberg_F: 4
   ellenberg_N: 5
@@ -247,23 +308,30 @@ wegwarte:
   DLI_min: 25
   DLI_target: 32
   peak_PPFD_min: 900
-  growing_season_months: [5, 6, 7, 8, 9]
-  critical_months: [6, 7, 8]
-  mowing_tolerance: "mittel"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L9"]
-  notes_de: >
-    Wegwarte (Ellenberg L9, Volllichtpflanze) sehr lichtbedürftig.
-    Nur in den hellsten Gaps / Reihenabständen denkbar.
-  warning_text: "Volllichtpflanze — unter Agri-PV nur in Lücken / Randbereichen."
-
+  growing_season_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 6
+  - 7
+  - 8
+  mowing_tolerance: medium
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L9
+  notes_de: Chicory (Ellenberg L9, full sun plant) is highly light-demanding. Only
+    feasible in bright gaps or row spacing.
+  warning_text: Full light plant - under Agri-PV only in unshaded gaps or borders.
 kleiner_wiesenknopf:
-  display_name: "Kleiner Wiesenknopf"
-  botanical_name: "Sanguisorba minor"
-  species_group: "herb"
-  use_type: "Wiesenstaude / Magerwiese"
-  evidence_basis: "Ellenberg L7-L8"
+  display_name: Salad Burnet
+  botanical_name: Sanguisorba minor
+  species_group: herb
+  use_type: Meadow Herb / Poor Meadow
+  evidence_basis: Ellenberg L7-L8
   ellenberg_L: 7
   ellenberg_F: 3
   ellenberg_N: 3
@@ -272,23 +340,31 @@ kleiner_wiesenknopf:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "mittel"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7"]
-  notes_de: >
-    Kleiner Wiesenknopf (L7-L8, je nach Unterart) eher lichtliebend.
-    Typisch für trockene Magerwiesen.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: medium
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7
+  notes_de: Salad Burnet (L7-L8) prefers sun/bright light. Typical for dry, nutrient-poor
+    grasslands.
+  warning_text: ''
 schafgarbe:
-  display_name: "Schafgarbe"
-  botanical_name: "Achillea millefolium"
-  species_group: "herb"
-  use_type: "Wiesenstaude / Arzneipflanze"
-  evidence_basis: "Ellenberg L8"
+  display_name: Yarrow
+  botanical_name: Achillea millefolium
+  species_group: herb
+  use_type: Meadow Herb / Medicinal Plant
+  evidence_basis: Ellenberg L8
   ellenberg_L: 8
   ellenberg_F: 4
   ellenberg_N: 5
@@ -297,23 +373,31 @@ schafgarbe:
   DLI_min: 22
   DLI_target: 28
   peak_PPFD_min: 800
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "A"
-  confidence_default: "hoch"
-  source_references: ["FloraWeb_L8"]
-  notes_de: >
-    Schafgarbe (Ellenberg L8, Lichtpflanze) benötigt viel Licht.
-    Nur in hellen Reihenabständen empfohlen.
-  warning_text: "Lichtpflanze — grenzwertig unter Agri-PV."
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: A
+  confidence_default: hoch
+  source_references:
+  - FloraWeb_L8
+  notes_de: Yarrow (Ellenberg L8, light plant) requires high solar radiation. Recommended
+    for inter-row gaps.
+  warning_text: Light plant - marginal under heavy panel shade.
 wiesen_sauerampfer:
-  display_name: "Wiesen-Sauerampfer"
-  botanical_name: "Rumex acetosa"
-  species_group: "herb"
-  use_type: "Wiesenstaude"
-  evidence_basis: "Ellenberg L8"
+  display_name: Common Sorrel
+  botanical_name: Rumex acetosa
+  species_group: herb
+  use_type: Meadow Herb
+  evidence_basis: Ellenberg L8
   ellenberg_L: 8
   ellenberg_F: 5
   ellenberg_N: 6
@@ -322,23 +406,31 @@ wiesen_sauerampfer:
   DLI_min: 22
   DLI_target: 28
   peak_PPFD_min: 800
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L8"]
-  notes_de: >
-    Wiesen-Sauerampfer (Ellenberg L8, Lichtpflanze) eher nur in den hellsten
-    Streifen / Gaps geeignet.
-  warning_text: "Lichtpflanze — nur in hellen Reihenabständen."
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L8
+  notes_de: Common Sorrel (Ellenberg L8, light plant) suitable primarily in bright
+    inter-row gaps.
+  warning_text: Light plant - inter-row gaps only.
 scharfer_hahnenfuss:
-  display_name: "Scharfer Hahnenfuß"
-  botanical_name: "Ranunculus acris"
-  species_group: "herb"
-  use_type: "Wiesenstaude"
-  evidence_basis: "Ellenberg L7"
+  display_name: Meadow Buttercup
+  botanical_name: Ranunculus acris
+  species_group: herb
+  use_type: Meadow Perennial
+  evidence_basis: Ellenberg L7
   ellenberg_L: 7
   ellenberg_F: 6
   ellenberg_N: 6
@@ -347,23 +439,29 @@ scharfer_hahnenfuss:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8]
-  critical_months: [5, 6]
-  mowing_tolerance: "hoch"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7"]
-  notes_de: >
-    Scharfer Hahnenfuß (Ellenberg L7) geeignet bei hellem Grünland.
-    Frische bis feuchte Wiesen.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  critical_months:
+  - 5
+  - 6
+  mowing_tolerance: high
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7
+  notes_de: Meadow Buttercup (Ellenberg L7) suitable in bright grassland. Fresh to
+    moist meadows.
+  warning_text: ''
 kleiner_klappertopf:
-  display_name: "Kleiner Klappertopf"
-  botanical_name: "Rhinanthus minor"
-  species_group: "herb"
-  use_type: "Halbparasit / Magerwiese"
-  evidence_basis: "Ellenberg L7"
+  display_name: Yellow Rattle
+  botanical_name: Rhinanthus minor
+  species_group: herb
+  use_type: Semi-parasite / Poor Meadow
+  evidence_basis: Ellenberg L7
   ellenberg_L: 7
   ellenberg_F: 4
   ellenberg_N: 3
@@ -372,23 +470,30 @@ kleiner_klappertopf:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [5, 6, 7, 8]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "gering"
-  evidence_tier: "C"
-  confidence_default: "niedrig"
-  source_references: ["FloraWeb_L7"]
-  notes_de: >
-    Kleiner Klappertopf (Ellenberg L7) gut für lichte Wiesen, konkurrenzabhängig.
-    Als Halbparasit auf Wirtsgraswurzeln angewiesen.
-  warning_text: "Halbparasit — Etablierung unter Agri-PV unsicher."
-
+  growing_season_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: low
+  evidence_tier: C
+  confidence_default: niedrig
+  source_references:
+  - FloraWeb_L7
+  notes_de: Yellow Rattle (Ellenberg L7) suitable for open meadows; depends on host
+    grass root competition.
+  warning_text: Semi-parasite - establishment under Agri-PV depends on host grass
+    density.
 blutwurz:
-  display_name: "Blutwurz"
-  botanical_name: "Potentilla erecta"
-  species_group: "herb"
-  use_type: "Wiesenstaude / Arzneipflanze"
-  evidence_basis: "Ellenberg L6 / Landolt L3"
+  display_name: Tormentil
+  botanical_name: Potentilla erecta
+  species_group: herb
+  use_type: Meadow Herb / Medicinal Plant
+  evidence_basis: Ellenberg L6 / Landolt L3
   ellenberg_L: 6
   ellenberg_F: 5
   ellenberg_N: 2
@@ -397,23 +502,32 @@ blutwurz:
   DLI_min: 15
   DLI_target: 22
   peak_PPFD_min: 600
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "mittel"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L6", "InfoFlora_L3"]
-  notes_de: >
-    Blutwurz (Ellenberg L6 / Landolt L3) relativ schattentoleranter.
-    Nährstoffarm (N2), bevorzugt Magerstandorte.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: medium
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L6
+  - InfoFlora_L3
+  notes_de: Tormentil (Ellenberg L6 / Landolt L3) relatively shade-tolerant. Low nutrient
+    requirement (N2).
+  warning_text: ''
 wiesen_labkraut:
-  display_name: "Wiesen-Labkraut"
-  botanical_name: "Galium mollugo agg."
-  species_group: "herb"
-  use_type: "Wiesenstaude"
-  evidence_basis: "Ellenberg L7"
+  display_name: Hedge Bedstraw
+  botanical_name: Galium mollugo agg.
+  species_group: herb
+  use_type: Meadow Perennial
+  evidence_basis: Ellenberg L7
   ellenberg_L: 7
   ellenberg_F: 5
   ellenberg_N: 5
@@ -422,22 +536,30 @@ wiesen_labkraut:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "mittel"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7"]
-  notes_de: >
-    Wiesen-Labkraut (Ellenberg L7) geeignet bei halblichten Bedingungen.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: medium
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7
+  notes_de: Hedge Bedstraw (Ellenberg L7) suitable under half-bright conditions.
+  warning_text: ''
 echte_kamille:
-  display_name: "Echte Kamille"
-  botanical_name: "Matricaria chamomilla / recutita"
-  species_group: "herb"
-  use_type: "Arzneipflanze / Ackerwildkraut"
-  evidence_basis: "Ellenberg L7 / Landolt L4"
+  display_name: German Chamomile
+  botanical_name: Matricaria chamomilla / recutita
+  species_group: herb
+  use_type: Medicinal / Arable Weed
+  evidence_basis: Ellenberg L7 / Landolt L4
   ellenberg_L: 7
   ellenberg_F: 5
   ellenberg_N: 5
@@ -446,23 +568,31 @@ echte_kamille:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "gering"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7", "InfoFlora_L4"]
-  notes_de: >
-    Echte Kamille (L7 / Landolt L4) hell, aber nicht zwingend Volllicht.
-    Braucht offene Bodenstellen zur Keimung.
-  warning_text: ""
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: low
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7
+  - InfoFlora_L4
+  notes_de: German Chamomile (L7 / Landolt L4) prefers bright conditions. Requires
+    open soil spots for germination.
+  warning_text: ''
 wilder_fenchel:
-  display_name: "Wilder Fenchel"
-  botanical_name: "Foeniculum vulgare"
-  species_group: "herb"
-  use_type: "Gewürzpflanze / Arzneipflanze"
-  evidence_basis: "Landolt L4 (hell)"
+  display_name: Wild Fennel
+  botanical_name: Foeniculum vulgare
+  species_group: herb
+  use_type: Spice / Medicinal Herb
+  evidence_basis: Landolt L4 (hell)
   ellenberg_L: 8
   ellenberg_F: 3
   ellenberg_N: 5
@@ -471,25 +601,31 @@ wilder_fenchel:
   DLI_min: 22
   DLI_target: 28
   peak_PPFD_min: 800
-  growing_season_months: [4, 5, 6, 7, 8, 9]
-  critical_months: [6, 7, 8]
-  mowing_tolerance: "gering"
-  evidence_tier: "C"
-  confidence_default: "niedrig"
-  source_references: ["InfoFlora_L4"]
-  notes_de: >
-    Wilder Fenchel (Landolt L4, hell) lichtliebend. Eher nur in
-    den hellsten Gaps / Randbereichen unter Agri-PV.
-  warning_text: "Lichtliebend — nur in hellen Reihenabständen."
-
-# --- Floodplain / Wet Meadow Specialists (Auenarten) ---
-
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 6
+  - 7
+  - 8
+  mowing_tolerance: low
+  evidence_tier: C
+  confidence_default: niedrig
+  source_references:
+  - InfoFlora_L4
+  notes_de: Wild Fennel (Landolt L4, bright) light-loving. Recommended for bright
+    gaps or borders.
+  warning_text: Light-loving - inter-row gaps only.
 brenndolde:
-  display_name: "Brenndolde"
-  botanical_name: "Selinum dubium syn. Cnidium dubium"
-  species_group: "floodplain"
-  use_type: "Stromtalart / Auenwiese"
-  evidence_basis: "Ellenberg L7, F8"
+  display_name: False Parsley
+  botanical_name: Selinum dubium syn. Cnidium dubium
+  species_group: floodplain
+  use_type: River Valley Species / Floodplain
+  evidence_basis: Ellenberg L7, F8
   ellenberg_L: 7
   ellenberg_F: 8
   ellenberg_N: 4
@@ -498,24 +634,31 @@ brenndolde:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [5, 6, 7, 8, 9]
-  critical_months: [6, 7, 8]
-  mowing_tolerance: "gering"
-  evidence_tier: "C"
-  confidence_default: "niedrig"
-  source_references: ["FloraWeb_L7_F8"]
-  notes_de: >
-    Brenndolde (Ellenberg L7, F8) lichtbedürftig, aber hydrologisch viel
-    kritischer. Wasserstand und Überflutungsdynamik mindestens so entscheidend
-    wie PAR.
-  warning_text: "Hydrologisch prüfpflichtig (F8) — Wasserstand und Überflutungsdynamik entscheidend."
-
+  growing_season_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 6
+  - 7
+  - 8
+  mowing_tolerance: low
+  evidence_tier: C
+  confidence_default: niedrig
+  source_references:
+  - FloraWeb_L7_F8
+  notes_de: False Parsley (Ellenberg L7, F8) light-demanding and hydrologically critical.
+    Water table and flooding dynamics are key.
+  warning_text: Hydrology check required (F8) - water table and flooding dynamics
+    are critical.
 gelbe_wiesenraute:
-  display_name: "Gelbe Wiesenraute"
-  botanical_name: "Thalictrum flavum"
-  species_group: "floodplain"
-  use_type: "Stromtalart / Auenwiese"
-  evidence_basis: "Ellenberg L7, F8"
+  display_name: Yellow Meadow-rue
+  botanical_name: Thalictrum flavum
+  species_group: floodplain
+  use_type: River Valley Species / Floodplain
+  evidence_basis: Ellenberg L7, F8
   ellenberg_L: 7
   ellenberg_F: 8
   ellenberg_N: 5
@@ -524,23 +667,28 @@ gelbe_wiesenraute:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [5, 6, 7, 8]
-  critical_months: [6, 7]
-  mowing_tolerance: "gering"
-  evidence_tier: "C"
-  confidence_default: "niedrig"
-  source_references: ["FloraWeb_L7_F8"]
-  notes_de: >
-    Gelbe Wiesenraute (Ellenberg L7, F8) geeignet in hell-feuchten Bereichen.
-    Braucht wechselfeuchte Standorte.
-  warning_text: "Hydrologisch prüfpflichtig (F8)."
-
+  growing_season_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  critical_months:
+  - 6
+  - 7
+  mowing_tolerance: low
+  evidence_tier: C
+  confidence_default: niedrig
+  source_references:
+  - FloraWeb_L7_F8
+  notes_de: Yellow Meadow-rue (Ellenberg L7, F8) suitable in bright, moist areas.
+    Requires seasonally wet soils.
+  warning_text: Hydrology check required (F8).
 wasser_greiskraut:
-  display_name: "Wasser-Greiskraut"
-  botanical_name: "Jacobaea aquatica syn. Senecio aquaticus"
-  species_group: "floodplain"
-  use_type: "Feuchtwiese / Auenwiese"
-  evidence_basis: "Ellenberg L7, F8"
+  display_name: Water Ragwort
+  botanical_name: Jacobaea aquatica syn. Senecio aquaticus
+  species_group: floodplain
+  use_type: Wet Meadow / Floodplain
+  evidence_basis: Ellenberg L7, F8
   ellenberg_L: 7
   ellenberg_F: 8
   ellenberg_N: 4
@@ -549,23 +697,30 @@ wasser_greiskraut:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [5, 6, 7, 8, 9]
-  critical_months: [6, 7, 8]
-  mowing_tolerance: "gering"
-  evidence_tier: "C"
-  confidence_default: "niedrig"
-  source_references: ["FloraWeb_L7_F8"]
-  notes_de: >
-    Wasser-Greiskraut (Ellenberg L7, F8) feuchte helle Standorte.
-    Braucht regelmäßige Überflutung oder hohen Grundwasserstand.
-  warning_text: "Hydrologisch prüfpflichtig (F8)."
-
+  growing_season_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  critical_months:
+  - 6
+  - 7
+  - 8
+  mowing_tolerance: low
+  evidence_tier: C
+  confidence_default: niedrig
+  source_references:
+  - FloraWeb_L7_F8
+  notes_de: Water Ragwort (Ellenberg L7, F8) prefers moist, bright sites. Requires
+    periodic flooding or high groundwater.
+  warning_text: Hydrology check required (F8).
 sumpf_platterbse:
-  display_name: "Sumpf-Platterbse"
-  botanical_name: "Lathyrus palustris"
-  species_group: "floodplain"
-  use_type: "Feuchtwiese / Auenwiese"
-  evidence_basis: "Landolt L4 (hell)"
+  display_name: Marsh Pea
+  botanical_name: Lathyrus palustris
+  species_group: floodplain
+  use_type: Wet Meadow / Floodplain
+  evidence_basis: Landolt L4 (hell)
   ellenberg_L: 7
   ellenberg_F: 8
   ellenberg_N: 3
@@ -574,23 +729,28 @@ sumpf_platterbse:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [5, 6, 7, 8]
-  critical_months: [6, 7]
-  mowing_tolerance: "gering"
-  evidence_tier: "C"
-  confidence_default: "niedrig"
-  source_references: ["InfoFlora_L4"]
-  notes_de: >
-    Sumpf-Platterbse (Landolt L4, F8) hell-feuchte Auenbereiche.
-    Naturschutzrelevante Art.
-  warning_text: "Hydrologisch prüfpflichtig (F8) — naturschutzrelevant."
-
+  growing_season_months:
+  - 5
+  - 6
+  - 7
+  - 8
+  critical_months:
+  - 6
+  - 7
+  mowing_tolerance: low
+  evidence_tier: C
+  confidence_default: niedrig
+  source_references:
+  - InfoFlora_L4
+  notes_de: Marsh Pea (Landolt L4, F8) bright-moist floodplain areas. Conservation-relevant
+    species.
+  warning_text: Hydrology check required (F8) - conservation relevant.
 kuckucks_lichtnelke:
-  display_name: "Kuckucks-Lichtnelke"
-  botanical_name: "Silene flos-cuculi"
-  species_group: "floodplain"
-  use_type: "Feuchtwiese"
-  evidence_basis: "Ellenberg L7, F7"
+  display_name: Ragged-Robin
+  botanical_name: Silene flos-cuculi
+  species_group: floodplain
+  use_type: Wet Meadow
+  evidence_basis: Ellenberg L7, F7
   ellenberg_L: 7
   ellenberg_F: 7
   ellenberg_N: 4
@@ -599,13 +759,21 @@ kuckucks_lichtnelke:
   DLI_min: 18
   DLI_target: 25
   peak_PPFD_min: 700
-  growing_season_months: [4, 5, 6, 7, 8]
-  critical_months: [5, 6, 7]
-  mowing_tolerance: "mittel"
-  evidence_tier: "B"
-  confidence_default: "mittel"
-  source_references: ["FloraWeb_L7_F7"]
-  notes_de: >
-    Kuckucks-Lichtnelke (Ellenberg L7, F7) passend für feuchte Wiesen,
-    nicht stark schattig.
-  warning_text: ""
+  growing_season_months:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  critical_months:
+  - 5
+  - 6
+  - 7
+  mowing_tolerance: medium
+  evidence_tier: B
+  confidence_default: mittel
+  source_references:
+  - FloraWeb_L7_F7
+  notes_de: Ragged-Robin (Ellenberg L7, F7) suitable for moist meadows, not heavily
+    shaded.
+  warning_text: ''

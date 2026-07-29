@@ -174,39 +174,39 @@ def _score_hydro(ellenberg_F: int) -> float:
 
 
 def _classify_light(score: float, rPAR_actual: float, rPAR_min: float) -> str:
-    """Return German light classification."""
+    """Return English light classification."""
     if score >= 70:
-        return "lichtseitig geeignet"
+        return "Light Suitable"
     elif score >= 50:
-        return "grenzwertig"
+        return "Marginal Light"
     elif score >= 25:
-        return "nur in hellen Reihenabständen"
+        return "Inter-row Gaps Only"
     else:
-        return "nicht für stark beschattete Modulbereiche"
+        return "Not Suitable for Heavy Shade"
 
 
 def _classify_hydro(ellenberg_F: int) -> str:
-    """Return German hydrology classification."""
+    """Return English hydrology classification."""
     if ellenberg_F <= 5:
-        return "hydrologisch geeignet"
+        return "Hydrologically Suitable"
     elif ellenberg_F <= 7:
-        return "hydrologisch prüfpflichtig"
+        return "Hydrology Verification Needed"
     else:
-        return "nur in feuchten Senken"
+        return "Wet Depressions Only"
 
 
 def _classify_zone(light_class: str, hydro_class: str, rPAR_actual: float, rPAR_min: float) -> str:
     """Combined zone recommendation."""
-    if light_class == "nicht für stark beschattete Modulbereiche":
-        return "nicht empfohlen"
-    elif light_class == "nur in hellen Reihenabständen":
-        return "nur in hellen Reihenabständen / Gaps"
-    elif hydro_class == "nur in feuchten Senken":
-        return "nur in feuchten Senken"
-    elif light_class == "grenzwertig" or hydro_class == "hydrologisch prüfpflichtig":
-        return "zonenabhängig"
+    if light_class == "Not Suitable for Heavy Shade":
+        return "Not Recommended"
+    elif light_class == "Inter-row Gaps Only":
+        return "Inter-row Gaps Only"
+    elif hydro_class == "Wet Depressions Only":
+        return "Wet Depressions Only"
+    elif light_class == "Marginal Light" or hydro_class == "Hydrology Verification Needed":
+        return "Zone Dependent"
     else:
-        return "gesamte Fläche"
+        return "Entire Field"
 
 
 # ---------------------------------------------------------------------------
@@ -268,27 +268,27 @@ def evaluate_meadow_species(
 
     # 9) Limiting factor
     if light_score < 50 and hydro_score < 60:
-        limiting = "Licht + Hydrologie"
+        limiting = "Light + Hydrology"
     elif light_score < 50:
-        limiting = "Licht (rPAR zu niedrig)"
+        limiting = "Light (rPAR too low)"
     elif hydro_score < 60:
-        limiting = "Hydrologie (F≥8)"
+        limiting = "Hydrology (F>=8)"
     elif s_DLI < 50:
-        limiting = "DLI (zu niedrig)"
+        limiting = "DLI (too low)"
     else:
-        limiting = "—"
+        limiting = "None"
 
     # 10) Explanation
     explanation_parts = []
     if rPAR_actual >= species.rPAR_target:
-        explanation_parts.append(f"Restlicht {rPAR_actual*100:.0f}% ≥ Zielwert {species.rPAR_target*100:.0f}%.")
+        explanation_parts.append(f"Relative PAR {rPAR_actual*100:.0f}% >= Target {species.rPAR_target*100:.0f}%.")
     elif rPAR_actual >= species.rPAR_min:
-        explanation_parts.append(f"Restlicht {rPAR_actual*100:.0f}% zwischen Minimum ({species.rPAR_min*100:.0f}%) und Zielwert ({species.rPAR_target*100:.0f}%).")
+        explanation_parts.append(f"Relative PAR {rPAR_actual*100:.0f}% between Minimum ({species.rPAR_min*100:.0f}%) and Target ({species.rPAR_target*100:.0f}%).")
     else:
-        explanation_parts.append(f"Restlicht {rPAR_actual*100:.0f}% unter Minimum ({species.rPAR_min*100:.0f}%).")
+        explanation_parts.append(f"Relative PAR {rPAR_actual*100:.0f}% below Minimum ({species.rPAR_min*100:.0f}%).")
 
     if species.ellenberg_F >= 7:
-        explanation_parts.append(f"Feuchtezeiger F{species.ellenberg_F} — hydrologische Standortprüfung erforderlich.")
+        explanation_parts.append(f"Moisture indicator F{species.ellenberg_F} — hydrological site verification required.")
 
     explanation_de = " ".join(explanation_parts)
 

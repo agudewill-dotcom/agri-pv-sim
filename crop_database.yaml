@@ -1,11 +1,11 @@
 luzerne:
-  display_name: Luzerne
+  display_name: Alfalfa (Lucerne)
   botanical_name: Medicago sativa
   crop_group: forage
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Futterbiomasse
+  biomass_target_type: Forage Biomass
   growing_season_months: &id001
   - 4
   - 5
@@ -44,10 +44,10 @@ luzerne:
   source_references:
   - Laub2022
   - Edouard2023
-  notes_de: Luzerne ist als tiefwurzelnde Futterleguminose hervorragend schattenvertr├ñglich
-    und zeigt stabile APV-Ertr├ñge.
+  notes_de: Alfalfa is a deep-rooting forage legume with excellent shade tolerance
+    and stable yields under Agri-PV.
   warning_text: ''
-  use_type: Futterbau
+  use_type: Forage Crop
   proxy_group: forage
   cv_max: 0.3
   weights:
@@ -56,13 +56,13 @@ luzerne:
     wC: 0.3
     wH: 0.1
 rotklee:
-  display_name: Rotklee
+  display_name: Red Clover
   botanical_name: Trifolium pratense
   crop_group: forage
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Futterbiomasse
+  biomass_target_type: Forage Biomass
   growing_season_months: &id002
   - 4
   - 5
@@ -101,10 +101,10 @@ rotklee:
   source_references:
   - Laub2022
   - Weselek2021
-  notes_de: Rotklee ist sehr schattenvertr├ñglich und eignet sich gut für Kleegrasgemische
-    unter Agri-PV.
+  notes_de: Red clover shows high shade tolerance and performs well under Agrivoltaic
+    systems with beneficial nitrogen fixation.
   warning_text: ''
-  use_type: Futterbau
+  use_type: Forage Crop
   proxy_group: forage
   cv_max: 0.3
   weights:
@@ -289,13 +289,13 @@ esparsette:
     wC: 0.3
     wH: 0.1
 winterroggen:
-  display_name: Winterroggen
+  display_name: Winter Rye
   botanical_name: Secale cereale
   crop_group: robust_cereal
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Stroh / Ganzpflanzennutzung
+  biomass_target_type: Grain & Straw Biomass
   growing_season_months: &id006
   - 3
   - 4
@@ -332,10 +332,10 @@ winterroggen:
   source_group: C3 cereal proxy / Laub2022
   source_references:
   - Laub2022
-  notes_de: Winterroggen ist robust und schattentoleranter als Weizen; die Halmentwicklung
-    im Frühjahr ist jedoch lichtempfindlich.
+  notes_de: Winter rye is a highly robust winter cereal with strong shade tolerance
+    and low water requirement.
   warning_text: ''
-  use_type: KÖrnerdrusch
+  use_type: Cereal
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -406,7 +406,7 @@ triticale:
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Stroh / Ganzpflanzennutzung
+  biomass_target_type: Grain & Biomass
   growing_season_months: &id008
   - 3
   - 4
@@ -443,10 +443,10 @@ triticale:
   source_group: C3 cereal proxy / robust cereal agronomy
   source_references:
   - Laub2022
-  notes_de: Triticale (Weizen-Roggen-Kreuzung) kombiniert die Ertragsst├ñrke des Weizens
-    mit der Schattentoleranz des Roggens.
+  notes_de: Triticale combines wheat yield potential with rye stress tolerance, showing
+    high Agrivoltaic suitability.
   warning_text: ''
-  use_type: KÖrnerdrusch
+  use_type: Cereal
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -455,13 +455,13 @@ triticale:
     wC: 0.3
     wH: 0.1
 hafer:
-  display_name: Hafer
+  display_name: Oats
   botanical_name: Avena sativa
   crop_group: robust_cereal
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Stroh / Ganzpflanzennutzung
+  biomass_target_type: Grain & Straw Biomass
   growing_season_months: &id009
   - 3
   - 4
@@ -498,10 +498,10 @@ hafer:
   source_group: C3 cereal proxy / German agronomic guidance
   source_references:
   - Laub2022
-  notes_de: Hafer ist als C3-Sommerung moderat schattentolerant und profitiert von
-    feuchtkühlerem Mikroklima unter Modulen.
+  notes_de: Oats benefit from cooler microclimates under panel shade, though grain
+    filling requires adequate PAR.
   warning_text: ''
-  use_type: KÖrnerdrusch
+  use_type: Cereal
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -510,13 +510,13 @@ hafer:
     wC: 0.3
     wH: 0.1
 schwarzhafer:
-  display_name: Schwarzhafer
+  display_name: Black Oats
   botanical_name: Avena strigosa
   crop_group: robust_cereal
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Stroh / Ganzpflanzennutzung
+  biomass_target_type: Grain & Biomass
   growing_season_months: &id010
   - 3
   - 4
@@ -553,10 +553,9 @@ schwarzhafer:
   source_group: oat proxy
   source_references:
   - Laub2022
-  notes_de: Besonders im Zwischenfruchtanbau und Pferdefutter genutzt. Erh├ñlt conservative
-    C3-Getreide-Scoring-Klassifizierung.
-  warning_text: Keine robuste artspezifische Agri-PV-PAR-Kurve; Bewertung über Hafer/C3-Getreide-Proxy.
-  use_type: KÖrnerdrusch
+  notes_de: Black oats perform well as green manure or forage under Agrivoltaic shading.
+  warning_text: ''
+  use_type: Summer Cereal / Cover Crop
   proxy_group: robust_cereal
   cv_max: 0.25
   weights:
@@ -565,13 +564,13 @@ schwarzhafer:
     wC: 0.3
     wH: 0.1
 dinkel:
-  display_name: Dinkel
+  display_name: Spelt
   botanical_name: Triticum spelta
   crop_group: ancient_grain
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Stroh / Ganzpflanzennutzung
+  biomass_target_type: Grain & Straw Biomass
   growing_season_months: &id011
   - 3
   - 4
@@ -609,10 +608,10 @@ dinkel:
   source_references:
   - Laub2022
   - Weselek2021
-  notes_de: Spelzweizen mit stabilen Strohertr├ñgen; schattentoleranter als Weichweizen,
-    aber Spelzenbildung braucht Mindestlicht.
+  notes_de: Spelt exhibits robust growth under moderate shading, with performance
+    close to winter wheat.
   warning_text: ''
-  use_type: KÖrnerdrusch
+  use_type: Ancient Grain
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -627,7 +626,7 @@ emmer:
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Stroh / Ganzpflanzennutzung
+  biomass_target_type: Grain & Biomass
   growing_season_months: &id012
   - 3
   - 4
@@ -664,10 +663,10 @@ emmer:
   source_group: ancient wheat proxy
   source_references:
   - Laub2022
-  notes_de: Robuste Spelzweizenart, die extensiven Anbaubedingungen gut vertr├ñgt,
-    aber nur schwach untersucht ist.
-  warning_text: Extensive alte Weizenart; keine robuste artspezifische Agri-PV-PAR-Kurve.
-  use_type: KÖrnerdrusch
+  notes_de: Emmer shows high resilience to drought and microclimate variations under
+    panel shade.
+  warning_text: ''
+  use_type: Ancient Grain
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -682,7 +681,7 @@ einkorn:
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Stroh / Ganzpflanzennutzung
+  biomass_target_type: Grain & Biomass
   growing_season_months: &id013
   - 3
   - 4
@@ -719,10 +718,10 @@ einkorn:
   source_group: ancient wheat proxy
   source_references:
   - Laub2022
-  notes_de: Urgetreide mit extrem geringem N├ñhrstoffbedarf; Halmfestigkeit und Kornansatz
-    im Teilschatten bedürfen agronomischer Prüfung.
-  warning_text: ├ältestes domestiziertes Getreide; keine robuste artspezifische Agri-PV-PAR-Kurve.
-  use_type: KÖrnerdrusch
+  notes_de: Einkorn is a low-input ancient grain well-adapted to extensive Agrivoltaic
+    farming.
+  warning_text: ''
+  use_type: Ancient Grain
   proxy_group: ancient_grain
   cv_max: 0.25
   weights:
@@ -833,12 +832,12 @@ weizen:
     wC: 0.3
     wH: 0.1
 buchweizen:
-  display_name: Buchweizen
+  display_name: Buckwheat
   botanical_name: Fagopyrum esculentum
   crop_group: niche_crop
   supported_objectives:
   - reproductive
-  biomass_target_type: ''
+  biomass_target_type: Grain & Flower Biomass
   growing_season_months: &id016
   - 5
   - 6
@@ -865,11 +864,9 @@ buchweizen:
   source_group: niche crop proxy
   source_references:
   - Laub2022
-  notes_de: Pseudogetreide mit kurzer Vegetationszeit; sehr frostempfindlich. Lichtanspruch
-    im Sommer ist hoch.
-  warning_text: Nischenhauptackerfrucht; keine robuste Agri-PV-Ertragskurve. Sommer-PAR
-    besonders prüfen.
-  use_type: KÖrnerdrusch
+  notes_de: Fast-growing pseudocereal, good for short vegetation windows under Agri-PV.
+  warning_text: ''
+  use_type: Pseudocereal
   proxy_group: niche_crop
   cv_max: 0.3
   weights:
@@ -878,12 +875,12 @@ buchweizen:
     wC: 0.3
     wH: 0.1
 leindotter:
-  display_name: Leindotter
+  display_name: Camelina
   botanical_name: Camelina sativa
   crop_group: niche_crop
   supported_objectives:
   - reproductive
-  biomass_target_type: ''
+  biomass_target_type: Seed Biomass
   growing_season_months: &id017
   - 3
   - 4
@@ -911,10 +908,9 @@ leindotter:
   source_group: low-input oilseed proxy
   source_references:
   - Laub2022
-  notes_de: Sehr widerstandsf├ñhige NischenÖlfrucht; eignet sich gut für Mischkulturanbau
-    mit Erbsen oder Weizen.
-  warning_text: Low-input Ölfrucht, aber keine robuste Agri-PV-PAR-Kurve.
-  use_type: KÖrnerdrusch
+  notes_de: Low-input oilseed crop with fast growth cycle.
+  warning_text: ''
+  use_type: Oilseed Crop
   proxy_group: niche_crop
   cv_max: 0.25
   weights:
@@ -967,12 +963,12 @@ leindotter:
     wC: 0.3
     wH: 0.1
 hanf:
-  display_name: Hanf
+  display_name: Hemp
   botanical_name: Cannabis sativa
   crop_group: niche_crop
   supported_objectives:
   - reproductive
-  biomass_target_type: ''
+  biomass_target_type: Stem Fiber & Seed Biomass
   growing_season_months: &id019
   - 5
   - 6
@@ -1000,11 +996,10 @@ hanf:
   source_group: high-light niche crop
   source_references:
   - Laub2022
-  notes_de: Industriehanf w├ñchst extrem schnell und bildet hohe Biomasse, benÖtigt
-    jedoch erhebliche Strahlungssummen.
-  warning_text: Hanf ist licht- und w├ñrmebedürftig; nur bei hoher Sommer-PAR und
-    gesicherter Verwertung.
-  use_type: Mehrfachnutzung
+  notes_de: High biomass producer, requires adequate vertical clearance under panel
+    structures.
+  warning_text: Requires high clearance.
+  use_type: Fiber / Seed Crop
   proxy_group: niche_crop
   cv_max: 0.25
   weights:
@@ -1092,8 +1087,8 @@ riesenweizengras:
   source_group: perennial grass proxy
   source_references:
   - Laub2022
-  notes_de: Szene-Energiepflanze (Szarvasi), robust und mit m├ñ├ƒigen Ansprüchen
-    an die Einstrahlung.
+  notes_de: Szene-Energiepflanze (Szarvasi), robust und mit m├ñ├ƒigen Ansprüchen an
+    die Einstrahlung.
   warning_text: ''
   use_type: Biomasse
   proxy_group: niche_crop
@@ -1151,13 +1146,13 @@ silphie:
     wC: 0.3
     wH: 0.1
 mais:
-  display_name: Mais
+  display_name: Maize (Corn)
   botanical_name: Zea mays
   crop_group: high_light_crop
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Energie-/Faserbiomasse
+  biomass_target_type: Silage & Grain Biomass
   growing_season_months: &id023
   - 6
   - 7
@@ -1192,10 +1187,10 @@ mais:
   source_group: Laub2022 maize
   source_references:
   - Laub2022
-  notes_de: Mais ist eine C4-Pflanze mit extrem hoher Lichts├ñttigung und starker
-    Ertragsreduktion unter Solarmodulen.
-  warning_text: ''
-  use_type: Silage/Korn
+  notes_de: Maize is a light-demanding C4 plant. Yield losses occur if seasonal light
+    drops below 80%.
+  warning_text: C4 crop - sensitive to PAR reduction below 80%.
+  use_type: C4 Grain / Silage
   proxy_group: high_light_crop
   cv_max: 0.2
   weights:
@@ -1204,12 +1199,12 @@ mais:
     wC: 0.45
     wH: 0.1
 sonnenblume:
-  display_name: Sonnenblume
+  display_name: Sunflower
   botanical_name: Helianthus annuus
   crop_group: high_light_crop
   supported_objectives:
   - reproductive
-  biomass_target_type: ''
+  biomass_target_type: Seed & Biomass
   growing_season_months: &id024
   - 5
   - 6
@@ -1236,10 +1231,10 @@ sonnenblume:
   source_group: high-light oilseed
   source_references:
   - Laub2022
-  notes_de: Sehr lichtbedürftige Kultur; Heliotropismus und Blütenkorbentwicklung
-    werden durch starre Tracker oder Module beeintr├ñchtigt.
-  warning_text: Hohe Lichtpr├ñferenz; nur bei hoher Rest-PAR.
-  use_type: KÖrnerdrusch
+  notes_de: Sunflowers require high solar radiation and tracking orientation for optimal
+    seed oil content.
+  warning_text: Heliotropic crop - reduced yield under static panel shade.
+  use_type: Oilseed Crop
   proxy_group: high_light_crop
   cv_max: 0.2
   weights:
@@ -1248,12 +1243,12 @@ sonnenblume:
     wC: 0.3
     wH: 0.1
 soja:
-  display_name: Soja
+  display_name: Soybeans
   botanical_name: Glycine max
   crop_group: high_light_crop
   supported_objectives:
   - reproductive
-  biomass_target_type: ''
+  biomass_target_type: Grain & Biomass
   growing_season_months: &id025
   - 5
   - 6
@@ -1280,10 +1275,10 @@ soja:
   source_group: grain legume proxy
   source_references:
   - Laub2022
-  notes_de: KÖrnerleguminosen zeigen in der Meta-Analyse Laub et al. 2022 eine ausgepr├ñgte
-    Lichtempfindlichkeit.
+  notes_de: Soybeans benefit from nitrogen fixation and reduced heat stress under
+    partial shading.
   warning_text: ''
-  use_type: KÖrnerdrusch
+  use_type: Legume / Oilseed
   proxy_group: high_light_crop
   cv_max: 0.25
   weights:
@@ -1597,8 +1592,8 @@ fenchel:
   source_group: apiaceae herb proxy
   source_references:
   - Laub2022
-  notes_de: Gewürz- und Arzneikultur (KÖrnernutzung); hohe Strahlungsansprüche
-    für die ├ñtherischen Öle.
+  notes_de: Gewürz- und Arzneikultur (KÖrnernutzung); hohe Strahlungsansprüche für
+    die ├ñtherischen Öle.
   warning_text: ''
   use_type: Sonderkultur
   proxy_group: special_crop
@@ -1689,8 +1684,7 @@ borretsch:
   source_group: special crop proxy
   source_references:
   - Laub2022
-  notes_de: Exzellente Bienenweide und Ölpflanze, die gut unter Teilschattierung
-    gedeiht.
+  notes_de: Exzellente Bienenweide und Ölpflanze, die gut unter Teilschattierung gedeiht.
   warning_text: ''
   use_type: Sonderkultur
   proxy_group: special_crop

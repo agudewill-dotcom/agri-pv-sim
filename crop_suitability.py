@@ -419,52 +419,52 @@ def evaluate_crop(
 
     # Base Suitability
     if final_score >= 0.80:
-        suitability = "sehr gut geeignet"
+        suitability = "Highly Suitable"
     elif final_score >= 0.65:
-        suitability = "geeignet"
+        suitability = "Suitable"
     elif final_score >= 0.45:
-        suitability = "grenzwertig"
+        suitability = "Marginal"
     else:
-        suitability = "ungeeignet"
+        suitability = "Not Recommended"
 
     # Peak PPFD penalty on base suitability
     if peak_ppfd_crit is not None and peak_ppfd_crit < crop.peak_PPFD_min:
-        suitability = "grenzwertig" if suitability == "geeignet" else "ungeeignet"
+        suitability = "Marginal" if suitability == "Suitable" else "Not Recommended"
 
     # Homogeneity Penalty on base suitability
     if cv_par > 0.25 and crop.crop_group in ["robust_cereal", "ancient_grain", "high_light_crop"]:
-        suitability = "grenzwertig" if suitability == "geeignet" else "ungeeignet"
+        suitability = "Marginal" if suitability == "Suitable" else "Not Recommended"
 
     # Standard DIN classification and warnings
     warning_text = crop.warning_text
     if crop.evidence_tier in ["A", "B"] and crop.crop_group in ["forage", "robust_cereal", "ancient_grain", "niche_crop"]:
-        if suitability in ["geeignet", "sehr gut geeignet"]:
-            classification = "geeignet als Hauptkultur"
-        elif suitability == "grenzwertig":
-            classification = "grenzwertig"
+        if suitability in ["Suitable", "Highly Suitable"]:
+            classification = "Suitable as Primary Crop"
+        elif suitability == "Marginal":
+            classification = "Marginal / Requires Verification"
         else:
-            classification = "nicht empfohlen"
+            classification = "Not Recommended"
     else:
         # Special crop floor check
         passes_floor = (comp_a >= 0.65) and (comp_c >= 0.65) and (comp_h >= 0.50)
-        if suitability in ["geeignet", "sehr gut geeignet"] and passes_floor:
+        if suitability in ["Suitable", "Highly Suitable"] and passes_floor:
             if crop.crop_group == "special_crop":
-                classification = "geeignet als Sonderkultur / Blühstreifen"
+                classification = "Suitable as Special Crop / Flower Strip"
             else:
-                classification = "nur als Sonderkultur mit Abnehmer-/Feldnachweis"
-        elif suitability == "ungeeignet" or final_score < 0.45:
-            classification = "nicht empfohlen"
+                classification = "Special Crop Only (Contract Required)"
+        elif suitability == "Not Recommended" or final_score < 0.45:
+            classification = "Not Recommended"
         else:
-            classification = "nur mit agronomischer Prüfung"
+            classification = "Requires Agronomic Verification"
             if not warning_text:
                 warning_text = (
-                    "Für diese Kultur liegt keine belastbare artspezifische Agri-PV-PAR-Kurve vor. "
-                    "Bewertung erfolgt als Proxy auf Basis von Lichtpräferenz, Kulturgruppe und standortspezifischer PAR."
+                    "No robust species-specific Agri-PV PAR curve available for this crop. "
+                    "Evaluation performed as proxy based on light preference, crop group, and site PAR."
                 )
 
     # Specific C3 Cereal, Forage and Maize shade constraints
     if crop.id == "mais" and r_ann < 0.80:
-        classification = "nicht empfohlen"
+        classification = "Not Recommended"
 
     confidence_value, confidence_label = calculate_confidence(
         crop.evidence_tier, has_monthly, has_hourly=has_hourly, is_proxy=(crop.evidence_tier == "C")

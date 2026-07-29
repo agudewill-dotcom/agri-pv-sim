@@ -365,15 +365,13 @@ ta_cell, ts_cell, delta_t, temp_bonus_pct = metrics['ta_cell'], metrics['ts_cell
 
 
 # --- NAVIGATION TABS ---
-tab_overview, tab_light, tab_spatial, tab_crops, tab_med, tab_meadow, tab_elec, tab_din = st.tabs([
+tab_overview, tab_light, tab_spatial, tab_crops, tab_elec, tab_report = st.tabs([
     "Executive Summary", 
     "Light Results", 
     "Spatial Heatmaps",
-    "Arable Crops",
-    "Medicinal & Special Crops",
-    "Feuchtwiesen & Auen",
+    "Crop & Vegetation Compatibility",
     "Electrical & Thermal", 
-    "DIN Spec & AwSV"
+    "Report & Downloads"
 ])
 
 
@@ -922,195 +920,6 @@ with tab_crops:
             They maintain robust yields under partial shading and show high spatial homogeneity across the layout.
         </div>
         """, unsafe_allow_html=True)
-
-    st.divider()
-
-    # SECTION 3: CROP DETAILED EXPLORATION PANEL
-    st.subheader("Arable Crop Detailed Exploration Panel")
-    st.markdown("Select a specific crop from the 35 available species to explore its coordinate-adjusted light requirements, growth season metrics, and evidence bibliography:")
-
-    # Selection dropdown
-    crop_options = {CROP_REGISTRY[cid].name_en: cid for cid in CROP_REGISTRY.keys()}
-    sorted_options_names = sorted(list(crop_options.keys()))
-
-    # Default to Wheat or Lucerne if available
-    default_idx = sorted_options_names.index("Wheat") if "Wheat" in sorted_options_names else 0
-    selected_crop_en = st.selectbox(
-        "Select Arable Crop for Detailed Agronomic Analysis:",
-        options=sorted_options_names,
-        index=default_idx,
-        key="crop_detailed_selector"
-    )
-    selected_crop_id = crop_options[selected_crop_en]
-
-    r_sel_bio = None
-    r_sel = None
-    if is_biomass:
-        try:
-            r_sel_bio = next(r for r in st.session_state.get('crop_results_bio', []) if r['crop'] == getattr(CROP_REGISTRY[selected_crop_id], 'display_name', getattr(CROP_REGISTRY[selected_crop_id], 'name_de', '')))
-        except StopIteration:
-            r_sel_bio = None
-    else:
-        r_sel = next(r for r in crop_results if r.crop_id == selected_crop_id)
-        
-    crop_sel = CROP_REGISTRY[selected_crop_id]
-
-    # Always compute these so the HTML ternary doesn't crash
-    _crit_m = crop_sel.reproductive_critical_months
-    sum_agri = sum(metrics['monthly_par_agri'][m - 1] for m in _crit_m) if _crit_m else 0
-    sum_ref = sum(metrics['monthly_par_open'][m - 1] for m in _crit_m) if _crit_m else 0
-    r_crit = sum_agri / sum_ref if sum_ref > 0 else 0.0
-
-    days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    _gs_m = crop_sel.growing_season_months
-    growing_days = sum(days_per_month[m - 1] for m in _gs_m) if _gs_m else 365
-    growing_par_agri = sum(metrics['monthly_par_agri'][m - 1] for m in _gs_m) if _gs_m else metrics['pa']
-    growing_par_ref = sum(metrics['monthly_par_open'][m - 1] for m in _gs_m) if _gs_m else metrics['par_open_field']
-    dli_agri = growing_par_agri / growing_days if growing_days > 0 else 0.0
-    dli_ref = growing_par_ref / growing_days if growing_days > 0 else 0.0
-    peak_ppfd_val = float(res_a['par'].max())
-
-    if not is_biomass:
-        din_compliance = get_din_compliance(r_sel) # "Plausibel", "Prüfpflichtig", "Nicht empfehlenswert"
-        if din_compliance == "Plausibel":
-            din_color = "#065f46"
-            din_bg = "#d1fae5"
-        elif din_compliance == "Prüfpflichtig":
-            din_color = "#b45309"
-            din_bg = "#fef3c7"
-        else:
-            din_color = "#b91c1c"
-            din_bg = "#fee2e2"
-    else:
-        if r_sel_bio:
-            din_compliance = "Plausibel" if r_sel_bio['score'] >= 75 else "Prüfpflichtig" if r_sel_bio['score'] >= 50 else "Nicht empfehlenswert"
-            din_color = "#065f46" if r_sel_bio['score'] >= 75 else "#b45309" if r_sel_bio['score'] >= 50 else "#b91c1c"
-            din_bg = "#d1fae5" if r_sel_bio['score'] >= 75 else "#fef3c7" if r_sel_bio['score'] >= 50 else "#fee2e2"
-        else:
-            din_compliance = "Nicht empfehlenswert"
-            din_color = "#b91c1c"
-            din_bg = "#fee2e2"
-
-    # Render detailed view columns
-    det_col1, det_col2, det_col3 = st.columns([1.2, 1.2, 1.6])
-
-    with det_col1:
-        st.html(f"""
-        <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
-            <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Physiological Light Metrics</h4>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Coordinates-adjusted simulation vs crop thresholds:</p>
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                {f'''
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Biomass Growing Season PAR:</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['r_gs']*100:.1f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Growing PAR:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.thresholds['biomass']['r_gs_target']*100:.0f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Min Growing PAR:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['biomass']['r_gs_min']*100:.0f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Biomass Target Type:</td><td style="text-align: right; font-weight: 700;">{crop_sel.biomass_target_type}</td></tr>
-                ''' if is_biomass and r_sel_bio else f'''
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Annual Relative PAR:</td><td style="text-align: right; font-weight: 700;">{(metrics['pa']/metrics['par_open_field'])*100:.1f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.thresholds['reproductive']['r_ann_target']*100:.0f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Min Annual PAR:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['reproductive']['r_ann_min']*100:.0f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Critical Phase PAR:</td><td style="text-align: right; font-weight: 700;">{r_crit*100:.1f}%</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Target Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #059669;">{crop_sel.thresholds['reproductive']['r_crit_target']*100:.0f}%</td></tr>
-                <tr><td style="padding: 6px 0; color: #475569;">Min Crit Phase:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['reproductive']['r_crit_min']*100:.0f}%</td></tr>
-                '''}
-            </table>
-        </div>
-        """)
-
-    with det_col2:
-        st.html(f"""
-        <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
-            <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Growth Season & Microclimate</h4>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Active vegetation periods and spatial distribution:</p>
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                {f'''
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Mean DLI:</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['DLI_gs_mean']:.1f} mol/m²/d</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">p10 DLI (darkest spots):</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['DLI_gs_p10']:.1f} mol/m²/d</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Simulated Peak PPFD:</td><td style="text-align: right; font-weight: 700;">{r_sel_bio['peak_PPFD_gs']:.0f} µmol/m²/s</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Crop Min Peak PPFD:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['biomass']['peak_PPFD_min']:.0f} µmol/m²/s</td></tr>
-                ''' if is_biomass and r_sel_bio else f'''
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Growing Season DLI:</td><td style="text-align: right; font-weight: 700;">{dli_agri:.1f} mol/m²/d</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Open-Field DLI:</td><td style="text-align: right; font-weight: 700; color: #64748b;">{dli_ref:.1f} mol/m²/d</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Simulated Peak PPFD:</td><td style="text-align: right; font-weight: 700;">{peak_ppfd_val:.0f} µmol/m²/s</td></tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Crop Min Peak PPFD:</td><td style="text-align: right; font-weight: 700; color: #d97706;">{crop_sel.thresholds['reproductive']['peak_PPFD_min']:.0f} µmol/m²/s</td></tr>
-                '''}
-                <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 0; color: #475569;">Spatial Homogeneity:</td><td style="text-align: right; font-weight: 700;">{(1.0 - metrics['cv_par'])*100:.1f}%</td></tr>
-                <tr><td style="padding: 6px 0; color: #475569;">Max Tolerable CV:</td><td style="text-align: right; font-weight: 700; color: #64748b;">{crop_sel.cv_max:.2f}</td></tr>
-            </table>
-        </div>
-        """)
-
-    with det_col3:
-        st.html(f"""
-        <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); min-height: 270px;">
-            <h4 style="margin: 0; color: #1e293b; font-family: 'Outfit';">Agronomic Evaluation</h4>
-            <div style="margin-top: 8px; margin-bottom: 8px;">
-                <span style="font-size: 1.3rem; font-weight: 800; color: #1e293b;">{crop_sel.name_en}</span>
-                <span style="font-size: 0.85rem; color: #64748b; font-style: italic; margin-left: 6px;">({crop_sel.botanical_name})</span>
-            </div>
-            <div style="margin-bottom: 10px;">
-                <span style="background-color: {din_bg}; color: {din_color}; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; border: 1px solid {din_color};">
-                    DIN COMPLIANCE: {din_compliance}
-                </span>
-            </div>
-            <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-top: 8px;">Evaluation Summary (German):</div>
-            <p style="font-size: 0.88rem; color: #334155; margin-top: 4px; line-height: 1.45; font-style: italic;">
-                "{crop_sel.notes_de}"
-            </p>
-        </div>
-        """)
-
-    # Render warning banners and references
-    if is_biomass and r_sel_bio:
-        for w in r_sel_bio.get('warnings', []):
-            st.warning(f"**CONSERVATIVE AGRONOMIC DISCLOSURE:** {w}")
-    elif not is_biomass and r_sel:
-        if r_sel.warning or r_sel.evidence_tier == 'C':
-            warning_msg = r_sel.warning if r_sel.warning else (
-                "For this crop, no reliable species-specific Agri-PV PAR curve is available. "
-                "Evaluation is performed conservatively as a proxy based on functional crop group, light preference, and site-specific PAR."
-            )
-            st.warning(f"**CONSERVATIVE AGRONOMIC DISCLOSURE (Tier C Evidence):** {warning_msg}")
-
-    # Growing season and critical phase calendars
-    st.markdown(f"**Active Growing Season Calendar for {crop_sel.name_en}**")
-    calendar_html = "".join([
-        f'<span style="background-color:#065f46; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.growing_season_months
-        else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>'
-        for m in range(1, 13)
-    ])
-    st.markdown(f'<div style="margin-top:8px; margin-bottom:16px;">{calendar_html}</div>', unsafe_allow_html=True)
-
-    if not is_biomass:
-        st.markdown(f"**Critical Shade Sensitivity Window for {crop_sel.name_en}**")
-        crit_html = "".join([
-            f'<span style="background-color:#b91c1c; color:white; font-weight:700; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>' if m in crop_sel.reproductive_critical_months
-            else f'<span style="background-color:#f1f5f9; color:#94a3b8; padding:4px 8px; margin:2px; border-radius:4px; font-size:0.85rem; display:inline-block;">{m_names_crops[m-1]}</span>'
-            for m in range(1, 13)
-        ])
-        st.markdown(f'<div style="margin-top:8px; margin-bottom:16px;">{crit_html}</div>', unsafe_allow_html=True)
-
-    # Bibliography
-    with st.expander(f"Show Bibliography and Literature References for {crop_sel.name_en}"):
-        st.markdown(f"**Agronomic Evidence Group:** `{crop_sel.source_group}` (Evidence Tier {crop_sel.evidence_tier})")
-        st.markdown("**Literature Sources mapped in `sources.yaml`:**")
-        for src_ref in crop_sel.source_references:
-            src_info = SOURCES_REGISTRY.get(src_ref, {})
-            if src_info:
-                st.markdown(f"- **{src_info.get('authors', 'Authors')} ({src_info.get('year', 'Year')})**: *{src_info.get('title', 'Title')}*")
-                st.markdown(f"  *Journal:* {src_info.get('journal', 'N/A')} | *DOI:* [{src_info.get('doi', 'N/A')}](https://doi.org/{src_info.get('doi', '')})")
-                st.markdown(f"  *Relevance:* {src_info.get('relevance', 'N/A')}")
-            else:
-                st.markdown(f"- **{src_ref}**: Reference mapped dynamically.")
-                
-    if is_biomass:
-        st.markdown("""
-        <div style="margin-top:20px; padding:15px; background-color:#fef2f2; border-left:5px solid #dc2626; border-radius:4px; font-size:0.85rem; color:#7f1d1d;">
-            <strong>Wichtiger Hinweis zur DIN SPEC 91434 & Nutzungskonzept:</strong><br/>
-            Die Biomassebewertung beschreibt die lichtseitige Plausibilität einer Kultur unter den simulierten Agri-PV-Bedingungen. Sie ersetzt keine standortspezifische Anbauplanung, keinen Referenzertragsnachweis, keine Wirtschaftlichkeitsprüfung und keine formale Prüfung der landwirtschaftlichen Hauptnutzung nach DIN SPEC 91434.
-        </div>
-        """, unsafe_allow_html=True)
-
     st.divider()
 
     # SECTION 4: PREMIUM CELL-LEVEL SPATIAL CROP EXPLORER
@@ -1501,253 +1310,46 @@ with tab_elec:
 
 
 
-# ==============================================================================
-# TAB 6: FEUCHTWIESEN & AUENWIESENARTEN
-# ==============================================================================
-with tab_meadow:
-    st.markdown("""
-    <div class="header-crops">
-        <h2 style="margin:0; font-weight:800; color:white;">Feuchtwiesen- & Auenwiesenarten</h2>
-        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Eignungsbewertung für Wiesen-, Kräuter- und Auenarten unter Agri-PV — basierend auf Ellenberg/Landolt-Zeigerwerten</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.warning(
-        "**IMPORTANT NOTICE:** Abgeleiteter Lichtbedarf aus Ellenberg/Landolt-Zeigerwerten, kein experimenteller PAR-Normwert. "
-        "Die Zeigerwerte beschreiben das Verhalten unter natürlichen Standort- und Konkurrenzbedingungen, "
-        "nicht fixe Kultur-Optima. Quellen: FloraWeb (Ellenberg), InfoFlora/BAFU (Landolt)."
-    )
-
-    from meadow_suitability import evaluate_all_meadow_species, MEADOW_REGISTRY
-
-    meadow_results = evaluate_all_meadow_species(
-        annual_PAR_agri=metrics['pa'],
-        annual_PAR_openfield=metrics['par_open_field'],
-        monthly_PAR_agri=metrics['monthly_par_agri'],
-        monthly_PAR_openfield=metrics['monthly_par_open'],
-        cv_PAR=metrics['cv_par'],
-    )
-
-    # --- Summary metrics ---
-    n_suitable = sum(1 for r in meadow_results if r.light_class == "lichtseitig geeignet")
-    n_marginal = sum(1 for r in meadow_results if r.light_class == "grenzwertig")
-    n_gaps_only = sum(1 for r in meadow_results if r.light_class == "nur in hellen Reihenabständen")
-    n_hydro_flag = sum(1 for r in meadow_results if r.ellenberg_F >= 7)
-
-    mc1, mc2, mc3, mc4 = st.columns(4)
-    mc1.metric("Lichtseitig geeignet", f"{n_suitable}", help="Arten mit ausreichend Restlicht für die gesamte Fläche")
-    mc2.metric("Grenzwertig", f"{n_marginal}", help="Arten an der Lichtgrenze")
-    mc3.metric("Nur in Gaps/Reihen", f"{n_gaps_only}", help="Lichtpflanzen, nur in hellen Streifen")
-    mc4.metric("Hydro-prüfpflichtig", f"{n_hydro_flag}", help="Arten mit Ellenberg F≥7 (Feuchtezeiger)")
-
-    st.markdown("---")
-
-    # --- Group filter ---
-    group_filter = st.multiselect(
-        "Artengruppen filtern:",
-        options=["Gräser", "Kräuter & Stauden", "Auenarten"],
-        default=["Gräser", "Kräuter & Stauden", "Auenarten"],
-        key="meadow_group_filter"
-    )
-    group_map = {"Gräser": "grass", "Kräuter & Stauden": "herb", "Auenarten": "floodplain"}
-    active_groups = [group_map[g] for g in group_filter]
-    filtered_results = [r for r in meadow_results if r.species_group in active_groups]
-
-    # --- Light class colors ---
-    def _light_badge(lc):
-        colors = {
-            "lichtseitig geeignet": ("#065f46", "#d1fae5"),
-            "grenzwertig": ("#b45309", "#fef3c7"),
-            "nur in hellen Reihenabständen": ("#b91c1c", "#fee2e2"),
-            "nicht für stark beschattete Modulbereiche": ("#7f1d1d", "#fecaca"),
-        }
-        c, bg = colors.get(lc, ("#475569", "#f1f5f9"))
-        return f'<span style="background:{bg};color:{c};padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">{lc}</span>'
-
-    def _hydro_badge(hc):
-        colors = {
-            "hydrologisch geeignet": ("#065f46", "#d1fae5"),
-            "hydrologisch prüfpflichtig": ("#b45309", "#fef3c7"),
-            "nur in feuchten Senken": ("#1e40af", "#dbeafe"),
-        }
-        c, bg = colors.get(hc, ("#475569", "#f1f5f9"))
-        return f'<span style="background:{bg};color:{c};padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">{hc}</span>'
-
-    def _zone_badge(zh):
-        colors = {
-            "gesamte Fläche": ("#065f46", "#d1fae5"),
-            "zonenabhängig": ("#b45309", "#fef3c7"),
-            "nur in hellen Reihenabständen / Gaps": ("#b91c1c", "#fee2e2"),
-            "nur in feuchten Senken": ("#1e40af", "#dbeafe"),
-            "nicht empfohlen": ("#7f1d1d", "#fecaca"),
-        }
-        c, bg = colors.get(zh, ("#475569", "#f1f5f9"))
-        return f'<span style="background:{bg};color:{c};padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">{zh}</span>'
-
-    # --- Results table ---
-    st.subheader("Eignungstabelle")
-
-    table_rows = ""
-    for r in filtered_results:
-        score_color = "#065f46" if r.score >= 80 else "#b45309" if r.score >= 60 else "#b91c1c"
-        table_rows += f"""
-        <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:8px 6px;font-weight:600;">{r.display_name}<br>
-                <span style="font-size:0.78rem;color:#64748b;font-style:italic;">{r.botanical_name}</span></td>
-            <td style="padding:8px 6px;text-align:center;font-weight:700;color:{score_color};">{r.score:.0f}</td>
-            <td style="padding:8px 6px;text-align:center;">{_light_badge(r.light_class)}</td>
-            <td style="padding:8px 6px;text-align:center;">{_hydro_badge(r.hydro_class)}</td>
-            <td style="padding:8px 6px;text-align:center;">{_zone_badge(r.zone_hint)}</td>
-            <td style="padding:8px 6px;text-align:center;font-size:0.85rem;">L{r.ellenberg_L} / F{r.ellenberg_F}</td>
-            <td style="padding:8px 6px;text-align:center;font-size:0.85rem;">{r.rPAR_actual*100:.0f}%<br>
-                <span style="color:#64748b;font-size:0.75rem;">(Min {r.rPAR_min*100:.0f}%)</span></td>
-            <td style="padding:8px 6px;text-align:center;font-size:0.85rem;">{r.evidence_basis}</td>
-        </tr>"""
-
-    st.html(f"""
-    <div style="overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
-        <thead>
-            <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;">
-                <th style="padding:10px 6px;text-align:left;font-weight:700;color:#1e293b;">Pflanze</th>
-                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Score</th>
-                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Licht-Klasse</th>
-                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Hydro-Klasse</th>
-                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Zonierung</th>
-                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">L / F</th>
-                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">rPAR</th>
-                <th style="padding:10px 6px;text-align:center;font-weight:700;color:#1e293b;">Evidenz</th>
-            </tr>
-        </thead>
-        <tbody>
-            {table_rows}
-        </tbody>
-    </table>
-    </div>
-    """)
-
-    st.markdown("---")
-
-    # --- Per-species detail expanders ---
-    st.subheader("Artensteckbriefe")
-
-    for r in filtered_results:
-        with st.expander(f"{r.display_name} ({r.botanical_name}) — Score: {r.score:.0f}"):
-            dc1, dc2 = st.columns(2)
-
-            with dc1:
-                st.markdown("**Lichtbewertung**")
-                st.markdown(f"- Restlicht (rPAR): **{r.rPAR_actual*100:.1f}%**")
-                st.markdown(f"- Minimum: {r.rPAR_min*100:.0f}% | Zielwert: {r.rPAR_target*100:.0f}%")
-                st.markdown(f"- Kritische Phase rPAR: **{r.r_crit*100:.1f}%**")
-                st.markdown(f"- Growing Season DLI: **{r.DLI_gs:.1f}** mol/m²/d (Min: {r.DLI_min}, Ziel: {r.DLI_target})")
-                st.markdown(f"- Licht-Score: **{r.light_score:.0f}**/100")
-                st.markdown(f"- CV PAR: {r.cv_PAR*100:.1f}%")
-
-            with dc2:
-                st.markdown("**Ökologische Kennwerte**")
-                st.markdown(f"- Ellenberg L (Licht): **{r.ellenberg_L}** | F (Feuchte): **{r.ellenberg_F}** | N (Nährstoff): **{r.ellenberg_N}**")
-                st.markdown(f"- Schnittverträglichkeit: **{r.mowing_tolerance}**")
-                st.markdown(f"- Artengruppe: {r.use_type}")
-                st.markdown(f"- Evidenzbasis: {r.evidence_basis} (Tier {r.evidence_tier})")
-                st.markdown(f"- Hydro-Score: **{r.hydro_score:.0f}**/100")
-                if r.limiting_factor != "—":
-                    st.markdown(f"- Limitierender Faktor: **{r.limiting_factor}**")
-
-            st.markdown(f"**Bewertung:** {r.explanation_de}")
-
-            if r.warning_text:
-                st.warning(r.warning_text)
-
-            # Ecological note
-            profile = MEADOW_REGISTRY.get(r.species_id)
-            if profile and profile.notes_de:
-                st.markdown(f"*{profile.notes_de}*")
 
 
 # ==============================================================================
-# TAB 7: DIN EVIDENCE & AwSV REGULATORY PERMITS
+# TAB 6: REPORT CONFIGURATION & DOWNLOADS
 # ==============================================================================
-with tab_din:
+with tab_report:
     st.markdown("""
     <div class="header-din">
-        <h2 style="margin:0; font-weight:800; color:white;">DIN 91434 & Reporting</h2>
-        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Regulatory Compliance, German Environmental Water Containment (AwSV), and Reporting Exports</p>
+        <h2 style="margin:0; font-weight:800; color:white;">Report Configuration & Data Downloads</h2>
+        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Configure Project Metadata, Generate 15-Page Technical PDF Validation Report, and Export Raw Simulation Data</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # SECTION 1: DIN SPEC 91434 COMPLIANCE
-    st.subheader("DIN SPEC 91434 Regulatory Assessment")
-    st.markdown("Assess compliance for Category II systems (high-clearance PV installations supporting arable agriculture):")
-    
-    c_din1, c_din2 = st.columns(2)
-    
-    with c_din1:
-        st.markdown("""
-        <div class="din-box">
-            <h4 style="margin-top:0; color:#1e293b;">DIN SPEC 91434 Category II Criteria Checklist</h4>
-            <ul style="padding-left:20px; line-height:1.7; color:#334155;">
-                <li>[Compliant] <strong>Arable tractor clearance:</strong> Minimum clearance height H ≥ 2.10m. (Applied clearance: <strong>2.10m</strong>)</li>
-                <li>[Compliant] <strong>Crop Yield Safeguard:</strong> Model predicts remaining crop yields above 66% for C3 cereals and forage under nominal shading.</li>
-                <li>[Compliant] <strong>Spatial Uniformity:</strong> Shading homogeneity (cv_PAR) is within tolerable limits (15%), preventing local wet zones or early ripening anomalies.</li>
-                <li>[Compliant] <strong>Dual Land Use:</strong> Standard agricultural procedures remain feasible beneath panels.</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with c_din2:
-        st.markdown(f"""
-        <div class="din-box" style="background-color: #f0fdf4; border-color: #bbf7d0;">
-            <h4 style="margin-top:0; color:#166534;">Regulatory Irradiance Bounds</h4>
-            <table style="width:100%; border-collapse:collapse; color:#166534; font-size:0.9rem;">
-                <tr style="border-bottom:1px solid #bbf7d0;"><td style="padding:8px 0;"><strong>Remaining PAR Sum:</strong></td><td style="text-align:right;"><strong>{metrics['remaining_par_pct']:.1f}%</strong></td></tr>
-                <tr style="border-bottom:1px solid #bbf7d0;"><td style="padding:8px 0;"><strong>Spatial CV (Homogeneity):</strong></td><td style="text-align:right;"><strong>{metrics['cv_par']*100:.1f}%</strong></td></tr>
-                <tr style="border-bottom:1px solid #bbf7d0;"><td style="padding:8px 0;"><strong>Mounting Clearance Height:</strong></td><td style="text-align:right;"><strong>2.10 m</strong></td></tr>
-                <tr><td style="padding:8px 0;"><strong>Status:</strong></td><td style="text-align:right; font-weight:700;">COMPLIANT (CATEGORY II)</td></tr>
-            </table>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    # SECTION 2: GERMAN WATER LAW PERMIT REQUIREMENT (AwSV Containment)
-    st.subheader("AwSV Water Protection Containment (Retention Basins)")
-    
-    st.markdown("""
-    <div class="law-box">
-        <h4 style="margin-top:0; font-family:'Outfit';">Environmental Regulations according to AwSV (Germany)</h4>
-        <p style="font-size:0.95rem; margin-bottom:14px; line-height:1.6;">
-            For Agrivoltaic systems in Germany, strict environmental regulations apply regarding water-polluting substances 
-            (e.g., lubricants, transformer coolants). The system operator must strictly comply with the following regulations:
-        </p>
-        <ul style="padding-left:20px; font-size:0.92rem; line-height:1.6;">
-            <li><strong>Retention Systems:</strong> Installations must be equipped with a containment system that can retain any leaked water-polluting substances.</li>
-            <li><strong>Fluid-Impermeability:</strong> Retention systems must be fluid-impermeable and must not have any outlets or drains.</li>
-            <li><strong>Volume Sizing:</strong> The retention volume must be sized to hold the maximum volume of fluids that could be released during an operational disturbance.</li>
-            <li><strong>Alternative:</strong> As an alternative to a retention system, a double-walled installation is permitted.</li>
-            <li><strong>Hazard Level D (Critical Water Protection Areas):</strong> For installations classified under Hazard Level D, the retention system must be able to hold the entire volume of the largest isolated operational unit.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.divider()
-    
-    # SECTION 3: EXECUTIVE REPORT GENERATION (PDF) & DATA EXPORT (CSV)
-    st.subheader("Executive Report & Data Export")
-    st.markdown("Download the complete, comprehensive technical validation report or the hourly calculations data:")
-    
+
+    st.subheader("Report Configuration & Metadata")
+    st.markdown("Customize project details and metadata embedded in the generated PDF technical validation report:")
+
+    rc1, rc2 = st.columns(2)
+    with rc1:
+        rep_project_name = st.text_input("Project Name:", value=config.get("project_name", "Agri-PV Site Validation"), key="rep_proj_name")
+        rep_prepared_by = st.text_input("Prepared By (Author / Company):", value="SunFarming Engineering", key="rep_prep_by")
+    with rc2:
+        rep_location = st.text_input("Project Location / Coordinates:", value=f"Lat: {config.get('latitude', 52.5):.3f}°, Lon: {config.get('longitude', 13.4):.3f}°", key="rep_loc_str")
+        rep_notes = st.text_area("Custom Report Notes / Remarks:", value="Technical feasibility and crop suitability assessment for high-clearance Agri-PV installation.", height=68, key="rep_notes_text")
+
+    st.markdown("---")
+
+    st.subheader("Export & Download Center")
+
     export_cols = ['ghi', 'dni', 'dhi', 'temp_air', 't_avg', 't_cell', 'temp_factor', 'g_g', 'par']
     col_names   = ['GHI [W/m²]', 'DNI [W/m²]', 'DHI [W/m²]', 'T_ambient [°C]',
                    'Beam_transmission', 'T_cell [°C]', 'Temp_factor', 'G_ground [W/m²]', 'PAR [μmol/m²/s]']
     export_a = res_a[export_cols].copy(); export_a.columns = col_names
-    
 
-    
     c_exp1, c_exp2 = st.columns(2)
     with c_exp1:
-        st.markdown("**Technical Report (PDF)**")
+        st.markdown("#### Technical PDF Validation Report")
+        st.markdown("Generates a comprehensive 15-page PDF document including executive summary, spatial heatmaps, electrical analysis, and crop compatibility profiles.")
         
-        # We must clear old PDF if inputs change, but to keep it simple, we just label it clearly
-        if st.button("Generate Technical Report (PDF)", use_container_width=True, type="primary"):
-            with st.spinner("Generating 15-page PDF with charts..."):
+        if st.button("Generate Technical Report (PDF)", use_container_width=True, type="primary", key="generate_pdf_btn"):
+            with st.spinner("Generating 15-page PDF report with interactive charts..."):
                 import importlib
                 import report.report_styles
                 import report.report_generator
@@ -1756,40 +1358,40 @@ with tab_din:
                 importlib.reload(report.report_charts)
                 importlib.reload(report.report_generator)
                 from report.report_generator import ReportGenerator
-                
+
                 # Build DLI curve charts for top 3 crops
                 from crop_suitability import CROP_REGISTRY as _CR
                 _days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
                 _mnames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                 _m_agri = metrics['monthly_par_agri']
                 _m_open = metrics['monthly_par_open']
-                
+
                 top_3_crop_data = []
                 for cr in crop_results[:3]:
                     crop_profile = _CR.get(cr.crop_id)
                     if not crop_profile:
                         continue
-                    
+
                     dli_agri_m = [_m_agri[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
                     dli_open_m = [_m_open[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
-                    
+
                     fig_dli = go.Figure()
                     fig_dli.add_trace(go.Bar(x=_mnames, y=dli_agri_m, name="Agri-PV (mol/m²/d)", marker_color="#10b981"))
                     fig_dli.add_trace(go.Scatter(x=_mnames, y=dli_open_m, name="Open Field (mol/m²/d)", mode="lines+markers", marker_color="#475569"))
                     fig_dli.add_hline(y=crop_profile.DLI_target, line_dash="dash", line_color="#059669", annotation_text="DLI Target")
                     fig_dli.add_hline(y=crop_profile.DLI_min, line_dash="dot", line_color="#d97706", annotation_text="DLI Min")
-                    
+
                     for m in crop_profile.critical_months:
                         fig_dli.add_vrect(x0=m-1.4, x1=m-0.6, fillcolor="rgba(239,68,68,0.1)", line_width=0)
-                    
+
                     fig_dli.update_layout(
                         height=300, margin=dict(l=50, r=10, t=30, b=30),
                         yaxis_title="DLI (mol/m²/d)",
-                        title=f"{cr.crop_name_de or cr.crop_id.capitalize()} — Monthly DLI",
+                        title=f"{crop_profile.display_name if hasattr(crop_profile, 'display_name') else cr.crop_id.capitalize()} — Monthly DLI",
                         title_font_size=13,
                         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font_size=9)
                     )
-                    
+
                     par_ref = metrics['par_open_field']
                     r_ann_pct = metrics['pa'] / par_ref * 100 if par_ref > 0 else 0
                     crit_months = crop_profile.critical_months
@@ -1799,7 +1401,7 @@ with tab_din:
                         r_crit_pct = s_agri / s_ref * 100 if s_ref > 0 else r_ann_pct
                     else:
                         r_crit_pct = r_ann_pct
-                    
+
                     gs_months = crop_profile.growing_months or crop_profile.growing_season_months
                     if gs_months:
                         gs_days = sum(_days[m-1] for m in gs_months)
@@ -1807,7 +1409,7 @@ with tab_din:
                         mean_dli_val = gs_par / gs_days if gs_days > 0 else 0
                     else:
                         mean_dli_val = sum(dli_agri_m) / 12
-                    
+
                     top_3_crop_data.append({
                         'result': cr,
                         'profile': crop_profile,
@@ -1817,7 +1419,7 @@ with tab_din:
                         'mean_dli': mean_dli_val,
                         'cv_par': metrics['cv_par'] * 100,
                     })
-                
+
                 # Evaluate meadow species for PDF
                 from meadow_suitability import evaluate_all_meadow_species as _eval_meadow
                 _meadow_pdf = _eval_meadow(
@@ -1839,11 +1441,18 @@ with tab_din:
                     'top_3_crops': top_3_crop_data,
                     'meadow_results': _meadow_pdf,
                 }
-                
+
+                # Copy updated config
+                report_config = dict(config)
+                report_config["project_name"] = rep_project_name
+                report_config["prepared_by"] = rep_prepared_by
+                report_config["location"] = rep_location
+                report_config["notes"] = rep_notes
+
                 metrics['spatial_kpis'] = kpis
-                generator = ReportGenerator(config, metrics, crop_results, figures)
+                generator = ReportGenerator(report_config, metrics, crop_results, figures)
                 st.session_state['pdf_bytes'] = generator.generate().getvalue()
-                
+
         if 'pdf_bytes' in st.session_state:
             st.download_button(
                 "Download Ready: Technical Report (PDF)",
@@ -1853,8 +1462,10 @@ with tab_din:
                 use_container_width=True,
                 key="din_pdf_download"
             )
+
     with c_exp2:
-        st.markdown("**Raw Hourly Simulation Data (CSV)**")
+        st.markdown("#### Raw Hourly Simulation Data (CSV)")
+        st.markdown("Download full 8,760-hour simulation dataset containing hourly solar positions, irradiance components, cell temperatures, and ground PAR values.")
         st.download_button(
             "Download Hourly Simulation Data (CSV)",
             export_a.to_csv().encode('utf-8'),

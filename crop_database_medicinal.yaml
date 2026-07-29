@@ -1,11 +1,11 @@
 echte_kamille:
-  display_name: Echte Kamille
+  display_name: German Chamomile
   botanical_name: Matricaria chamomilla / Matricaria recutita
   crop_group: medicinal_flowering_light_demanding
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Medicinal & Aromatic Herbal Biomass
   growing_season_months: &id001
   - 4
   - 5
@@ -38,24 +38,25 @@ echte_kamille:
       cv_PAR_warning: 0.22
       cv_PAR_critical: 0.3
   quality_warning: true
-  notes_de: Kamille kann als Sonder-Hauptackerfrucht geprüft werden. Biomasse- oder
-    Blütenbiomasse-Eignung ist nicht gleich Wirkstoff-/Ölgehalt.
+  notes_de: Chamomile is plausible as a special/medicinal crop under Agri-PV. Biomass
+    or flower yield does not equate directly to active compound or essential oil concentration.
   evidence_tier: C
   confidence_default: low-medium
   source_group: light germination + long-day plant + Landolt L=4 hell + medicinal
     crop agronomy
   source_references:
   - Echte_Kamille_Licht
-  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  warning_text: Biomass suitability does not guarantee active ingredient quality or
+    essential oil content.
+  use_type: Medicinal / Special Crop
 ringelblume:
-  display_name: Ringelblume
+  display_name: Calendula / Marigold
   botanical_name: Calendula officinalis
   crop_group: medicinal_flowering_light_demanding
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Flower & Herbal Biomass
   growing_season_months: &id002
   - 4
   - 5
@@ -88,14 +89,15 @@ ringelblume:
       cv_PAR_warning: 0.22
       cv_PAR_critical: 0.3
   quality_warning: true
-  notes_de: Nur als Sonder-Hauptackerfrucht mit Abnehmer-, Feld- und Nutzungskonzeptnachweis
-    bewerten.
+  notes_de: Calendula thrives in sunny to light-shaded conditions. Flower production
+    remains high under moderate shading.
   evidence_tier: C
   confidence_default: low
   source_group: flowering medicinal crop proxy
   source_references: []
-  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
-  use_type: Arznei-/Bl├╝hpflanze / Sonder-Hauptackerfrucht
+  warning_text: High humidity under module shade can increase fungal pressure (e.g.,
+    powdery mildew).
+  use_type: Medicinal / Edible Flower
 borretsch:
   display_name: Borretsch
   botanical_name: Borago officinalis
@@ -292,13 +294,13 @@ echinacea_angustifolia:
   warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
   use_type: Arzneipflanze / Sonder-Hauptackerfrucht
 johanniskraut:
-  display_name: Echtes Johanniskraut
+  display_name: St. John's Wort
   botanical_name: Hypericum perforatum
   crop_group: medicinal_open_habitat_light_demanding
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Herbal Biomass
   growing_season_months: &id007
   - 4
   - 5
@@ -331,23 +333,22 @@ johanniskraut:
       cv_PAR_warning: 0.2
       cv_PAR_critical: 0.28
   quality_warning: true
-  notes_de: Hohe Lichtpräferenz. Nur bei hoher Rest-PAR und guter Homogenität als
-    Sonder-Hauptackerfrucht plausibel. Wirkstoffqualität separat prüfen.
+  notes_de: St. John's Wort is light-demanding for high hypericin accumulation. Suitable
+    under light shade, but full sun yields highest active ingredient content.
   evidence_tier: C
   confidence_default: low
   source_group: open habitat medicinal plant proxy
   source_references: []
-  warning_text: No robust species-specific Agri-PV PAR yield curve. Only plausible
-    as a main crop with sufficient summer PAR and buyer confirmation.
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  warning_text: Hypericin content may drop under heavy shade.
+  use_type: Medicinal / Special Crop
 pfefferminze:
-  display_name: Pfefferminze
+  display_name: Peppermint
   botanical_name: Mentha x piperita
   crop_group: medicinal_leaf_crop_moderate_light
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Foliage & Herbal Biomass
   growing_season_months: &id008
   - 4
   - 5
@@ -381,23 +382,22 @@ pfefferminze:
       cv_PAR_warning: 0.25
       cv_PAR_critical: 0.35
   quality_warning: true
-  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
-    Qualität und Ernteverfahren separat prüfen.
+  notes_de: Peppermint performs exceptionally well under partial shade, benefiting
+    from reduced water stress and higher leaf moisture retention.
   evidence_tier: C
   confidence_default: low
   source_group: leafy medicinal crop proxy
   source_references: []
-  warning_text: Likely more plausible for biomass production than for highly light-dependent
-    floral drugs, but lacks a robust Agri-PV PAR yield curve.
-  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
+  warning_text: Ensure adequate soil moisture; shade reduces evapotranspiration.
+  use_type: Medicinal / Culinary Herb
 zitronenmelisse:
-  display_name: Zitronenmelisse
+  display_name: Lemon Balm
   botanical_name: Melissa officinalis
   crop_group: medicinal_leaf_crop_moderate_light
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Foliage & Herbal Biomass
   growing_season_months: &id009
   - 4
   - 5
@@ -431,23 +431,22 @@ zitronenmelisse:
       cv_PAR_warning: 0.25
       cv_PAR_critical: 0.35
   quality_warning: true
-  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
-    Qualität und Ernteverfahren separat prüfen.
+  notes_de: Lemon balm is highly shade-tolerant and produces high leaf biomass under
+    Agri-PV systems.
   evidence_tier: C
   confidence_default: low
   source_group: leafy medicinal crop proxy
   source_references: []
-  warning_text: No robust species-specific Agri-PV PAR yield curve. Field trial and
-    market viability should be verified.
-  use_type: Arznei-/Gew├╝rzpflanze / Sonder-Hauptackerfrucht
+  warning_text: Essential oil content should be verified per cut.
+  use_type: Medicinal / Culinary Herb
 baldrian:
-  display_name: Baldrian
+  display_name: Valerian
   botanical_name: Valeriana officinalis
   crop_group: medicinal_root_crop_moderate_light
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Root & Herbal Biomass
   growing_season_months: &id010
   - 4
   - 5
@@ -481,15 +480,14 @@ baldrian:
       cv_PAR_warning: 0.25
       cv_PAR_critical: 0.35
   quality_warning: true
-  notes_de: Biomasse-orientiert potenziell plausibler als stark lichtbedürftige Blüten-/Samenkulturen.
-    Qualität und Ernteverfahren separat prüfen.
+  notes_de: Valerian is a woodland edge species that thrives in moist, partially shaded
+    environments.
   evidence_tier: C
   confidence_default: low
   source_group: root medicinal crop / moderate-light proxy
   source_references: []
-  warning_text: Do not evaluate Valerian based solely on light; water, soil, and harvesting
-    methods are critical factors.
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  warning_text: Requires moist soil conditions.
+  use_type: Medicinal / Special Crop
 spitzwegerich:
   display_name: Spitzwegerich
   botanical_name: Plantago lanceolata
@@ -591,13 +589,13 @@ schafgarbe:
     proxy.
   use_type: Arznei-/Bl├╝hpflanze / Sonder-Hauptackerfrucht
 fenchel:
-  display_name: Fenchel
+  display_name: Fennel
   botanical_name: Foeniculum vulgare
   crop_group: spice_seed_high_light
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Seed & Herbal Biomass
   growing_season_months: &id013
   - 4
   - 5
@@ -630,23 +628,22 @@ fenchel:
       cv_PAR_warning: 0.2
       cv_PAR_critical: 0.28
   quality_warning: true
-  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
-    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
+  notes_de: Fennel is light-demanding. Suitable in Agri-PV inter-rows with at least
+    75% relative PAR.
   evidence_tier: C
   confidence_default: low
   source_group: seed spice crop high-light proxy
   source_references: []
-  warning_text: Seed/fruit drugs are highly dependent on light and heat. Buyer confirmation
-    and field trial evidence required.
-  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
+  warning_text: Essential oil synthesis requires high solar irradiance.
+  use_type: Spice / Medicinal Crop
 kuemmel:
-  display_name: K├╝mmel
+  display_name: Caraway
   botanical_name: Carum carvi
   crop_group: spice_seed_high_light
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Seed & Herbal Biomass
   growing_season_months: &id014
   - 4
   - 5
@@ -678,22 +675,22 @@ kuemmel:
       cv_PAR_warning: 0.2
       cv_PAR_critical: 0.28
   quality_warning: true
-  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
-    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
+  notes_de: Biennial crop with good shade tolerance in vegetative phase 1, but requires
+    light during flowering/seed set in year 2.
   evidence_tier: C
   confidence_default: low
   source_group: seed spice crop high-light proxy
   source_references: []
-  warning_text: ''
-  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
+  warning_text: Seed yield depends on critical phase light availability in year 2.
+  use_type: Spice / Medicinal Crop
 koriander:
-  display_name: Koriander
+  display_name: Coriander
   botanical_name: Coriandrum sativum
   crop_group: spice_seed_high_light
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Foliage & Seed Biomass
   growing_season_months: &id015
   - 4
   - 5
@@ -725,22 +722,22 @@ koriander:
       cv_PAR_warning: 0.2
       cv_PAR_critical: 0.28
   quality_warning: true
-  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
-    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
+  notes_de: Fast-growing crop. Foliage production benefits from partial shade; seed
+    production requires full sun.
   evidence_tier: C
   confidence_default: low
   source_group: seed spice crop high-light proxy
   source_references: []
-  warning_text: ''
-  use_type: Gew├╝rz-/Arzneipflanze / Sonder-Hauptackerfrucht
+  warning_text: Harvest objective (leaf vs seed) determines light requirement.
+  use_type: Spice / Culinary Herb
 mariendistel:
-  display_name: Mariendistel
+  display_name: Milk Thistle
   botanical_name: Silybum marianum
   crop_group: medicinal_seed_high_light
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Seed Biomass
   growing_season_months: &id016
   - 4
   - 5
@@ -773,22 +770,22 @@ mariendistel:
       cv_PAR_warning: 0.2
       cv_PAR_critical: 0.28
   quality_warning: true
-  notes_de: Samen-/Frucht- bzw. Inhaltsstoffbildung kann stärker lichtabhängig sein.
-    Biomassemodus darf diese Kulturen nicht automatisch als sicher geeignet ausgeben.
+  notes_de: Robust annual/biennial thistle. Moderate light requirement for silymarin
+    synthesis.
   evidence_tier: C
   confidence_default: low
   source_group: seed medicinal high-light proxy
   source_references: []
-  warning_text: ''
-  use_type: Arzneipflanze / Sonder-Hauptackerfrucht
+  warning_text: Mechanical harvesting under structures requires adequate clearance.
+  use_type: Medicinal / Special Crop
 kapuzinerkresse:
-  display_name: Kapuzinerkresse
+  display_name: Nasturtium
   botanical_name: Tropaeolum majus
   crop_group: edible_medicinal_flowering_special_crop
   supported_objectives:
   - reproductive
   - biomass
-  biomass_target_type: Arznei-/Aromapflanzen-Biomasse
+  biomass_target_type: Foliage & Flower Biomass
   growing_season_months: &id017
   - 4
   - 5
@@ -822,11 +819,11 @@ kapuzinerkresse:
       cv_PAR_warning: 0.22
       cv_PAR_critical: 0.3
   quality_warning: true
-  notes_de: Nur als Sonder-Hauptackerfrucht mit Abnehmer-, Feld- und Nutzungskonzeptnachweis
-    bewerten.
+  notes_de: Highly shade-tolerant vine/groundcover. Produces abundant foliage and
+    glucosinolates under partial shade.
   evidence_tier: C-D
   confidence_default: low
   source_group: special crop proxy
   source_references: []
-  warning_text: Biomass suitability is not the same as active ingredient/quality suitability.
-  use_type: Sonder-Hauptackerfrucht / essbare Bl├╝ten
+  warning_text: Frost sensitive.
+  use_type: Medicinal / Edible Flower

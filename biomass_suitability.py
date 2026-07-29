@@ -111,33 +111,33 @@ def evaluate_biomass_suitability(crop_profile, metrics: BiomassMetrics, site_con
 
     # Classification
     if score >= 80:
-        label = "geeignet für Biomasseziel"
+        label = "Suitable for Biomass Target"
     elif score >= 60:
-        label = "bedingt geeignet für Biomasseziel"
+        label = "Conditionally Suitable for Biomass Target"
     elif score >= 40:
-        label = "kritisch / nur mit Feldprüfung"
+        label = "Critical / Field Verification Required"
     else:
-        label = "ungeeignet unter simulierten Lichtbedingungen"
+        label = "Not Suitable under Simulated Light"
 
     # Hard rules
     if crop_profile.crop_group in ["high_light_C4_biomass", "high_light_crop"] and r_gs < r_gs_min:
-        label = "ungeeignet unter simulierten Lichtbedingungen"
+        label = "Not Suitable under Simulated Light"
 
-    if crop_profile.evidence_tier in ["C", "C-D", "D"] and label in ["geeignet für Biomasseziel", "bedingt geeignet für Biomasseziel"]:
-        label = "Sonder-Hauptackerfrucht mit Feld-/Abnehmernachweis"
+    if crop_profile.evidence_tier in ["C", "C-D", "D"] and label in ["Suitable for Biomass Target", "Conditionally Suitable for Biomass Target"]:
+        label = "Special Crop (Contract Required)"
 
     # Warnings
     warnings = []
     if crop_profile.evidence_tier in ["C", "C-D", "D"]:
-        warnings.append("Proxy-Ableitung: keine robuste artspezifische Agri-PV-Biomassekurve.")
+        warnings.append("Proxy derivation: no robust species-specific Agri-PV biomass curve.")
     if getattr(crop_profile, 'quality_warning', False):
-        warnings.append("Biomasse-Eignung ersetzt keine Wirkstoff-, Inhaltsstoff-, Öl-, Blüten- oder Arzneidroge-Qualitätsbewertung.")
+        warnings.append("Biomass suitability does not replace active ingredient or essential oil quality evaluation.")
     if cv > cv_warn:
-        warnings.append("Lichtverteilung ist heterogen; ungleichmäßiger Bestand möglich.")
+        warnings.append("Light distribution is heterogeneous; non-uniform stand development possible.")
     if dli_p10 < dli_p10_min:
-        warnings.append("Niedrige DLI in Teilflächen oder Zeitfenstern kann Aufwuchs begrenzen.")
+        warnings.append("Low DLI in shaded areas may restrict local growth.")
     if site_context.humidity_disease_index > 0.6:
-        warnings.append("Feuchtebedingtes Krankheits- oder Qualitätsrisiko prüfen.")
+        warnings.append("Humidity-related disease or quality risk requires site verification.")
 
     return {
         "crop": getattr(crop_profile, 'display_name', getattr(crop_profile, 'name_de', 'Unknown')),
