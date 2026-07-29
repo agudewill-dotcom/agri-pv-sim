@@ -8,15 +8,24 @@ import io
 from datetime import datetime
 import requests
 
+import importlib
 import solar
 import geometry
 import shading
 import irradiance
 import spatial
 import thermal
+
+importlib.reload(geometry)
+importlib.reload(shading)
+importlib.reload(irradiance)
+importlib.reload(spatial)
+importlib.reload(thermal)
+
 import simulation
-import importlib
 importlib.reload(simulation)
+
+from geometry import TableGeometry, GEOMETRY_PRESETS
 from crop_profiles import CROP_REGISTRY
 from crop_scoring import evaluate_all_crops, evaluate_crop
 from medicinal_crop_suitability import evaluate_all_medicinal_crops, MED_CROP_REGISTRY, MED_SOURCES_REGISTRY
@@ -523,20 +532,21 @@ with tab_light:
             selected_data = time_data.iloc[0]
             
     with sp_col1:
-        x_points = np.linspace(0, config['pitch'], 100)
-        geo_a = geometry.calculate_derived_geometry(15, length=5.63, clearance=2.10)
+        geo_inst = TableGeometry.from_dict(config.get('geometry', {}))
+        x_points = np.linspace(0, geo_inst.row_pitch_m, 100)
         
         t_mask = shading.calculate_spatial_mask(
-            x_points, geo_a['top_edge_height'], 2.10, 5.63, 15, 
-            selected_data['elevation'], selected_data['azimuth'], config['pitch'], config['tau']
+            x_points, geo_inst, selected_data['elevation'], selected_data['azimuth'], config['tau']
         )
         
         aoi_sel = irradiance.calculate_incidence_angle(selected_data['zenith'], selected_data['azimuth'], config['g_slope'], config['g_aspect'])
         cos_g = np.cos(np.radians(aoi_sel))
         
+        pw_val = geo_inst.table_projected_width_m
+        tau_eff_val = max(0, (pw_val - 0.81)/pw_val) * config['tau'] if pw_val > 0 else 0
         g_base_diff = selected_data['dhi'] * irradiance.sky_view_factor_periodic(
-            geo_a['top_edge_height'], geo_a['projected_width'], config['pitch'], 
-            max(0, (geo_a['projected_width'] - 0.81)/geo_a['projected_width']) * config['tau'], h_clearance=2.10
+            geo_inst.h_high_m, pw_val, geo_inst.row_pitch_m, 
+            tau_eff_val, h_clearance=geo_inst.clear_height_m
         ) * (1.0 + np.cos(np.radians(config['g_slope']))) / 2.0
         
         g_base_refl = selected_data['ghi'] * config['albedo'] * (1.0 - np.cos(np.radians(config['g_slope']))) / 2.0
@@ -549,8 +559,8 @@ with tab_light:
             title=f"Instantaneous Light Distribution ({sel_month}, {sel_hour}:00)"
         )
         
-        m_start = (config['pitch'] - geo_a['projected_width']) / 2
-        m_end = m_start + geo_a['projected_width']
+        m_start = (geo_inst.row_pitch_m - geo_inst.table_projected_width_m) / 2
+        m_end = m_start + geo_inst.table_projected_width_m
         fig_sp.add_vrect(
             x0=m_start, x1=m_end, 
             fillcolor="rgba(0,0,0,0.1)", layer="below", line_width=0, 
@@ -563,31 +573,34 @@ with tab_light:
         st.divider()
         st.markdown(f"**Solar Metadata ({sel_hour}:00 {sel_month})**")
         st.write(f"Sun Elevation: **{selected_data['elevation']:.1f}°**")
-        sh_len = shading.calculate_shadow_length(geo_a['top_edge_height'], selected_data['elevation'], selected_data['azimuth'], config['g_slope'], config['g_aspect'])
+        sh_len = shading.calculate_shadow_length(geo_inst.h_high_m, selected_data['elevation'], selected_data['azimuth'], config['g_slope'], config['g_aspect'])
         st.write(f"Shadow Length: **{min(sh_len, 99.9):.2f} m**")
         st.write("The cross-section visualizes the module's cast shadow stripe. Transparency (τ) and high elevated spacing prevent total ground darkness.")
         
     # Expandable formulas
     st.divider()
     with st.expander("Show Step-by-Step Physics Calculations"):
-        geo_a_calc = geometry.calculate_derived_geometry(15, length=5.63, clearance=2.10)
-        geo_s_calc = geometry.calculate_derived_geometry(15, length=5.63, clearance=0.80)
-        pw_a = geo_a_calc['projected_width']
-        pw_s = geo_s_calc['projected_width']
-        h_top_a = geo_a_calc['top_edge_height']
-        h_top_s = geo_s_calc['top_edge_height']
-        block_val = 0.81
-        tau_eff_a = max(0, (pw_a - block_val) / pw_a) * config['tau']
-        tau_eff_s = max(0, (pw_s - block_val) / pw_s) * config['tau']
+        geo_a_calc = geo_inst
+        geo_s_dict = geo_inst.to_dict()
+        geo_s_dict["clear_height_m"] = 0.80
+        geo_s_calc = TableGeometry.from_dict(geo_s_dict)
         
-        svf_a = irradiance.sky_view_factor_periodic(h_top_a, pw_a, config['pitch'], tau_eff_a, h_clearance=2.10)
-        svf_s = irradiance.sky_view_factor_periodic(h_top_s, pw_s, config['pitch'], tau_eff_s, h_clearance=0.80)
+        pw_a = geo_a_calc.table_projected_width_m
+        pw_s = geo_s_calc.table_projected_width_m
+        h_top_a = geo_a_calc.h_high_m
+        h_top_s = geo_s_calc.h_high_m
+        block_val = 0.81
+        tau_eff_a = max(0, (pw_a - block_val) / pw_a) * config['tau'] if pw_a > 0 else 0
+        tau_eff_s = max(0, (pw_s - block_val) / pw_s) * config['tau'] if pw_s > 0 else 0
+        
+        svf_a = irradiance.sky_view_factor_periodic(h_top_a, pw_a, geo_a_calc.row_pitch_m, tau_eff_a, h_clearance=geo_a_calc.clear_height_m)
+        svf_s = irradiance.sky_view_factor_periodic(h_top_s, pw_s, geo_s_calc.row_pitch_m, tau_eff_s, h_clearance=0.80)
         
         st.markdown("#### 1. System Geometry")
         st.table(pd.DataFrame({
             "Parameter": ["Module Sloped Length", "Projected Horizontal Width", "Lower Mounting Clearance", "Top Edge Height", "Row Pitch", "Blockage Width"],
-            "Agri-PV (2.10m)": ["5.63 m", f"{pw_a:.3f} m", "2.10 m", f"{h_top_a:.3f} m", f"{config['pitch']:.2f} m", "0.81 m"],
-            "Standard PV (0.80m)": ["5.63 m", f"{pw_s:.3f} m", "0.80 m", f"{h_top_s:.3f} m", f"{config['pitch']:.2f} m", "0.81 m"]
+            "Agri-PV": [f"{geo_a_calc.table_length_m:.2f} m", f"{pw_a:.3f} m", f"{geo_a_calc.clear_height_m:.2f} m", f"{h_top_a:.3f} m", f"{geo_a_calc.row_pitch_m:.2f} m", "0.81 m"],
+            "Standard PV (0.80m)": [f"{geo_s_calc.table_length_m:.2f} m", f"{pw_s:.3f} m", "0.80 m", f"{h_top_s:.3f} m", f"{geo_s_calc.row_pitch_m:.2f} m", "0.81 m"]
         }))
         
         st.markdown("#### 2. Beam Transmission (Direct Light Interception)")
