@@ -1506,16 +1506,14 @@ with tab_elec:
 # ==============================================================================
 with tab_meadow:
     st.markdown("""
-    <div style="background: linear-gradient(135deg, #065f46 0%, #047857 50%, #10b981 100%); padding: 24px; border-radius: 12px; margin-bottom: 24px;">
-        <h2 style="margin:0; font-weight:800; color:white;">🌿 Feuchtwiesen- & Auenwiesenarten</h2>
-        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">
-            Eignungsbewertung für Wiesen-, Kräuter- und Auenarten unter Agri-PV — basierend auf Ellenberg/Landolt-Zeigerwerten
-        </p>
+    <div class="header-crops">
+        <h2 style="margin:0; font-weight:800; color:white;">Feuchtwiesen- & Auenwiesenarten</h2>
+        <p style="margin:5px 0 0 0; opacity:0.9; font-size:1.05rem; color:white;">Eignungsbewertung für Wiesen-, Kräuter- und Auenarten unter Agri-PV — basierend auf Ellenberg/Landolt-Zeigerwerten</p>
     </div>
     """, unsafe_allow_html=True)
 
-    st.info(
-        "⚠️ **Abgeleiteter Lichtbedarf aus Ellenberg/Landolt-Zeigerwerten, kein experimenteller PAR-Normwert.** "
+    st.warning(
+        "**IMPORTANT NOTICE:** Abgeleiteter Lichtbedarf aus Ellenberg/Landolt-Zeigerwerten, kein experimenteller PAR-Normwert. "
         "Die Zeigerwerte beschreiben das Verhalten unter natürlichen Standort- und Konkurrenzbedingungen, "
         "nicht fixe Kultur-Optima. Quellen: FloraWeb (Ellenberg), InfoFlora/BAFU (Landolt)."
     )
@@ -1592,10 +1590,9 @@ with tab_meadow:
     table_rows = ""
     for r in filtered_results:
         score_color = "#065f46" if r.score >= 80 else "#b45309" if r.score >= 60 else "#b91c1c"
-        group_icon = "🌾" if r.species_group == "grass" else "🌿" if r.species_group == "herb" else "💧"
         table_rows += f"""
         <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:8px 6px;font-weight:600;">{group_icon} {r.display_name}<br>
+            <td style="padding:8px 6px;font-weight:600;">{r.display_name}<br>
                 <span style="font-size:0.78rem;color:#64748b;font-style:italic;">{r.botanical_name}</span></td>
             <td style="padding:8px 6px;text-align:center;font-weight:700;color:{score_color};">{r.score:.0f}</td>
             <td style="padding:8px 6px;text-align:center;">{_light_badge(r.light_class)}</td>
@@ -1635,8 +1632,7 @@ with tab_meadow:
     st.subheader("Artensteckbriefe")
 
     for r in filtered_results:
-        score_emoji = "✅" if r.score >= 80 else "⚠️" if r.score >= 60 else "❌"
-        with st.expander(f"{score_emoji} {r.display_name} (*{r.botanical_name}*) — Score: {r.score:.0f}"):
+        with st.expander(f"{r.display_name} ({r.botanical_name}) — Score: {r.score:.0f}"):
             dc1, dc2 = st.columns(2)
 
             with dc1:
@@ -1656,7 +1652,7 @@ with tab_meadow:
                 st.markdown(f"- Evidenzbasis: {r.evidence_basis} (Tier {r.evidence_tier})")
                 st.markdown(f"- Hydro-Score: **{r.hydro_score:.0f}**/100")
                 if r.limiting_factor != "—":
-                    st.markdown(f"- ⚠️ Limitierender Faktor: **{r.limiting_factor}**")
+                    st.markdown(f"- Limitierender Faktor: **{r.limiting_factor}**")
 
             st.markdown(f"**Bewertung:** {r.explanation_de}")
 
