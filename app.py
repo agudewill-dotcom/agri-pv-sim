@@ -29,6 +29,7 @@ from geometry import TableGeometry, GEOMETRY_PRESETS
 from crop_profiles import CROP_REGISTRY
 from crop_scoring import evaluate_all_crops, evaluate_crop
 from medicinal_crop_suitability import evaluate_all_medicinal_crops, MED_CROP_REGISTRY, MED_SOURCES_REGISTRY
+from meadow_suitability import evaluate_all_meadow_species, MEADOW_REGISTRY
 from crop_suitability import SOURCES_REGISTRY
 
 st.set_page_config(page_title="Agri-PV Strategic Analytics", layout="wide")
@@ -319,6 +320,16 @@ crop_results_med = evaluate_all_medicinal_crops(
     hourly_par=res_a['par']
 )
 st.session_state['crop_results_med'] = crop_results_med
+
+# Compute meadow crop suitability results
+crop_results_meadow = evaluate_all_meadow_species(
+    annual_PAR_agri=metrics['pa'],
+    annual_PAR_openfield=metrics['par_open_field'],
+    monthly_PAR_agri=metrics['monthly_par_agri'],
+    monthly_PAR_openfield=metrics['monthly_par_open'],
+    cv_PAR=metrics['cv_par']
+)
+st.session_state['crop_results_meadow'] = crop_results_meadow
 
 ENGLISH_CROP_NOTES = {
     "luzerne": "Lucerne is relatively shade-tolerant and well-suited for Agri-PV systems with moderate shading.",
@@ -736,6 +747,78 @@ with tab_crops:
         "and does not replace site-specific agronomic planning or formal DIN SPEC 91434 review."
     )
 
+    st.divider()
+
+    # Category Sub-tabs
+    sub_arable, sub_medicinal, sub_meadow = st.tabs([
+        "Arable Crops (Ackerbau)",
+        "Medicinal & Special Crops (Arznei- & Sonderkulturen)",
+        "Wet Meadow & Floodplain Species (Feuchtwiesen & Grünland)"
+    ])
+
+    # --- SUBTAB 1: ARABLE CROPS ---
+    with sub_arable:
+        st.subheader("Arable Crops Suitability Matrix")
+        df_arable = []
+        for r in crop_results:
+            crop = CROP_REGISTRY[r.crop_id]
+            df_arable.append({
+                "Crop Name (EN)": crop.name_en,
+                "Crop Name (DE)": crop.name_de,
+                "Crop Group": crop.crop_group.replace("_", " ").title(),
+                "Score": f"{r.score*100:.1f}%",
+                "Suitability Class": translate_class(r.classification),
+                "Evidence Tier": r.evidence_tier,
+                "Confidence": translate_confidence(r.confidence),
+                "Limiting Factor": r.limiting_factor.replace("_", " ").title()
+            })
+        st.dataframe(pd.DataFrame(df_arable), use_container_width=True)
+
+        st.subheader("Monthly DLI Light Integrals (Arable Crops)")
+        m_df_arable = pd.DataFrame({
+            "Month": m_names,
+            "Agri-PV DLI (mol/m²/d)": [metrics['monthly_dli_agri'][m-1] for m in range(1, 13)],
+            "Open-Field DLI (mol/m²/d)": [metrics['monthly_dli_open'][m-1] for m in range(1, 13)]
+        })
+        fig_dli = px.bar(m_df_arable, x="Month", y=["Agri-PV DLI (mol/m²/d)", "Open-Field DLI (mol/m²/d)"],
+                         barmode="group", title="Monthly Daily Light Integral (DLI) Comparison")
+        st.plotly_chart(fig_dli, use_container_width=True)
+
+    # --- SUBTAB 2: MEDICINAL CROPS ---
+    with sub_medicinal:
+        st.subheader("Medicinal & Special Crops Suitability Matrix")
+        df_med = []
+        for r in crop_results_med:
+            df_med.append({
+                "Crop Name": r.crop_name,
+                "Botanical Name": r.botanical_name,
+                "Use Type": r.use_type.title(),
+                "Annual rPAR": f"{r.r_ann*100:.1f}%",
+                "Critical rPAR": f"{r.r_crit*100:.1f}%",
+                "Suitability Class": translate_class(r.suitability_class),
+                "Homogeneity": r.homogeneity_class.title(),
+                "Limiting Factor": r.limiting_factor
+            })
+        st.dataframe(pd.DataFrame(df_med), use_container_width=True)
+
+    # --- SUBTAB 3: WET MEADOW & FLOODPLAIN SPECIES ---
+    with sub_meadow:
+        st.subheader("Wet Meadow & Floodplain Species Suitability Matrix")
+        df_meadow = []
+        for r in crop_results_meadow:
+            df_meadow.append({
+                "Species Name": r.display_name,
+                "Botanical Name": r.botanical_name,
+                "Group": r.species_group.title(),
+                "Ellenberg L": r.ellenberg_L,
+                "Ellenberg F": r.ellenberg_F,
+                "Ellenberg N": r.ellenberg_N,
+                "Score": f"{r.score:.1f}",
+                "Light Suitability": r.light_class,
+                "Hydrology Suitability": r.hydro_class,
+                "Recommended Zone": r.zone_hint
+            })
+        st.dataframe(pd.DataFrame(df_meadow), use_container_width=True)
 
     st.divider()
 
