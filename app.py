@@ -847,17 +847,31 @@ with tab_crops:
         )
         st.plotly_chart(fig_single_plant, use_container_width=True)
 
-        st.markdown(f"""
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:6px solid #0284c7; border-radius:10px; padding:20px; margin-top:15px;">
-            <h3 style="margin:0; color:#0f172a;">{sel_crop.name_en} <span style="font-size:1rem; color:#64748b; font-weight:normal;">({sel_crop.name_de})</span></h3>
-            <div style="font-weight:700; color:#0284c7; margin-top:4px;">Suitability Score: {sel_r.score*100:.1f}% ({translate_class(sel_r.classification)})</div>
-            <p style="margin-top:8px; color:#334155;">{ENGLISH_CROP_NOTES.get(sel_cid, sel_crop.notes_de)}</p>
-            <div style="font-size:0.88rem; color:#475569;">
-                <strong>Limiting Factor:</strong> {sel_r.limiting_factor.replace("_", " ").upper()} | 
-                <strong>Evidence Tier:</strong> {sel_r.evidence_tier} ({translate_confidence(sel_r.confidence).upper()} CONFIDENCE)
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        with st.expander(f"View Agronomic Details for {sel_crop.name_en} ({sel_crop.name_de})", expanded=True):
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.markdown(f"**Suitability Score:** {sel_r.score*100:.1f}% — **{translate_class(sel_r.classification)}**")
+                st.markdown(f"**Botanical Name:** *{sel_crop.botanical_name}*")
+                st.markdown(f"**Crop Group:** {sel_crop.crop_group.replace('_', ' ').title()}")
+                st.markdown(f"**Limiting Factor:** {sel_r.limiting_factor.replace('_', ' ').upper()}")
+                st.markdown(f"**Evidence Tier:** {sel_r.evidence_tier} ({translate_confidence(sel_r.confidence).upper()} confidence)")
+            with col_b:
+                if sel_r.component_scores:
+                    st.markdown("**Component Scoring Breakdown:**")
+                    c = sel_r.component_scores
+                    st.write(f"- Annual PAR Adequacy (A): **{c.get('A',0)*100:.1f}%**")
+                    st.write(f"- Seasonal PAR Sum (S): **{c.get('S',0)*100:.1f}%**")
+                    st.write(f"- Critical Phase DLI (C): **{c.get('C',0)*100:.1f}%**")
+                    st.write(f"- Spatial Homogeneity (H): **{c.get('H',0)*100:.1f}%**")
+            st.markdown(f"**Notes:** {ENGLISH_CROP_NOTES.get(sel_cid, sel_crop.notes_de)}")
+            if sel_r.sources:
+                st.markdown("**Evidence Literature Sources:**")
+                for src in sel_r.sources:
+                    st.markdown(f"- *{src}*")
+            calendar_str = " | ".join([f"**{m_names[m-1]}**" if m in sel_crop.growing_months else f"{m_names[m-1]}" for m in range(1, 13)])
+            st.markdown(f"**Growing Season** (active in bold): {calendar_str}")
+            crit_str = " | ".join([f"**{m_names[m-1]}**" if m in sel_crop.critical_months else f"{m_names[m-1]}" for m in range(1, 13)])
+            st.markdown(f"**Critical Light Window** (critical in bold): {crit_str}")
 
     # --- SUBTAB 2: MEDICINAL CROPS ---
     with sub_medicinal:
@@ -928,6 +942,18 @@ with tab_crops:
         )
         st.plotly_chart(fig_single_med, use_container_width=True)
 
+        with st.expander(f"View Agronomic Details for {sel_med_crop.display_name}", expanded=True):
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.markdown(f"**Suitability Class:** {translate_class(sel_med_r.suitability_class)}")
+                st.markdown(f"**Botanical Name:** *{sel_med_crop.botanical_name}*")
+                st.markdown(f"**Use Type:** {sel_med_crop.use_type.title()}")
+                st.markdown(f"**Limiting Factor:** {sel_med_r.limiting_factor}")
+            with col_m2:
+                st.markdown(f"**Annual rPAR:** {sel_med_r.r_ann*100:.1f}%")
+                st.markdown(f"**Critical Phase rPAR:** {sel_med_r.r_crit*100:.1f}%")
+                st.markdown(f"**Homogeneity Class:** {sel_med_r.homogeneity_class.title()}")
+
     # --- SUBTAB 3: WET MEADOW & FLOODPLAIN SPECIES ---
     with sub_meadow:
         st.subheader("Wet Meadow & Floodplain Species Suitability Scores (Balkendiagramm)")
@@ -967,161 +993,6 @@ with tab_crops:
                 "Recommended Zone": r.zone_hint
             })
         st.dataframe(pd.DataFrame(df_meadow), use_container_width=True)
-
-    st.divider()
-
-    # SECTION 4: PREMIUM CELL-LEVEL SPATIAL CROP EXPLORER
-    st.subheader("Cell-Level Spatial Suitability Explorer (Micro-Climate)")
-    st.markdown("""
-    Since the module rows shade some parts of the ground more than others, crop suitability changes across the pitch period.
-    This Rigorous Spatial simulation models suitability at 11 separate cells across the row pitch period (from row-to-row spacing).
-    """)
-
-    # Run 1D spatial simulation
-    x_points, spatial_par_annual, spatial_par_monthly = simulation.compute_spatial_annual_par(
-        config['lat'], config['lon'], config['g_slope'], config['g_aspect'], 
-        config['tau'], config['albedo'], config['geometry'], n_points=11
-    )
-
-    # Compute suitability at each cell
-    spatial_scores = {crop_id: [] for crop_id in CROP_REGISTRY.keys()}
-    for idx in range(11):
-        cell_ann = spatial_par_annual[idx]
-        cell_monthly = list(spatial_par_monthly[idx])
-        
-        # Evaluate each crop at cell idx
-        for crop_id, crop in CROP_REGISTRY.items():
-            res = evaluate_crop(
-                crop, cell_ann, metrics['par_open_field'], cell_monthly, cv_par=0.0, has_hourly=True
-            )
-            spatial_scores[crop_id].append(res.score)
-            
-    # Plot Spatial Suitability Profile
-    fig_spatial = go.Figure()
-
-    # Plot top crops
-    for crop_id in ["luzerne", "weizen", "hafer", "mais"]:
-        crop = CROP_REGISTRY[crop_id]
-        fig_spatial.add_trace(go.Scatter(
-            x=x_points, 
-            y=spatial_scores[crop_id],
-            mode='lines+markers',
-            name=crop.name_en,
-            line=dict(width=3),
-            marker=dict(size=7)
-        ))
-        
-    # Add module shading box
-    proj_w = 5.63 * np.cos(np.radians(15))
-    m_start = (config['pitch'] - proj_w) / 2
-    m_end = m_start + proj_w
-    fig_spatial.add_vrect(
-        x0=m_start, x1=m_end, 
-        fillcolor="rgba(0,0,0,0.06)", layer="below", line_width=0, 
-        annotation_text="Module Table"
-    )
-
-    fig_spatial.update_layout(
-        title="Spatial Suitability Score across Row Pitch (0m = row gap center, middle = directly under module)",
-        xaxis_title="Horizontal Distance across Row Pitch (m)",
-        yaxis_title="Suitability Score (0-1)",
-        yaxis=dict(range=[0, 1.05]),
-        height=400,
-        margin=dict(l=0, r=0, t=40, b=0)
-    )
-    st.plotly_chart(fig_spatial, use_container_width=True)
-
-    st.info("""
-    **Agronomic Insights from Spatial Profile:** 
-    Cereals like Wheat show high suitability in the row gap center (left & right) but drop significantly directly under the modules (shaded zone).
-    Lucerne remains highly robust and suited across the entire row pitch. Maize is fully unsuited regardless of location.
-    """)
-
-    st.divider()
-
-    # SECTION 5: TOP RECOMMENDED CROP DETAIL CARDS
-    st.subheader("Detailed Crop Recommendation Cards")
-    st.markdown("Detailed breakdown of the top recommended crops:")
-
-    # Group crops by classification
-    rec_crops = [r for r in crop_results if "geeignet" in r.classification.lower()]
-    if not rec_crops:
-        rec_crops = crop_results[:3]  # fallback to top 3 if none suitable
-        
-    cols = st.columns(len(rec_crops[:3]))
-
-    for idx, r in enumerate(rec_crops[:3]):
-        crop = CROP_REGISTRY[r.crop_id]
-        
-        # Color coding classes matching new labels
-        class_lower = r.classification.lower()
-        if "hauptkultur" in class_lower or "sonderkultur" in class_lower or "geeignet" in class_lower:
-            card_class = "crop-card-geeignet"
-            badge_class = "badge-geeignet"
-        elif "prüfung" in class_lower or "grenzwertig" in class_lower:
-            card_class = "crop-card-grenzwertig"
-            badge_class = "badge-grenzwertig"
-        else:
-            card_class = "crop-card-nicht"
-            badge_class = "badge-nicht"
-            
-        # Warning banner if evidence_tier == 'C'
-        warning_html = ""
-        if r.evidence_tier == 'C':
-            warning_html = (
-                f'<div style="background-color:#fffbeb; border-left:3px solid #d97706; padding:8px 12px; border-radius:4px; font-size:0.8rem; color:#b45309; margin-top:10px; line-height:1.35;">'
-                f'For this crop, no reliable species-specific Agri-PV PAR curve is available. Evaluation is performed as a proxy based on light preference, crop group, and site-specific PAR.'
-                f'</div>'
-            )
-            
-        with cols[idx]:
-            st.markdown(f"""
-<div class="crop-card {card_class}">
-<h3 style="margin:0; color:#0f172a;">{crop.name_en}</h3>
-<div style="font-size:0.9rem; color:#64748b; font-style:italic; margin-bottom:8px;">(German: {crop.name_de})</div>
-<div class="badge {badge_class}">{translate_class(r.classification)}</div>
-<div style="margin-top:12px; font-size:1.6rem; font-weight:800; color:#0f172a;">Score: {r.score*100:.1f}%</div>
-<p style="font-size:0.9rem; color:#334155; margin-top:8px; line-height:1.4;">{ENGLISH_CROP_NOTES.get(r.crop_id, r.notes_de)}</p>
-{warning_html}
-<div class="limiting-box">
-<strong>Limiting Factor:</strong> {r.limiting_factor.replace("_", " ").upper()}<br/>
-<strong>Evidence Tier:</strong> {r.evidence_tier} ({translate_confidence(r.confidence).upper()} CONFIDENCE)
-</div>
-</div>
-            """, unsafe_allow_html=True)
-            
-            # Expander details
-            with st.expander(f"View Agronomic Details for {crop.name_en}"):
-                st.markdown(f"**Evidence Literature Sources:**")
-                for src in r.sources:
-                    st.markdown(f"- *{src}*")
-                    
-                st.markdown(f"**Component Scoring Breakdown:**")
-                c_scores = r.component_scores
-                st.write(f"- Annual PAR Adequacy (A): **{c_scores['A']*100:.1f}%**")
-                st.write(f"- Seasonal PAR Sum (S): **{c_scores['S']*100:.1f}%**")
-                st.write(f"- Critical Phase DLI (C): **{c_scores['C']*100:.1f}%**")
-                st.write(f"- Spatial Homogeneity (H): **{c_scores['H']*100:.1f}%**")
-                
-                # Show growing calendar months
-                st.markdown(f"**Growing Season Calendar:**")
-                calendar_str = " | ".join([f"**{m_names[m-1]}**" if m in crop.growing_months else f"{m_names[m-1]}" for m in range(1, 13)])
-                st.markdown(f"Months (active in bold): {calendar_str}")
-                
-                st.markdown(f"**Critical Light Sensitivity Window:**")
-                crit_str = " | ".join([f"**{m_names[m-1]}**" if m in crop.critical_months else f"{m_names[m-1]}" for m in range(1, 13)])
-                st.markdown(f"Months (critical in bold): {crit_str}")
-                
-    st.markdown("""
-    <div style="background-color:#eff6ff; border-left:6px solid #3b82f6; padding:18px 24px; border-radius:8px; margin-top:20px;">
-        <strong style="color:#1e3a8a;">Strategic Recommendation:</strong><br/>
-        For fixed-tilt high-clearance systems (Category II under DIN SPEC 91434) with row pitches ≥ 8m, <strong>Lucerne</strong> 
-        and robust C3 cereals (such as <strong>Oats</strong> and <strong>Spelt</strong>) represent the most reliable agricultural choice. 
-        They maintain robust yields under partial shading and show high spatial homogeneity across the layout.
-    </div>
-    """, unsafe_allow_html=True)
-
-
 
 # ==============================================================================
 # TAB 5: ELECTRICAL & THERMAL RESULTS
