@@ -1190,6 +1190,51 @@ with tab_report:
 
     st.markdown("---")
 
+    # ------------------------------------------------------------------
+    # PLANT SELECTION FOR REPORT
+    # ------------------------------------------------------------------
+    st.subheader("Plant Selection for Report")
+    st.markdown("Select which species to include in the generated PDF report. Only selected plants will appear with their DLI profile charts and agronomic detail pages.")
+
+    rp_c1, rp_c2, rp_c3 = st.columns(3)
+
+    with rp_c1:
+        st.markdown("**Arable & Agricultural Crops**")
+        all_arable_opts = [(r.crop_id, f"{CROP_REGISTRY[r.crop_id].name_en} ({CROP_REGISTRY[r.crop_id].name_de})") for r in crop_results]
+        rep_arable_sel = st.multiselect(
+            "Select arable crops:",
+            options=[o[0] for o in all_arable_opts],
+            default=[o[0] for o in all_arable_opts],
+            format_func=lambda cid: next((o[1] for o in all_arable_opts if o[0] == cid), cid),
+            key="rep_arable_sel"
+        )
+
+    with rp_c2:
+        st.markdown("**Medicinal & Special Crops**")
+        all_med_opts = [(r.crop_id, r.crop_name) for r in crop_results_med]
+        rep_med_sel = st.multiselect(
+            "Select medicinal crops:",
+            options=[o[0] for o in all_med_opts],
+            default=[o[0] for o in all_med_opts],
+            format_func=lambda cid: next((o[1] for o in all_med_opts if o[0] == cid), cid),
+            key="rep_med_sel"
+        )
+
+    with rp_c3:
+        st.markdown("**Wet Meadow & Floodplain Species**")
+        all_meadow_opts = [(r.species_id, r.display_name) for r in crop_results_meadow]
+        rep_meadow_sel = st.multiselect(
+            "Select meadow species:",
+            options=[o[0] for o in all_meadow_opts],
+            default=[o[0] for o in all_meadow_opts],
+            format_func=lambda sid: next((o[1] for o in all_meadow_opts if o[0] == sid), sid),
+            key="rep_meadow_sel"
+        )
+
+    st.info(f"Report will include: **{len(rep_arable_sel)}** arable crops, **{len(rep_med_sel)}** medicinal species, **{len(rep_meadow_sel)}** meadow species.")
+
+    st.markdown("---")
+
     st.subheader("Export & Download Center")
 
     export_cols = ['ghi', 'dni', 'dhi', 'temp_air', 't_avg', 't_cell', 'temp_factor', 'g_g', 'par']
@@ -1200,10 +1245,10 @@ with tab_report:
     c_exp1, c_exp2 = st.columns(2)
     with c_exp1:
         st.markdown("#### Technical PDF Validation Report")
-        st.markdown("Generates a comprehensive 15-page PDF document including executive summary, spatial heatmaps, electrical analysis, and crop compatibility profiles.")
-        
+        st.markdown("Generates a comprehensive PDF document including executive summary, spatial heatmaps, electrical analysis, and all selected crop compatibility profiles with DLI charts.")
+
         if st.button("Generate Technical Report (PDF)", use_container_width=True, type="primary", key="generate_pdf_btn"):
-            with st.spinner("Generating 15-page PDF report with interactive charts..."):
+            with st.spinner("Generating PDF report with selected plants and DLI charts..."):
                 import importlib
                 import report.report_styles
                 import report.report_generator
@@ -1213,15 +1258,17 @@ with tab_report:
                 importlib.reload(report.report_generator)
                 from report.report_generator import ReportGenerator
 
-                # Build DLI curve charts for top 3 crops
+                # Build DLI charts for ALL selected arable crops
                 from crop_suitability import CROP_REGISTRY as _CR
                 _days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
                 _mnames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                 _m_agri = metrics['monthly_par_agri']
                 _m_open = metrics['monthly_par_open']
 
-                top_3_crop_data = []
-                for cr in crop_results[:3]:
+                selected_arable_data = []
+                for cr in crop_results:
+                    if cr.crop_id not in rep_arable_sel:
+                        continue
                     crop_profile = _CR.get(cr.crop_id)
                     if not crop_profile:
                         continue
@@ -1234,14 +1281,12 @@ with tab_report:
                     fig_dli.add_trace(go.Scatter(x=_mnames, y=dli_open_m, name="Open Field (mol/m²/d)", mode="lines+markers", marker_color="#475569"))
                     fig_dli.add_hline(y=crop_profile.DLI_target, line_dash="dash", line_color="#059669", annotation_text="DLI Target")
                     fig_dli.add_hline(y=crop_profile.DLI_min, line_dash="dot", line_color="#d97706", annotation_text="DLI Min")
-
                     for m in crop_profile.critical_months:
                         fig_dli.add_vrect(x0=m-1.4, x1=m-0.6, fillcolor="rgba(239,68,68,0.1)", line_width=0)
-
                     fig_dli.update_layout(
                         height=300, margin=dict(l=50, r=10, t=30, b=30),
                         yaxis_title="DLI (mol/m²/d)",
-                        title=f"{crop_profile.display_name if hasattr(crop_profile, 'display_name') else cr.crop_id.capitalize()} — Monthly DLI",
+                        title=f"{crop_profile.name_en} ({crop_profile.name_de}) — Monthly DLI",
                         title_font_size=13,
                         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font_size=9)
                     )
@@ -1264,7 +1309,7 @@ with tab_report:
                     else:
                         mean_dli_val = sum(dli_agri_m) / 12
 
-                    top_3_crop_data.append({
+                    selected_arable_data.append({
                         'result': cr,
                         'profile': crop_profile,
                         'fig_dli': fig_dli,
@@ -1274,26 +1319,116 @@ with tab_report:
                         'cv_par': metrics['cv_par'] * 100,
                     })
 
-                # Evaluate meadow species for PDF
-                from meadow_suitability import evaluate_all_meadow_species as _eval_meadow
-                _meadow_pdf = _eval_meadow(
+                # Build DLI charts for ALL selected medicinal crops
+                from medicinal_crop_suitability import MED_CROP_REGISTRY as _MCR
+                selected_med_data = []
+                for mr in crop_results_med:
+                    if mr.crop_id not in rep_med_sel:
+                        continue
+                    med_prof = _MCR.get(mr.crop_id)
+                    if not med_prof:
+                        continue
+
+                    dli_agri_m = [_m_agri[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
+                    dli_open_m = [_m_open[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
+
+                    fig_med_dli = go.Figure()
+                    fig_med_dli.add_trace(go.Bar(x=_mnames, y=dli_agri_m, name="Agri-PV (mol/m²/d)", marker_color="#059669"))
+                    fig_med_dli.add_trace(go.Scatter(x=_mnames, y=dli_open_m, name="Open Field (mol/m²/d)", mode="lines+markers", marker_color="#475569"))
+                    fig_med_dli.add_hline(y=med_prof.DLI_min, line_dash="dot", line_color="#d97706", annotation_text="DLI Min")
+                    fig_med_dli.update_layout(
+                        height=280, margin=dict(l=50, r=10, t=30, b=30),
+                        yaxis_title="DLI (mol/m²/d)",
+                        title=f"{med_prof.display_name} ({med_prof.botanical_name}) — Monthly DLI",
+                        title_font_size=12,
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font_size=9)
+                    )
+                    selected_med_data.append({
+                        'result': mr,
+                        'profile': med_prof,
+                        'fig_dli': fig_med_dli,
+                    })
+
+                # Build Balkendiagramm overview figures
+                arable_bar_data = []
+                for cr in [r for r in crop_results if r.crop_id in rep_arable_sel]:
+                    cp = _CR.get(cr.crop_id)
+                    if not cp: continue
+                    lbl = translate_class(cr.classification)
+                    arable_bar_data.append({"Crop": f"{cp.name_en} ({cp.name_de})", "Score (%)": cr.score * 100.0, "Class": lbl})
+                df_rep_arable = pd.DataFrame(arable_bar_data).sort_values("Score (%)", ascending=True)
+                fig_rep_arable_bar = px.bar(
+                    df_rep_arable, y="Crop", x="Score (%)", color="Class", orientation="h",
+                    title=f"Arable Crops Suitability Scores ({len(df_rep_arable)} selected)", text_auto=".1f",
+                    color_discrete_map={"Suitable": "#059669", "Highly Suitable": "#047857", "Marginal": "#d97706", "Not Recommended": "#dc2626", "Suitable as Main Crop": "#059669", "Only with Agronomic Trial": "#d97706", "Special Crop Only (Trial Req.)": "#f59e0b"}
+                ) if arable_bar_data else None
+                if fig_rep_arable_bar:
+                    fig_rep_arable_bar.add_vline(x=80, line_dash="dash", line_color="#047857", annotation_text="Target (80%)")
+                    fig_rep_arable_bar.add_vline(x=65, line_dash="dot", line_color="#d97706", annotation_text="Min (65%)")
+                    fig_rep_arable_bar.update_layout(height=max(350, len(df_rep_arable)*22), margin=dict(l=0, r=20, t=40, b=0), xaxis=dict(range=[0, 105]))
+
+                med_bar_data = []
+                for mr in [r for r in crop_results_med if r.crop_id in rep_med_sel]:
+                    med_bar_data.append({"Species": mr.crop_name, "Annual rPAR (%)": mr.r_ann * 100.0, "Critical Phase rPAR (%)": mr.r_crit * 100.0})
+                df_rep_med = pd.DataFrame(med_bar_data)
+                fig_rep_med_bar = px.bar(
+                    df_rep_med, x="Species", y=["Annual rPAR (%)", "Critical Phase rPAR (%)"],
+                    barmode="group", title=f"Medicinal Crops PAR Availability ({len(df_rep_med)} selected)", text_auto=".1f"
+                ) if med_bar_data else None
+                if fig_rep_med_bar:
+                    fig_rep_med_bar.update_layout(height=380, margin=dict(l=0, r=0, t=40, b=0), yaxis=dict(range=[0, 110]))
+
+                # Filter meadow results
+                from meadow_suitability import evaluate_all_meadow_species as _eval_meadow, MEADOW_REGISTRY as _MREG
+                _all_meadow = _eval_meadow(
                     annual_PAR_agri=metrics['pa'],
                     annual_PAR_openfield=metrics['par_open_field'],
                     monthly_PAR_agri=metrics['monthly_par_agri'],
                     monthly_PAR_openfield=metrics['monthly_par_open'],
                     cv_PAR=metrics['cv_par'],
                 )
+                _selected_meadow = [r for r in _all_meadow if r.species_id in rep_meadow_sel]
+
+                # Build meadow DLI charts
+                selected_meadow_data = []
+                for mwr in _selected_meadow:
+                    mw_prof = _MREG.get(mwr.species_id)
+                    if not mw_prof:
+                        continue
+                    dli_agri_m = [_m_agri[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
+                    dli_open_m = [_m_open[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
+                    fig_mw_dli = go.Figure()
+                    fig_mw_dli.add_trace(go.Bar(x=_mnames, y=dli_agri_m, name="Agri-PV (mol/m²/d)", marker_color="#0891b2"))
+                    fig_mw_dli.add_trace(go.Scatter(x=_mnames, y=dli_open_m, name="Open Field (mol/m²/d)", mode="lines+markers", marker_color="#475569"))
+                    fig_mw_dli.add_hline(y=mw_prof.DLI_target, line_dash="dash", line_color="#059669", annotation_text="DLI Target")
+                    fig_mw_dli.add_hline(y=mw_prof.DLI_min, line_dash="dot", line_color="#d97706", annotation_text="DLI Min")
+                    fig_mw_dli.update_layout(
+                        height=280, margin=dict(l=50, r=10, t=30, b=30),
+                        yaxis_title="DLI (mol/m²/d)",
+                        title=f"{mw_prof.display_name} ({mw_prof.botanical_name}) — Monthly DLI",
+                        title_font_size=12,
+                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font_size=9)
+                    )
+                    selected_meadow_data.append({'result': mwr, 'profile': mw_prof, 'fig_dli': fig_mw_dli})
 
                 figures = {
                     'heat': fig_heat,
-                    'crop': fig_arable_bar if 'fig_arable_bar' in locals() else None,
+                    'crop': fig_rep_arable_bar,
                     'elec': None,
                     'weather': fig_irr,
                     'layout': fig_sp,
                     'spatial_dict': fig_spatial_dict,
                     'radar': None,
-                    'top_3_crops': top_3_crop_data,
-                    'meadow_results': _meadow_pdf,
+                    # Selected plants per category
+                    'selected_arable': selected_arable_data,
+                    'selected_med': selected_med_data,
+                    'selected_meadow': selected_meadow_data,
+                    # Overview Balkendiagramm figures
+                    'fig_arable_overview': fig_rep_arable_bar,
+                    'fig_med_overview': fig_rep_med_bar,
+                    # Legacy keys
+                    'top_3_crops': selected_arable_data[:3],
+                    'meadow_results': _selected_meadow,
                 }
 
                 # Copy updated config

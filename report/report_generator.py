@@ -466,36 +466,55 @@ class ReportGenerator:
         self.story.append(PageBreak())
 
     def create_page_11_crop_results(self):
-        self.story.append(Paragraph("Crop Simulation Results", self.styles['Heading1']))
-        self.story.append(Paragraph("Suitability scores for standard arable crops under this specific layout.", self.styles['Normal']))
+        """Arable Crop Results: Balkendiagramm overview + individual DLI profile pages."""
+        self.story.append(Paragraph("Arable & Agricultural Crops — Suitability Results", self.styles['Heading1']))
+        self.story.append(Paragraph(
+            "Suitability scores for all selected arable and agricultural crops under this specific Agri-PV layout. "
+            "Scores are derived from a multi-component evaluation of annual PAR, seasonal PAR, critical-phase DLI and spatial homogeneity.",
+            self.styles['Normal']
+        ))
         self.story.append(Spacer(1, 10))
-        
-        data = [["Crop Name", "Suitability Class", "Score", "Confidence"]]
-        for r in self.crop_results[:12]:
-            class_para = Paragraph(r.classification, self.styles['Normal'])
-            crop_name = r.crop_name_de if r.crop_name_de else r.crop_id.capitalize()
-            crop_para = Paragraph(crop_name, self.styles['Normal'])
-            data.append([crop_para, class_para, f"{r.score*100:.1f}%", r.confidence])
-            
-        t = Table(data, colWidths=[110, 200, 70, 70])
+
+        selected_arable = self.figures.get('selected_arable', [])
+
+        # --- Overview Balkendiagramm ---
+        fig_overview = self.figures.get('fig_arable_overview')
+        if fig_overview:
+            self.story.append(Paragraph("Suitability Score Overview (Balkendiagramm)", self.styles['Heading2']))
+            bar_h = max(250, len(selected_arable) * 22)
+            img_bar = export_plotly_to_image(fig_overview, width=900, height=bar_h)
+            if img_bar:
+                self.story.append(img_bar)
+            self.story.append(Spacer(1, 10))
+
+        # --- Summary Table ---
+        self.story.append(Paragraph("Summary Table", self.styles['Heading2']))
+        data = [["Crop (EN / DE)", "Class", "Score", "Limiting Factor", "Evidence"]]
+        for cd in selected_arable:
+            cr = cd['result']
+            cp = cd['profile']
+            data.append([
+                Paragraph(f"{cp.name_en}<br/><i>{cp.name_de}</i>", self.styles['Normal']),
+                Paragraph(cr.classification, self.styles['Normal']),
+                f"{cr.score*100:.1f}%",
+                cr.limiting_factor.replace('_', ' ').title(),
+                f"Tier {cr.evidence_tier}"
+            ])
+        t = Table(data, colWidths=[120, 145, 50, 100, 45])
         t.setStyle(get_table_style_standard())
         self.story.append(t)
         self.story.append(PageBreak())
-        
-        # Top 3 Crop Detail Pages
-        top_3 = self.figures.get('top_3_crops', [])
-        for i, crop_data in enumerate(top_3[:3]):
+
+        # --- Individual DLI Profile Page per Selected Arable Crop ---
+        for i, crop_data in enumerate(selected_arable):
             cr = crop_data['result']
             cp = crop_data['profile']
-            crop_name = cr.crop_name_de if cr.crop_name_de else cr.crop_id.capitalize()
-            
-            self.story.append(Paragraph(f"Top {i+1}: {crop_name}", self.styles['Heading1']))
-            
+
+            self.story.append(Paragraph(f"{cp.name_en} ({cp.name_de})", self.styles['Heading1']))
             if cp.botanical_name:
                 self.story.append(Paragraph(f"<i>{cp.botanical_name}</i>", self.styles['NormalGray']))
-            self.story.append(Spacer(1, 10))
-            
-            # Profile summary table
+            self.story.append(Spacer(1, 8))
+
             crit_months_str = ", ".join(str(m) for m in cp.critical_months) if cp.critical_months else "—"
             profile_data = [
                 ["Parameter", "Value", "Parameter", "Value"],
@@ -509,41 +528,101 @@ class ReportGenerator:
             t = Table(profile_data, colWidths=[120, 110, 120, 100])
             t.setStyle(get_table_style_standard())
             self.story.append(t)
-            self.story.append(Spacer(1, 10))
-            
-            # Evaluation text
+            self.story.append(Spacer(1, 8))
+
             if cr.notes_de:
                 self.story.append(Paragraph("<b>Evaluation:</b>", self.styles['Heading3']))
                 self.story.append(Paragraph(cr.notes_de, self.styles['Normal']))
-            self.story.append(Spacer(1, 10))
-            
-            # DLI Chart
+            self.story.append(Spacer(1, 8))
+
             fig_dli = crop_data.get('fig_dli')
             if fig_dli:
                 self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
-                img = export_plotly_to_image(fig_dli, width=800, height=350)
+                img = export_plotly_to_image(fig_dli, width=800, height=320)
                 if img:
                     self.story.append(img)
-            
+
             self.story.append(PageBreak())
 
+        # --- Medicinal & Special Crops ---
+        selected_med = self.figures.get('selected_med', [])
+        if selected_med:
+            self.story.append(Paragraph("Medicinal & Special Crops — Suitability Results", self.styles['Heading1']))
+            self.story.append(Paragraph(
+                "Light availability assessment for all selected medicinal and specialty crops. "
+                "Annual and critical-phase relative PAR values are compared against species-specific light thresholds.",
+                self.styles['Normal']
+            ))
+            self.story.append(Spacer(1, 10))
+
+            fig_med_ov = self.figures.get('fig_med_overview')
+            if fig_med_ov:
+                self.story.append(Paragraph("PAR Availability Overview (Balkendiagramm)", self.styles['Heading2']))
+                img_med_ov = export_plotly_to_image(fig_med_ov, width=900, height=400)
+                if img_med_ov:
+                    self.story.append(img_med_ov)
+                self.story.append(Spacer(1, 10))
+
+            data_med = [["Crop", "Botanical Name", "Annual rPAR", "Crit. rPAR", "Class", "Limiting Factor"]]
+            for md in selected_med:
+                mr = md['result']
+                mp = md['profile']
+                data_med.append([
+                    Paragraph(mr.crop_name, self.styles['Normal']),
+                    Paragraph(f"<i>{mp.botanical_name}</i>", self.styles['Normal']),
+                    f"{mr.r_ann*100:.1f}%",
+                    f"{mr.r_crit*100:.1f}%",
+                    Paragraph(mr.suitability_class, self.styles['Normal']),
+                    mr.limiting_factor
+                ])
+            t_med = Table(data_med, colWidths=[90, 120, 55, 55, 80, 60])
+            t_med.setStyle(get_table_style_standard())
+            self.story.append(t_med)
+            self.story.append(PageBreak())
+
+            for md in selected_med:
+                mr = md['result']
+                mp = md['profile']
+                self.story.append(Paragraph(f"{mr.crop_name}", self.styles['Heading1']))
+                self.story.append(Paragraph(f"<i>{mp.botanical_name}</i> — {mp.use_type.title()}", self.styles['NormalGray']))
+                self.story.append(Spacer(1, 6))
+
+                med_profile_data = [
+                    ["Parameter", "Value", "Parameter", "Value"],
+                    ["Suitability Class", Paragraph(mr.suitability_class, self.styles['Normal']), "Homogeneity", mr.homogeneity_class.title()],
+                    ["Annual rPAR", f"{mr.r_ann*100:.1f}%", "Critical rPAR", f"{mr.r_crit*100:.1f}%"],
+                    ["DLI Min Threshold", f"{mp.DLI_min:.1f} mol/m\u00b2/d", "Limiting Factor", mr.limiting_factor],
+                ]
+                t_mp = Table(med_profile_data, colWidths=[120, 110, 120, 100])
+                t_mp.setStyle(get_table_style_standard())
+                self.story.append(t_mp)
+                self.story.append(Spacer(1, 8))
+
+                fig_dli_med = md.get('fig_dli')
+                if fig_dli_med:
+                    self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
+                    img_md = export_plotly_to_image(fig_dli_med, width=800, height=300)
+                    if img_md:
+                        self.story.append(img_md)
+                self.story.append(PageBreak())
+
     def create_page_meadow_species(self):
-        """Page: Feuchtwiesen- & Auenwiesenarten suitability."""
-        meadow_results = self.figures.get('meadow_results', [])
-        if not meadow_results:
+        """Page: Wet Meadow & Floodplain Species suitability with DLI charts."""
+        selected_meadow = self.figures.get('selected_meadow', [])
+        meadow_results  = self.figures.get('meadow_results', [])
+        if not meadow_results and not selected_meadow:
             return  # No meadow data, skip page
 
-        self.story.append(Paragraph("Feuchtwiesen- & Auenwiesenarten", self.styles['Heading1']))
+        self.story.append(Paragraph("Wet Meadow & Floodplain Species — Suitability Results", self.styles['Heading1']))
         self.story.append(Paragraph(
-            "Eignungsbewertung für Wiesen-, Kräuter- und Auenarten unter Agri-PV. "
-            "Abgeleiteter Lichtbedarf aus Ellenberg/Landolt-Zeigerwerten (kein experimenteller PAR-Normwert). "
-            "Hydrologische Standortfaktoren (Ellenberg F) fließen in den Score ein.",
+            "Suitability assessment for selected wet meadow, floodplain and grassland species under this Agri-PV layout. "
+            "Scores are derived from Ellenberg / Landolt light indicator values (L), hydrology (F), and measured relative PAR.",
             self.styles['Normal']
         ))
         self.story.append(Spacer(1, 10))
 
-        # Results table
-        data = [["Pflanze", "Score", "Licht", "Hydro", "Zonierung", "L/F", "rPAR"]]
+        # Summary table
+        data = [["Species", "Score", "Light Class", "Hydro Class", "Zone", "L/F", "rPAR"]]
         for r in meadow_results:
             name_para = Paragraph(f"<b>{r.display_name}</b><br/><i>{r.botanical_name}</i>", self.styles['Normal'])
             data.append([
@@ -555,20 +634,46 @@ class ReportGenerator:
                 f"L{r.ellenberg_L}/F{r.ellenberg_F}",
                 f"{r.rPAR_actual*100:.0f}%",
             ])
-
-        t = Table(data, colWidths=[105, 38, 90, 80, 80, 35, 35])
+        t = Table(data, colWidths=[110, 35, 90, 80, 80, 35, 30])
         t.setStyle(get_table_style_standard())
         self.story.append(t)
-        self.story.append(Spacer(1, 10))
-
-        # Legend
+        self.story.append(Spacer(1, 8))
         self.story.append(Paragraph(
-            "<b>Legende:</b> L = Ellenberg Lichtzahl, F = Ellenberg Feuchtezahl. "
-            "rPAR = Relative PAR (Agri-PV / Open Field). "
-            "Score = Gewichtete Kombination aus Licht (70%), Hydrologie (20%) und Homogenität (10%).",
+            "<b>Legend:</b> L = Ellenberg Light Value, F = Ellenberg Moisture Value. "
+            "rPAR = Relative PAR (Agri-PV / Open Field). Score = weighted combination of light (70%), hydrology (20%) and homogeneity (10%).",
             self.styles['Normal']
         ))
         self.story.append(PageBreak())
+
+        # Individual DLI pages for selected meadow species
+        for md in selected_meadow:
+            mwr = md['result']
+            mwp = md['profile']
+            self.story.append(Paragraph(f"{mwp.display_name}", self.styles['Heading1']))
+            self.story.append(Paragraph(f"<i>{mwp.botanical_name}</i> — {mwp.species_group.title() if hasattr(mwp, 'species_group') else ''}", self.styles['NormalGray']))
+            self.story.append(Spacer(1, 6))
+
+            mw_profile_data = [
+                ["Parameter", "Value", "Parameter", "Value"],
+                ["Suitability Score", f"{mwr.score:.1f} / 100", "Light Class", mwr.light_class],
+                ["Hydrology Class", mwr.hydro_class, "Recommended Zone", mwr.zone_hint],
+                ["Ellenberg L", str(mwr.ellenberg_L), "Ellenberg F", str(mwr.ellenberg_F)],
+                ["Actual rPAR", f"{mwr.rPAR_actual*100:.1f}%", "Limiting Factor", mwr.limiting_factor],
+                ["DLI Min", f"{mwp.DLI_min:.1f} mol/m\u00b2/d", "DLI Target", f"{mwp.DLI_target:.1f} mol/m\u00b2/d"],
+            ]
+            t_mw = Table(mw_profile_data, colWidths=[120, 110, 120, 100])
+            t_mw.setStyle(get_table_style_standard())
+            self.story.append(t_mw)
+            self.story.append(Spacer(1, 8))
+
+            fig_dli_mw = md.get('fig_dli')
+            if fig_dli_mw:
+                self.story.append(Paragraph("Monthly DLI — Agri-PV vs. Open Field", self.styles['Heading3']))
+                img_mw = export_plotly_to_image(fig_dli_mw, width=800, height=300)
+                if img_mw:
+                    self.story.append(img_mw)
+            self.story.append(PageBreak())
+
 
     def create_page_12_combined_evaluation(self):
         self.story.append(Paragraph("Combined Agri-PV Scenario Evaluation", self.styles['Heading1']))
