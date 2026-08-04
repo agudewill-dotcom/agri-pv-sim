@@ -15,9 +15,22 @@ from .report_styles import get_report_styles, get_table_style_standard, get_tabl
 from .report_charts import export_plotly_to_image, render_latex_to_image, create_dli_chart_img, create_horizontal_bar_chart_img
 
 # Attempt to load a logo, or we will use a text placeholder
-LOGO_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logo.png")
+def get_clean_crop_name(cp):
+    import re
+    n1 = getattr(cp, 'name_en', getattr(cp, 'display_name', ''))
+    n2 = getattr(cp, 'name_de', '')
+    
+    n1 = re.sub(r'\s*\([^)]*\)', '', str(n1)).strip()
+    n2 = re.sub(r'\s*\([^)]*\)', '', str(n2)).strip()
+    
+    if not n1:
+        return n2
+    if not n2 or n1.lower() == n2.lower():
+        return n1
+    return f"{n1} / {n2}"
 
 class ReportGenerator:
+
     def __init__(self, config, metrics, crop_results, figures):
         self.config = config
         self.metrics = metrics
@@ -466,21 +479,8 @@ class ReportGenerator:
         self.story.append(Paragraph("The crop yield result is an agronomic approximation based on light availability. It is not a substitute for a site-specific agronomic assessment.", self.styles['Disclaimer']))
         self.story.append(PageBreak())
 
-def get_clean_crop_name(cp):
-    import re
-    n1 = getattr(cp, 'name_en', getattr(cp, 'display_name', ''))
-    n2 = getattr(cp, 'name_de', '')
-    
-    n1 = re.sub(r'\s*\([^)]*\)', '', str(n1)).strip()
-    n2 = re.sub(r'\s*\([^)]*\)', '', str(n2)).strip()
-    
-    if not n1:
-        return n2
-    if not n2 or n1.lower() == n2.lower():
-        return n1
-    return f"{n1} / {n2}"
-
     def create_page_11_crop_results(self):
+
         """Arable Crop Results: Balkendiagramm overview + individual DLI profile pages."""
         self.story.append(Paragraph("Arable & Agricultural Crops — Suitability Results", self.styles['Heading1']))
         self.story.append(Paragraph(
