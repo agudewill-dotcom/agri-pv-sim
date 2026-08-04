@@ -145,7 +145,7 @@ class ReportGenerator:
         geo = TableGeometry.from_dict(geo_dict)
         
         data = [
-            ["Parameter", "Value", "Parameter", "Value"],
+            [Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader']), Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader'])],
             [Paragraph("Geometry Mode", self.styles['Normal']), Paragraph(f"{geo.geometry_mode}", self.styles['Normal']), Paragraph("Clearance Height (LH)", self.styles['Normal']), f"{geo.clear_height_m:.2f} m"],
             [Paragraph("Source / Reference", self.styles['Normal']), Paragraph(f"{geo.source_label}", self.styles['Normal']), Paragraph("Top Edge Height (H_high)", self.styles['Normal']), f"{geo.h_high_m:.2f} m"],
             [Paragraph("Tilt Angle", self.styles['Normal']), f"{geo.tilt_deg:.1f}°", Paragraph("Row Pitch", self.styles['Normal']), f"{geo.row_pitch_m:.2f} m"],
@@ -184,6 +184,7 @@ class ReportGenerator:
         lon_val = self.config.get('lon', 11.76)
         
         data = [
+            [Paragraph("Parameter / Indicator", self.styles['TableHeader']), Paragraph("Details & Reference Specification", self.styles['TableHeader'])],
             [Paragraph("Data Source & Provider", self.styles['Normal']), Paragraph("<b>PVGIS 5.2 API</b> (European Commission Joint Research Centre - JRC, ERA5 / SARAH-2 Solar Irradiance Satellite Database)", self.styles['Normal'])],
             [Paragraph("Geographic Coordinates", self.styles['Normal']), Paragraph(f"Latitude: <b>{lat_val:.4f}° N</b>, Longitude: <b>{lon_val:.4f}° E</b>", self.styles['Normal'])],
             [Paragraph("Temporal Resolution", self.styles['Normal']), Paragraph("Hourly time series (8,760 annual timesteps)", self.styles['Normal'])],
@@ -526,7 +527,13 @@ class ReportGenerator:
 
         # --- Summary Table ---
         self.story.append(Paragraph("Summary Table", self.styles['Heading2']))
-        data = [["Crop Name", "Class", "Score", "Limiting Factor", "Evidence"]]
+        data = [[
+            Paragraph("Crop Name", self.styles['TableHeader']),
+            Paragraph("Class", self.styles['TableHeader']),
+            Paragraph("Score", self.styles['TableHeader']),
+            Paragraph("Limiting Factor", self.styles['TableHeader']),
+            Paragraph("Evidence", self.styles['TableHeader'])
+        ]]
         for cd in selected_arable:
             cr = cd['result']
             cp = cd['profile']
@@ -554,13 +561,13 @@ class ReportGenerator:
 
             crit_months_str = ", ".join(str(m) for m in cp.critical_months) if cp.critical_months else "—"
             profile_data = [
-                ["Parameter", "Value", "Parameter", "Value"],
-                ["Classification", Paragraph(cr.classification, self.styles['Normal']), "Evidence Tier", f"Tier {cr.evidence_tier}"],
-                ["Crop Group", cp.crop_group.replace("_", " ").title(), "Confidence", cr.confidence],
-                ["Score", f"{cr.score*100:.1f} %", "Critical Months", crit_months_str],
-                ["Rel. PAR (Annual)", f"{crop_data['r_ann']:.1f} %", "Rel. PAR (Crit.)", f"{crop_data['r_crit']:.1f} %"],
-                ["Mean DLI (GS)", f"{crop_data['mean_dli']:.1f} mol/m\u00b2/d", "DLI Target", f"{cp.DLI_target:.0f} mol/m\u00b2/d"],
-                ["DLI Minimum", f"{cp.DLI_min:.0f} mol/m\u00b2/d", "Light Homogeneity (CV)", f"{crop_data['cv_par']:.1f} %"],
+                [Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader']), Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader'])],
+                [Paragraph("Classification", self.styles['Normal']), Paragraph(cr.classification, self.styles['Normal']), Paragraph("Evidence Tier", self.styles['Normal']), f"Tier {cr.evidence_tier}"],
+                [Paragraph("Crop Group", self.styles['Normal']), Paragraph(cp.crop_group.replace("_", " ").title(), self.styles['Normal']), Paragraph("Confidence", self.styles['Normal']), cr.confidence],
+                [Paragraph("Score", self.styles['Normal']), f"{cr.score*100:.1f} %", Paragraph("Critical Months", self.styles['Normal']), crit_months_str],
+                [Paragraph("Rel. PAR (Annual)", self.styles['Normal']), f"{crop_data['r_ann']:.1f} %", Paragraph("Rel. PAR (Crit.)", self.styles['Normal']), f"{crop_data['r_crit']:.1f} %"],
+                [Paragraph("Mean DLI (GS)", self.styles['Normal']), f"{crop_data['mean_dli']:.1f} mol/m\u00b2/d", Paragraph("DLI Target", self.styles['Normal']), f"{cp.DLI_target:.0f} mol/m\u00b2/d"],
+                [Paragraph("DLI Minimum", self.styles['Normal']), f"{cp.DLI_min:.0f} mol/m\u00b2/d", Paragraph("Light Homogeneity (CV)", self.styles['Normal']), f"{crop_data['cv_par']:.1f} %"],
             ]
             t = Table(profile_data, colWidths=[120, 110, 120, 100])
             t.setStyle(get_table_style_standard())
@@ -604,12 +611,12 @@ class ReportGenerator:
             self.story.append(Spacer(1, 10))
 
             data_med = [[
-                Paragraph("Crop", self.styles['Normal']),
-                Paragraph("Botanical Name", self.styles['Normal']),
-                Paragraph("Ann. rPAR", self.styles['Normal']),
-                Paragraph("Crit. rPAR", self.styles['Normal']),
-                Paragraph("Suitability Class", self.styles['Normal']),
-                Paragraph("Limiting Factor", self.styles['Normal'])
+                Paragraph("Crop", self.styles['TableHeader']),
+                Paragraph("Botanical Name", self.styles['TableHeader']),
+                Paragraph("Ann. rPAR", self.styles['TableHeader']),
+                Paragraph("Crit. rPAR", self.styles['TableHeader']),
+                Paragraph("Suitability Class", self.styles['TableHeader']),
+                Paragraph("Limiting Factor", self.styles['TableHeader'])
             ]]
             for md in selected_med:
                 mr = md['result']
@@ -635,7 +642,7 @@ class ReportGenerator:
                 self.story.append(Spacer(1, 6))
 
                 med_profile_data = [
-                    ["Parameter", "Value", "Parameter", "Value"],
+                    [Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader']), Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader'])],
                     [Paragraph("Suitability Class", self.styles['Normal']), Paragraph(str(mr.suitability_class).replace(" (", "<br/>("), self.styles['Normal']), Paragraph("Homogeneity", self.styles['Normal']), Paragraph(mr.homogeneity_class.title(), self.styles['Normal'])],
                     [Paragraph("Annual rPAR", self.styles['Normal']), f"{mr.r_ann*100:.1f}%", Paragraph("Critical rPAR", self.styles['Normal']), f"{mr.r_crit*100:.1f}%"],
                     [Paragraph("DLI Min Threshold", self.styles['Normal']), f"{mp.DLI_min:.1f} mol/m\u00b2/d", Paragraph("Limiting Factor", self.styles['Normal']), Paragraph(str(mr.limiting_factor).replace(" (", "<br/>("), self.styles['Normal'])],
@@ -678,7 +685,15 @@ class ReportGenerator:
         self.story.append(Spacer(1, 10))
 
         # Summary table
-        data = [["Species", "Score", "Light Class", "Hydro Class", "Zone", "L/F", "rPAR"]]
+        data = [[
+            Paragraph("Species", self.styles['TableHeader']),
+            Paragraph("Score", self.styles['TableHeader']),
+            Paragraph("Light Class", self.styles['TableHeader']),
+            Paragraph("Hydro Class", self.styles['TableHeader']),
+            Paragraph("Zone", self.styles['TableHeader']),
+            Paragraph("L/F", self.styles['TableHeader']),
+            Paragraph("rPAR", self.styles['TableHeader'])
+        ]]
         for r in meadow_results:
             name_para = Paragraph(f"<b>{r.display_name}</b><br/><i>{r.botanical_name}</i>", self.styles['Normal'])
             data.append([
@@ -710,7 +725,7 @@ class ReportGenerator:
             self.story.append(Spacer(1, 6))
 
             mw_profile_data = [
-                ["Parameter", "Value", "Parameter", "Value"],
+                [Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader']), Paragraph("Parameter", self.styles['TableHeader']), Paragraph("Value", self.styles['TableHeader'])],
                 [Paragraph("Suitability Score", self.styles['Normal']), f"{mwr.score:.1f} / 100", Paragraph("Light Class", self.styles['Normal']), Paragraph(str(mwr.light_class).replace(" (", "<br/>("), self.styles['Normal'])],
                 [Paragraph("Hydrology Class", self.styles['Normal']), Paragraph(str(mwr.hydro_class).replace(" (", "<br/>("), self.styles['Normal']), Paragraph("Recommended Zone", self.styles['Normal']), Paragraph(str(mwr.zone_hint).replace(" (", "<br/>("), self.styles['Normal'])],
                 [Paragraph("Ellenberg L", self.styles['Normal']), str(mwr.ellenberg_L), Paragraph("Ellenberg F", self.styles['Normal']), str(mwr.ellenberg_F)],

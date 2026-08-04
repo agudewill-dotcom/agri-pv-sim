@@ -44,6 +44,15 @@ def get_report_styles():
             parent=base_style,
             textColor=BRAND_GRAY
         ),
+        'TableHeader': ParagraphStyle(
+            'TableHeader',
+            parent=base_style,
+            fontName='Arial-Bold',
+            fontSize=9,
+            leading=11,
+            textColor=HexColor("#ffffff"),
+            spaceAfter=0
+        ),
         'Disclaimer': ParagraphStyle(
             'Disclaimer',
             parent=base_style,
