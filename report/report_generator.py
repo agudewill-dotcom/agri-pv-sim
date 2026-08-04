@@ -146,20 +146,20 @@ class ReportGenerator:
         
         data = [
             ["Parameter", "Value", "Parameter", "Value"],
-            ["Geometry Mode", f"{geo.geometry_mode}", "Clearance Height (LH)", f"{geo.clear_height_m:.2f} m"],
-            ["Source / Reference", f"{geo.source_label}", "Top Edge Height (H_high)", f"{geo.h_high_m:.2f} m"],
-            ["Tilt Angle", f"{geo.tilt_deg:.1f}°", "Row Pitch", f"{geo.row_pitch_m:.2f} m"],
-            ["Surface Azimuth", f"{geo.surface_azimuth_deg:.1f}°", "Free Ground Gap", f"{geo.ground_gap_m:.2f} m"],
-            ["Table Inclined Length", f"{geo.table_length_m:.2f} m", "Ground Coverage (GCR)", f"{geo.ground_coverage_ratio*100:.1f} %"],
-            ["Projected Width", f"{geo.table_projected_width_m:.2f} m", "Structural Light Loss", f"{geo.structural_loss_percent:.1f} %"],
-            ["Table Vertical Rise", f"{geo.table_vertical_rise_m:.2f} m", "Module Transparency (τ)", f"{self.config.get('tau', 0.20)*100:.1f} %"],
+            [Paragraph("Geometry Mode", self.styles['Normal']), Paragraph(f"{geo.geometry_mode}", self.styles['Normal']), Paragraph("Clearance Height (LH)", self.styles['Normal']), f"{geo.clear_height_m:.2f} m"],
+            [Paragraph("Source / Reference", self.styles['Normal']), Paragraph(f"{geo.source_label}", self.styles['Normal']), Paragraph("Top Edge Height (H_high)", self.styles['Normal']), f"{geo.h_high_m:.2f} m"],
+            [Paragraph("Tilt Angle", self.styles['Normal']), f"{geo.tilt_deg:.1f}°", Paragraph("Row Pitch", self.styles['Normal']), f"{geo.row_pitch_m:.2f} m"],
+            [Paragraph("Surface Azimuth", self.styles['Normal']), f"{geo.surface_azimuth_deg:.1f}°", Paragraph("Free Ground Gap", self.styles['Normal']), f"{geo.ground_gap_m:.2f} m"],
+            [Paragraph("Table Inclined Length", self.styles['Normal']), f"{geo.table_length_m:.2f} m", Paragraph("Ground Coverage (GCR)", self.styles['Normal']), f"{geo.ground_coverage_ratio*100:.1f} %"],
+            [Paragraph("Projected Width", self.styles['Normal']), f"{geo.table_projected_width_m:.2f} m", Paragraph("Structural Light Loss", self.styles['Normal']), f"{geo.structural_loss_percent:.1f} %"],
+            [Paragraph("Table Vertical Rise", self.styles['Normal']), f"{geo.table_vertical_rise_m:.2f} m", Paragraph("Module Transparency (τ)", self.styles['Normal']), f"{self.config.get('tau', 0.20)*100:.1f} %"],
         ]
-        t = Table(data, colWidths=[120, 110, 110, 110])
+        t = Table(data, colWidths=[110, 130, 115, 95])
         t.setStyle(get_table_style_standard())
         self.story.append(t)
         self.story.append(Spacer(1, 12))
         
-        if geo.geometry_mode == "Predefined Table 12°":
+        if "12°" in str(geo.geometry_mode):
             self.story.append(Paragraph("<b>Reference Note (Drawing 12°):</b> Geometrie gemäß SUNfarming Schnitt Agri-PV 12°: LH 2,70 m, Tischlänge ca. 5,75 m, horizontale Projektion ca. 5,62 m, Pitch ca. 8,28 m, freier Gap ca. 2,63 m.", self.styles['NormalGray']))
             self.story.append(Spacer(1, 10))
         
