@@ -1168,7 +1168,7 @@ with tab_elec:
             labels={'index': 'Month', 'value': 'kWh/m²'}, 
             color_discrete_sequence=["#1e293b", "#94a3b8", "#cbd5e1"]
         )
-        fig_irr.update_layout(xaxis={'categoryorder':'array', 'categoryarray':m_names}, height=380, margin=dict(l=0,r=0,t=10,b=0))
+        fig_irr.update_layout(xaxis={'categoryorder':'array', 'categoryarray':m_names, 'title':'Month'}, height=380, margin=dict(l=10, r=10, t=20, b=40))
         st.plotly_chart(fig_irr, use_container_width=True)
         
     with gm2:

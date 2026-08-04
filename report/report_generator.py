@@ -180,17 +180,21 @@ class ReportGenerator:
         self.story.append(Paragraph("The meteorological data driving the solar physics engine.", self.styles['Normal']))
         self.story.append(Spacer(1, 10))
         
+        lat_val = self.config.get('lat', 48.47)
+        lon_val = self.config.get('lon', 11.76)
+        
         data = [
-            ["Source", "PVGIS TMY (Typical Meteorological Year) / ERA5"],
-            ["Resolution", "Hourly (8760 steps)"],
-            ["Global Horizontal Irradiance", f"{self.metrics.get('vo', 1200):.0f} kWh/m²/a (Open Field)"],
-            ["Albedo", "0.22 (Standard agricultural soil/grass)"],
-            ["Data Handling", "Missing values interpolated linearly"]
+            [Paragraph("Data Source & Provider", self.styles['Normal']), Paragraph("<b>PVGIS 5.2 API</b> (European Commission Joint Research Centre - JRC, ERA5 / SARAH-2 Solar Irradiance Satellite Database)", self.styles['Normal'])],
+            [Paragraph("Geographic Coordinates", self.styles['Normal']), Paragraph(f"Latitude: <b>{lat_val:.4f}° N</b>, Longitude: <b>{lon_val:.4f}° E</b>", self.styles['Normal'])],
+            [Paragraph("Temporal Resolution", self.styles['Normal']), Paragraph("Hourly time series (8,760 annual timesteps)", self.styles['Normal'])],
+            [Paragraph("Global Horizontal Irradiance", self.styles['Normal']), Paragraph(f"<b>{self.metrics.get('vo', 1200):.0f} kWh/m²/a</b> (Open Field Baseline)", self.styles['Normal'])],
+            [Paragraph("Albedo Ground Model", self.styles['Normal']), Paragraph("0.22 (Standard agricultural soil / green grass)", self.styles['Normal'])],
+            [Paragraph("Data Handling & Quality", self.styles['Normal']), Paragraph("Physically consistent ERA5 / SARAH-2 TMY validation", self.styles['Normal'])]
         ]
-        t = Table(data, colWidths=[180, 270])
+        t = Table(data, colWidths=[150, 300])
         t.setStyle(get_table_style_standard())
         self.story.append(t)
-        self.story.append(Spacer(1, 20))
+        self.story.append(Spacer(1, 15))
         
         self.story.append(Paragraph("Monthly Meteorological Averages", self.styles['Heading2']))
         if 'weather' in self.figures and self.figures['weather']:
@@ -199,8 +203,8 @@ class ReportGenerator:
         else:
             self.story.append(Paragraph("Weather component breakdown omitted from this view.", self.styles['NormalGray']))
             
-        self.story.append(Spacer(1, 15))
-        self.story.append(Paragraph("Note: All weather and irradiation values used in the report are based on the actual app data source via the API.", self.styles['Disclaimer']))
+        self.story.append(Spacer(1, 12))
+        self.story.append(Paragraph(f"<b>Data Source & Reference Citation:</b> All hourly meteorological and solar radiation time series (GHI, DNI, DHI, ambient temperature T2m, wind speed WS10m) used in this simulation report are retrieved dynamically via API from the <b>European Commission Joint Research Centre (JRC) PVGIS 5.2 database</b> (seriescalc / ERA5 TMY dataset) for coordinates Lat: {lat_val:.4f}° N, Lon: {lon_val:.4f}° E.", self.styles['Disclaimer']))
         self.story.append(PageBreak())
 
     def create_page_4_method_solar(self):
