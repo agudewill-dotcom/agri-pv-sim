@@ -636,9 +636,9 @@ class ReportGenerator:
 
                 med_profile_data = [
                     ["Parameter", "Value", "Parameter", "Value"],
-                    [Paragraph("Suitability Class", self.styles['Normal']), Paragraph(mr.suitability_class, self.styles['Normal']), Paragraph("Homogeneity", self.styles['Normal']), Paragraph(mr.homogeneity_class.title(), self.styles['Normal'])],
+                    [Paragraph("Suitability Class", self.styles['Normal']), Paragraph(str(mr.suitability_class).replace(" (", "<br/>("), self.styles['Normal']), Paragraph("Homogeneity", self.styles['Normal']), Paragraph(mr.homogeneity_class.title(), self.styles['Normal'])],
                     [Paragraph("Annual rPAR", self.styles['Normal']), f"{mr.r_ann*100:.1f}%", Paragraph("Critical rPAR", self.styles['Normal']), f"{mr.r_crit*100:.1f}%"],
-                    [Paragraph("DLI Min Threshold", self.styles['Normal']), f"{mp.DLI_min:.1f} mol/m\u00b2/d", Paragraph("Limiting Factor", self.styles['Normal']), Paragraph(mr.limiting_factor, self.styles['Normal'])],
+                    [Paragraph("DLI Min Threshold", self.styles['Normal']), f"{mp.DLI_min:.1f} mol/m\u00b2/d", Paragraph("Limiting Factor", self.styles['Normal']), Paragraph(str(mr.limiting_factor).replace(" (", "<br/>("), self.styles['Normal'])],
                 ]
                 t_mp = Table(med_profile_data, colWidths=[110, 115, 110, 115])
                 t_mp.setStyle(get_table_style_standard())
@@ -711,10 +711,10 @@ class ReportGenerator:
 
             mw_profile_data = [
                 ["Parameter", "Value", "Parameter", "Value"],
-                [Paragraph("Suitability Score", self.styles['Normal']), f"{mwr.score:.1f} / 100", Paragraph("Light Class", self.styles['Normal']), Paragraph(mwr.light_class, self.styles['Normal'])],
-                [Paragraph("Hydrology Class", self.styles['Normal']), Paragraph(mwr.hydro_class, self.styles['Normal']), Paragraph("Recommended Zone", self.styles['Normal']), Paragraph(mwr.zone_hint, self.styles['Normal'])],
+                [Paragraph("Suitability Score", self.styles['Normal']), f"{mwr.score:.1f} / 100", Paragraph("Light Class", self.styles['Normal']), Paragraph(str(mwr.light_class).replace(" (", "<br/>("), self.styles['Normal'])],
+                [Paragraph("Hydrology Class", self.styles['Normal']), Paragraph(str(mwr.hydro_class).replace(" (", "<br/>("), self.styles['Normal']), Paragraph("Recommended Zone", self.styles['Normal']), Paragraph(str(mwr.zone_hint).replace(" (", "<br/>("), self.styles['Normal'])],
                 [Paragraph("Ellenberg L", self.styles['Normal']), str(mwr.ellenberg_L), Paragraph("Ellenberg F", self.styles['Normal']), str(mwr.ellenberg_F)],
-                [Paragraph("Actual rPAR", self.styles['Normal']), f"{mwr.rPAR_actual*100:.1f}%", Paragraph("Limiting Factor", self.styles['Normal']), Paragraph(mwr.limiting_factor, self.styles['Normal'])],
+                [Paragraph("Actual rPAR", self.styles['Normal']), f"{mwr.rPAR_actual*100:.1f}%", Paragraph("Limiting Factor", self.styles['Normal']), Paragraph(str(mwr.limiting_factor).replace(" (", "<br/>("), self.styles['Normal'])],
                 [Paragraph("DLI Min", self.styles['Normal']), f"{mwp.DLI_min:.1f} mol/m\u00b2/d", Paragraph("DLI Target", self.styles['Normal']), f"{mwp.DLI_target:.1f} mol/m\u00b2/d"],
             ]
             t_mw = Table(mw_profile_data, colWidths=[110, 115, 110, 115])
