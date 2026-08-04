@@ -603,7 +603,14 @@ class ReportGenerator:
                 self.story.append(img_med_ov)
             self.story.append(Spacer(1, 10))
 
-            data_med = [["Crop", "Botanical Name", "Annual rPAR", "Crit. rPAR", "Class", "Limiting Factor"]]
+            data_med = [[
+                Paragraph("Crop", self.styles['Normal']),
+                Paragraph("Botanical Name", self.styles['Normal']),
+                Paragraph("Ann. rPAR", self.styles['Normal']),
+                Paragraph("Crit. rPAR", self.styles['Normal']),
+                Paragraph("Suitability Class", self.styles['Normal']),
+                Paragraph("Limiting Factor", self.styles['Normal'])
+            ]]
             for md in selected_med:
                 mr = md['result']
                 mp = md['profile']
@@ -613,9 +620,9 @@ class ReportGenerator:
                     f"{mr.r_ann*100:.1f}%",
                     f"{mr.r_crit*100:.1f}%",
                     Paragraph(mr.suitability_class, self.styles['Normal']),
-                    mr.limiting_factor
+                    Paragraph(mr.limiting_factor, self.styles['Normal'])
                 ])
-            t_med = Table(data_med, colWidths=[90, 120, 55, 55, 80, 60])
+            t_med = Table(data_med, colWidths=[80, 95, 55, 55, 85, 80])
             t_med.setStyle(get_table_style_standard())
             self.story.append(t_med)
             self.story.append(PageBreak())
@@ -629,11 +636,11 @@ class ReportGenerator:
 
                 med_profile_data = [
                     ["Parameter", "Value", "Parameter", "Value"],
-                    ["Suitability Class", Paragraph(mr.suitability_class, self.styles['Normal']), "Homogeneity", mr.homogeneity_class.title()],
-                    ["Annual rPAR", f"{mr.r_ann*100:.1f}%", "Critical rPAR", f"{mr.r_crit*100:.1f}%"],
-                    ["DLI Min Threshold", f"{mp.DLI_min:.1f} mol/m\u00b2/d", "Limiting Factor", mr.limiting_factor],
+                    [Paragraph("Suitability Class", self.styles['Normal']), Paragraph(mr.suitability_class, self.styles['Normal']), Paragraph("Homogeneity", self.styles['Normal']), Paragraph(mr.homogeneity_class.title(), self.styles['Normal'])],
+                    [Paragraph("Annual rPAR", self.styles['Normal']), f"{mr.r_ann*100:.1f}%", Paragraph("Critical rPAR", self.styles['Normal']), f"{mr.r_crit*100:.1f}%"],
+                    [Paragraph("DLI Min Threshold", self.styles['Normal']), f"{mp.DLI_min:.1f} mol/m\u00b2/d", Paragraph("Limiting Factor", self.styles['Normal']), Paragraph(mr.limiting_factor, self.styles['Normal'])],
                 ]
-                t_mp = Table(med_profile_data, colWidths=[120, 110, 120, 100])
+                t_mp = Table(med_profile_data, colWidths=[110, 115, 110, 115])
                 t_mp.setStyle(get_table_style_standard())
                 self.story.append(t_mp)
                 self.story.append(Spacer(1, 8))
@@ -704,13 +711,13 @@ class ReportGenerator:
 
             mw_profile_data = [
                 ["Parameter", "Value", "Parameter", "Value"],
-                ["Suitability Score", f"{mwr.score:.1f} / 100", "Light Class", mwr.light_class],
-                ["Hydrology Class", mwr.hydro_class, "Recommended Zone", mwr.zone_hint],
-                ["Ellenberg L", str(mwr.ellenberg_L), "Ellenberg F", str(mwr.ellenberg_F)],
-                ["Actual rPAR", f"{mwr.rPAR_actual*100:.1f}%", "Limiting Factor", mwr.limiting_factor],
-                ["DLI Min", f"{mwp.DLI_min:.1f} mol/m\u00b2/d", "DLI Target", f"{mwp.DLI_target:.1f} mol/m\u00b2/d"],
+                [Paragraph("Suitability Score", self.styles['Normal']), f"{mwr.score:.1f} / 100", Paragraph("Light Class", self.styles['Normal']), Paragraph(mwr.light_class, self.styles['Normal'])],
+                [Paragraph("Hydrology Class", self.styles['Normal']), Paragraph(mwr.hydro_class, self.styles['Normal']), Paragraph("Recommended Zone", self.styles['Normal']), Paragraph(mwr.zone_hint, self.styles['Normal'])],
+                [Paragraph("Ellenberg L", self.styles['Normal']), str(mwr.ellenberg_L), Paragraph("Ellenberg F", self.styles['Normal']), str(mwr.ellenberg_F)],
+                [Paragraph("Actual rPAR", self.styles['Normal']), f"{mwr.rPAR_actual*100:.1f}%", Paragraph("Limiting Factor", self.styles['Normal']), Paragraph(mwr.limiting_factor, self.styles['Normal'])],
+                [Paragraph("DLI Min", self.styles['Normal']), f"{mwp.DLI_min:.1f} mol/m\u00b2/d", Paragraph("DLI Target", self.styles['Normal']), f"{mwp.DLI_target:.1f} mol/m\u00b2/d"],
             ]
-            t_mw = Table(mw_profile_data, colWidths=[120, 110, 120, 100])
+            t_mw = Table(mw_profile_data, colWidths=[110, 115, 110, 115])
             t_mw.setStyle(get_table_style_standard())
             self.story.append(t_mw)
             self.story.append(Spacer(1, 8))
