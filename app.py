@@ -719,6 +719,15 @@ with tab_spatial:
             zmin=zmin, zmax=zmax
         ))
         
+        for rect in layers['pv_rects']:
+            fig.add_shape(
+                type="rect",
+                x0=rect['x0'], y0=rect['y0'], x1=rect['x1'], y1=min(rect['y1'], y_max),
+                fillcolor="rgba(100, 100, 100, 0.35)",
+                line=dict(color="rgba(60, 60, 60, 0.7)", width=1),
+                layer="above"
+            )
+            
         fig.update_layout(
             title=title,
             xaxis_title="Distance parallel to rows (m)",
