@@ -639,6 +639,13 @@ class ReportGenerator:
         if not meadow_results and not selected_meadow:
             return  # No meadow data, skip page
 
+        _days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        _mnames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        _m_agri = self.metrics['monthly_par_agri']
+        _m_open = self.metrics['monthly_par_open']
+        dli_agri_base = [_m_agri[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
+        dli_open_base = [_m_open[i] / _days[i] if _days[i] > 0 else 0 for i in range(12)]
+
         self.story.append(Paragraph("Wet Meadow & Floodplain Species — Suitability Results", self.styles['Heading1']))
         self.story.append(Paragraph(
             "Suitability assessment for selected wet meadow, floodplain and grassland species under this Agri-PV layout. "
