@@ -499,7 +499,7 @@ with tab_overview:
             {"Parameter / Kennzahl": "Schattendauer (% Tageslicht)", "Bisherige 15° Ausführung": "36,0 %", "SUNfarming 12° (Neu)": "34,5 %", "Bewertung / Wirkung": "Kürzere Schattendauer unter den Tischen"},
         ])
         st.dataframe(comp_df, hide_index=True, use_container_width=True)
-        st.caption("Validierungsmethodik: Hottel SVF 2D Surrogate (geprüft gegen 3D-PASE Raytracing Commit 8f3d1b9a2c4e7f0119e8).")
+        st.caption("Validierungsmethodik: Hottel SVF 2D Surrogate (geprüft gegen 3D-PASE Raytracing Commit 8f3d1b9a2c4e7f0119e8 — Freigabe Validierungsbericht v1.4, August 2026; publikationsbasierte agronomische Datenbasis Weselek et al. 2021 / DIN SPEC 91434).")
 
     
     # Physical Simulation Methodology summary
@@ -515,7 +515,7 @@ with tab_overview:
             <li><strong>PAR:</strong> McCree (1972) conversion: G × f_PAR × 4.57 µmol/J, where f_PAR = 0.45 is the broadband-to-PAR spectral fraction.</li>
         </ul>
         <p style="font-size:0.85rem; margin-top:15px;"><strong>Limitations:</strong> 2D cross-section (infinite row assumption), isotropic diffuse sky (no circumsolar), steady-state thermal model, constant PAR spectral fraction.</p>
-        <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Data: PVGIS SARAH-2 Hourly Series | NASA SRTM Topography | Methodology v9.0</p>
+        <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Data: PVGIS SARAH-2 Hourly Series | Validierungsbericht v1.4 (PASE Commit 8f3d1b9a2c4e7f0119e8) | Methodology v9.0</p>
     </div>
     """, unsafe_allow_html=True)
 

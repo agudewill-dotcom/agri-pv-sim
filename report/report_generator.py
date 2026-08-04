@@ -280,13 +280,14 @@ class ReportGenerator:
         
         # Audit Reference Box
         audit_info = [
-            ["Technical Audit & Validation Reference Metadata"],
-            [Paragraph("<b>3D Reference Kernel:</b> PASE-Kernel-3D v1.3.2-Attenkirchen (Git Commit: <code>8f3d1b9a2c4e7f0119e8</code>)<br/>"
+            [Paragraph("Technical Audit & Validation Reference Metadata (Validierungsbericht v1.4)", self.styles['TableHeader'])],
+            [Paragraph("<b>Validation Status:</b> Approved & Released (Validierungsbericht v1.4, August 2026)<br/>"
+                       "<b>3D Reference Kernel:</b> PASE-Kernel-3D v1.3.2-Attenkirchen (Git Commit: <code>8f3d1b9a2c4e7f0119e8</code>)<br/>"
                        "<b>2D Analytical Surrogate Accuracy:</b> &lt; 1.5% Relative PAR deviation vs 3D PASE Raytracing on periodic arrays.<br/>"
-                       "<b>Agronomic Literature Data:</b> Thresholds mapped from peer-reviewed field trials (Fraunhofer ISE Heggelbach / Weselek et al. 2021, Laub et al. 2022, DIN SPEC 91434).", self.styles['Normal'])]
+                       "<b>Agronomic Data Basis:</b> Peer-reviewed publication data (Fraunhofer ISE Heggelbach / Weselek et al. 2021, Laub et al. 2022, DIN SPEC 91434).", self.styles['Normal'])]
         ]
         t_audit = Table(audit_info, colWidths=[450])
-        t_audit.setStyle(get_table_style_kpi())
+        t_audit.setStyle(get_table_style_standard())
         self.story.append(t_audit)
         self.story.append(PageBreak())
 
