@@ -372,7 +372,7 @@ class ReportGenerator:
             ["Median Remaining PAR", f"{sp_kpis.get('median_rem', 0):.1f} %", "Heterogeneity (CV)", f"{sp_kpis.get('cv_rem', 0)*100:.1f} %"],
             ["Area < 50% PAR", f"{sp_kpis.get('below_50_pct', 0):.1f} %", "Area < 60% PAR", f"{sp_kpis.get('below_60_pct', 0):.1f} %"]
         ]
-        t = Table(kpi_data, colWidths=[140, 70, 140, 70])
+        t = Table(kpi_data, colWidths=[130, 85, 130, 85])
         t.setStyle(get_table_style_kpi())
         self.story.append(t)
         
