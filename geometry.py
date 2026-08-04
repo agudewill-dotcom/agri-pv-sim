@@ -6,8 +6,8 @@ from typing import Dict, Any
 # GEOMETRY PRESET REGISTRY (SUNfarming Cross-Section Definitions)
 # ==============================================================================
 GEOMETRY_PRESETS: Dict[str, Dict[str, Any]] = {
-    "Predefined Table 12°": {
-        "source_label": "SUNfarming Schnitt Agri-PV 12° / 8.28 m Pitch",
+    "SUNfarming 12° (Neue Ausführung - LH 2.70m)": {
+        "source_label": "SUNfarming Schnitt Agri-PV 12° / 8.28 m Pitch / LH 2.70 m",
         "tilt_deg": 12.0,
         "clear_height_m": 2.70,
         "surface_azimuth_deg": 180.0,
@@ -21,17 +21,21 @@ GEOMETRY_PRESETS: Dict[str, Dict[str, Any]] = {
             "note": "Referenz Schnitt 12°: LH 2,70 m | Tischlänge ca. 5,75 m | horizontale Projektion ca. 5,62 m | Pitch ca. 8,28 m | freier Gap ca. 2,63 m."
         }
     },
-    "Predefined Table 15°": {
-        "source_label": "SUNfarming / existing 15° default table",
+    "Bisherige 15° Ausführung (LH 2.10m)": {
+        "source_label": "Bisherige Ausführung 15° / 8.63 m Pitch / LH 2.10 m",
         "tilt_deg": 15.0,
         "clear_height_m": 2.10,
         "surface_azimuth_deg": 180.0,
         "table_length_m": 5.63,
         "row_pitch_m": 8.63,
-        "structural_loss_percent": 0.0,
+        "structural_loss_percent": 3.0,
         "drawing_reference": None
     }
 }
+# Backward compatibility aliases
+GEOMETRY_PRESETS["Predefined Table 12°"] = GEOMETRY_PRESETS["SUNfarming 12° (Neue Ausführung - LH 2.70m)"]
+GEOMETRY_PRESETS["Predefined Table 15°"] = GEOMETRY_PRESETS["Bisherige 15° Ausführung (LH 2.10m)"]
+
 
 # Legacy fallback defaults
 DEFAULT_MODULE_LENGTH = 5.63

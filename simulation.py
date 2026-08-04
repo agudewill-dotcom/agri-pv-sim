@@ -408,7 +408,11 @@ def render_sidebar_and_run():
     
     geom_mode = st.sidebar.selectbox(
         "Geometrie-Modus",
-        options=["Predefined Table 12°", "Predefined Table 15°", "Custom Table Geometry"],
+        options=[
+            "SUNfarming 12° (Neue Ausführung - LH 2.70m)",
+            "Bisherige 15° Ausführung (LH 2.10m)",
+            "Custom Table Geometry"
+        ],
         key="geom_mode_select"
     )
     
